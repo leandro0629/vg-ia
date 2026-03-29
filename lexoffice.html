@@ -2299,8 +2299,7 @@ async function _sbLoad(key) {
 const _sbQueue = {};
 const _sbTimers = {};
 function _sbSave(key, value) {
-  if (!_sbReady) { console.log('[_sbSave] Supabase not ready'); return; }
-  console.log('[_sbSave] Saving', key, 'to Supabase...');
+  if (!_sbReady) return;
   _sbQueue[key] = value;
   clearTimeout(_sbTimers[key]);
   _sbTimers[key] = setTimeout(async () => {
@@ -2317,13 +2316,10 @@ function _sbSave(key, value) {
         },
         body: JSON.stringify({ key, data, updated_at: new Date().toISOString() })
       });
-      if (response.ok) {
-        console.log('[_sbSave] Success!');
-      } else {
-        const err = await response.json();
-        console.error('[_sbSave] HTTP error:', err);
+      if (!response.ok) {
+        console.warn('[_sbSave] Save failed for', key);
       }
-    } catch(e) { console.error('[_sbSave] Fetch error:', e); }
+    } catch(e) { /* silently fail */ }
   }, 2000);
 }
 
