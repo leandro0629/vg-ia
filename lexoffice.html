@@ -3853,16 +3853,6 @@ function salvarNovoUsuario() {
   users.push(newUser);
   saveUsers(users);
 
-  // Insere também na tabela auth_users do Supabase
-  if (_sbReady) {
-    _sb.from('auth_users').insert({ email, password: senha, profile: perfil, name: nome }).then(
-      ({ data, error }) => {
-        if (error) console.warn('Erro ao sincronizar usuário no Supabase:', error);
-        else console.log('✅ Usuário sincronizado no Supabase');
-      }
-    );
-  }
-
   addActivity(`Usuário "${nome}" criado`, '#c8a96e');
   closeModal('modalNovoUsuario');
   renderPage_usuarios();
