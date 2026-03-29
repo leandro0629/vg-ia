@@ -2308,14 +2308,22 @@ function _sbSave(key, value) {
     if (data === undefined) return;
     delete _sbQueue[key];
     try {
-      const { data: resData, error } = await _sb.from('app_data')
-        .upsert({ key, data, updated_at: new Date().toISOString() });
-      if (error) {
-        console.error('[_sbSave] Supabase error:', error);
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/app_data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({ key, data, updated_at: new Date().toISOString() })
+      });
+      if (response.ok) {
+        console.log('[_sbSave] Success!');
       } else {
-        console.log('[_sbSave] Success!', resData);
+        const err = await response.json();
+        console.error('[_sbSave] HTTP error:', err);
       }
-    } catch(e) { console.error('[_sbSave] Try/catch error:', e); }
+    } catch(e) { console.error('[_sbSave] Fetch error:', e); }
   }, 2000);
 }
 
