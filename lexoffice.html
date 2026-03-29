@@ -2314,18 +2314,35 @@ async function _sbLoad(key) {
 }
 
 async function _sbSave(key, value) {
-  if (!_sbReady || !_sb) return;
+  // Tenta SDK primeiro, depois proxy do Netlify como fallback
+  if (_sbReady && _sb) {
+    try {
+      const { error } = await _sb
+        .from('app_data')
+        .upsert({ key, data: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+      if (!error) {
+        console.log('[✓] Sincronizado:', key);
+        return;
+      }
+    } catch(e) {
+      console.log('[⚠] SDK falhou, tentando proxy...');
+    }
+  }
+
+  // Fallback: usa função Netlify como proxy
   try {
-    const { error } = await _sb
-      .from('app_data')
-      .upsert({ key, data: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-    if (error) {
-      console.warn('[⚠] Supabase erro ao salvar "' + key + '":', error.message, error);
+    const response = await fetch('/.netlify/functions/supabase-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, data: value })
+    });
+    if (response.ok) {
+      console.log('[✓] Sincronizado via proxy:', key);
     } else {
-      console.log('[✓] Sincronizado:', key);
+      console.warn('[⚠] Proxy error:', response.status);
     }
   } catch(e) {
-    console.warn('[⚠] Falha de rede ao salvar "' + key + '":', e.message);
+    console.warn('[⚠] Falha ao sincronizar:', e.message);
   }
 }
 
