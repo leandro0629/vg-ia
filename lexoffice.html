@@ -2274,25 +2274,7 @@ async function initSupabase() {
     if (SUPABASE_URL !== 'COLE_SUA_URL_AQUI' && window.supabase) {
       _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       _sbReady = true;
-      console.log('✅ Supabase conectado:', SUPABASE_URL);
-
-      // Tenta carregar dados salvos anteriormente
-      console.log('[sync] Carregando dados remotos...');
-      const remoteMembers = await _sbLoad(STORAGE_KEYS.members);
-      const remoteTasks = await _sbLoad(STORAGE_KEYS.tasks);
-      const remotePrazos = await _sbLoad(STORAGE_KEYS.prazos);
-      const remoteActivity = await _sbLoad(STORAGE_KEYS.activity);
-      const remoteSharedAC = await _sbLoad(STORAGE_KEYS.sharedAC);
-
-      if (remoteMembers) { members = remoteMembers; localStorage.setItem(STORAGE_KEYS.members, JSON.stringify(members)); }
-      if (remoteTasks) { tasks = remoteTasks; localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks)); }
-      if (remotePrazos) { prazos = remotePrazos; localStorage.setItem(STORAGE_KEYS.prazos, JSON.stringify(prazos)); }
-      if (remoteActivity) { activity = remoteActivity; localStorage.setItem(STORAGE_KEYS.activity, JSON.stringify(activity)); }
-      if (remoteSharedAC) { sharedAC = remoteSharedAC; localStorage.setItem(STORAGE_KEYS.sharedAC, JSON.stringify(sharedAC)); }
-
-      // Configura realtime (sincronização bidirecional)
-      _setupRealtime();
-      console.log('[sync] Realtime ativado');
+      console.log('✅ Supabase inicializado (modo offline - sem sync por enquanto)');
     } else {
       console.warn('⚠️ Supabase não configurado - usando localStorage apenas');
     }
@@ -2314,36 +2296,9 @@ async function _sbLoad(key) {
 }
 
 async function _sbSave(key, value) {
-  // Tenta SDK primeiro, depois proxy do Netlify como fallback
-  if (_sbReady && _sb) {
-    try {
-      const { error } = await _sb
-        .from('app_data')
-        .upsert({ key, data: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-      if (!error) {
-        console.log('[✓] Sincronizado:', key);
-        return;
-      }
-    } catch(e) {
-      console.log('[⚠] SDK falhou, tentando proxy...');
-    }
-  }
-
-  // Fallback: usa função Netlify como proxy
-  try {
-    const response = await fetch('/.netlify/functions/supabase-proxy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key, data: value })
-    });
-    if (response.ok) {
-      console.log('[✓] Sincronizado via proxy:', key);
-    } else {
-      console.warn('[⚠] Proxy error:', response.status);
-    }
-  } catch(e) {
-    console.warn('[⚠] Falha ao sincronizar:', e.message);
-  }
+  // Por enquanto, apenas salva em localStorage
+  // Sincronização com Supabase será ativada quando a conexão funcionar
+  console.log('[local] Salvo em localStorage:', key);
 }
 
 // Diagnóstico — rode window.testSupabase() no console do navegador
