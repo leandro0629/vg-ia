@@ -1840,7 +1840,7 @@
 
 <div id="undoToastContainer"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><!-- MODAL NOVA ATIVIDADE COMPARTILHADA -->
+<!-- MODAL NOVA ATIVIDADE COMPARTILHADA -->
 <div class="modal-overlay" id="modalNovaAC">
   <div class="modal modal-lg">
     <div class="modal-header">
@@ -2269,19 +2269,37 @@ const SUPABASE_KEY  = 'sb_publishable_WT-K6mJ3XQp7fqV1rg_QXg_M-jFE-D3';
 _sb = null;
 _sbReady = false;
 
-function initSupabase() {
+async function initSupabase() {
   try {
     if (SUPABASE_URL !== 'COLE_SUA_URL_AQUI' && window.supabase) {
       _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       _sbReady = true;
       console.log('✅ Supabase conectado:', SUPABASE_URL);
+
+      // Tenta carregar dados salvos anteriormente
+      console.log('[sync] Carregando dados remotos...');
+      const remoteMembers = await _sbLoad(STORAGE_KEYS.members);
+      const remoteTasks = await _sbLoad(STORAGE_KEYS.tasks);
+      const remotePrazos = await _sbLoad(STORAGE_KEYS.prazos);
+      const remoteActivity = await _sbLoad(STORAGE_KEYS.activity);
+      const remoteSharedAC = await _sbLoad(STORAGE_KEYS.sharedAC);
+
+      if (remoteMembers) { members = remoteMembers; localStorage.setItem(STORAGE_KEYS.members, JSON.stringify(members)); }
+      if (remoteTasks) { tasks = remoteTasks; localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks)); }
+      if (remotePrazos) { prazos = remotePrazos; localStorage.setItem(STORAGE_KEYS.prazos, JSON.stringify(prazos)); }
+      if (remoteActivity) { activity = remoteActivity; localStorage.setItem(STORAGE_KEYS.activity, JSON.stringify(activity)); }
+      if (remoteSharedAC) { sharedAC = remoteSharedAC; localStorage.setItem(STORAGE_KEYS.sharedAC, JSON.stringify(sharedAC)); }
+
+      // Configura realtime (sincronização bidirecional)
+      _setupRealtime();
+      console.log('[sync] Realtime ativado');
     } else {
-      console.warn('⚠️ Supabase não configurado - usando localStorage');
+      console.warn('⚠️ Supabase não configurado - usando localStorage apenas');
     }
   } catch(e) { console.warn('❌ Supabase init error:', e); }
 }
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initSupabase);
+  document.addEventListener('DOMContentLoaded', () => initSupabase());
 } else {
   initSupabase();
 }
@@ -2295,78 +2313,39 @@ async function _sbLoad(key) {
   } catch(e) { return null; }
 }
 
-// Retry com backoff exponencial
-async function _sbSaveWithRetry(key, value, attempt = 1) {
-  if (!_sbReady) return;
-  const MAX_ATTEMPTS = 3;
-  const DELAY = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
-
+async function _sbSave(key, value) {
+  if (!_sbReady || !_sb) return;
   try {
-    const url = `${SUPABASE_URL}/rest/v1/app_data`;
-    const body = { key, data: value, updated_at: new Date().toISOString() };
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    if (response.ok || response.status === 201) {
-      console.log('[✓] Sincronizado:', key);
-      return true;
-    } else if (response.status === 409) {
-      // Atualiza se já existe
-      const updateUrl = `${SUPABASE_URL}/rest/v1/app_data?key=eq.${encodeURIComponent(key)}`;
-      const updateResp = await fetch(updateUrl, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(body)
-      });
-      console.log('[✓] Atualizado:', key);
-      return updateResp.ok;
-    }
-  } catch(e) {
-    if (attempt < MAX_ATTEMPTS) {
-      console.log(`[⟳] Tentando novamente (${attempt}/${MAX_ATTEMPTS}) em ${DELAY}ms...`);
-      await new Promise(r => setTimeout(r, DELAY));
-      return _sbSaveWithRetry(key, value, attempt + 1);
+    const { error } = await _sb
+      .from('app_data')
+      .upsert({ key, data: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (error) {
+      console.warn('[⚠] Supabase erro ao salvar "' + key + '":', error.message, error);
     } else {
-      console.warn('[⚠] Falhou após', MAX_ATTEMPTS, 'tentativas:', key);
+      console.log('[✓] Sincronizado:', key);
     }
-  }
-}
-
-function _sbSave(key, value) {
-  if (!_sbReady) return;
-  const body = JSON.stringify({ key, data: value, updated_at: new Date().toISOString() });
-  const url = `${SUPABASE_URL}/rest/v1/app_data`;
-
-  // Tenta sendBeacon primeiro (mais resiliente)
-  try {
-    const blob = new Blob([body], { type: 'application/json' });
-    navigator.sendBeacon(url, blob);
-    console.log('[beacon] Enviado:', key);
   } catch(e) {
-    // Se falhar, tenta fetch com retry
-    _sbSaveWithRetry(key, value);
+    console.warn('[⚠] Falha de rede ao salvar "' + key + '":', e.message);
   }
 }
+
+// Diagnóstico — rode window.testSupabase() no console do navegador
+window.testSupabase = async function() {
+  console.log('=== TESTE SUPABASE ===');
+  console.log('URL:', SUPABASE_URL);
+  console.log('KEY (primeiros 20):', SUPABASE_KEY.substring(0, 20) + '...');
+  console.log('_sbReady:', _sbReady, '| _sb:', !!_sb);
+  if (!_sb) { console.error('PROBLEMA: cliente Supabase não iniciado'); return; }
+  console.log('Testando leitura...');
+  const { data, error } = await _sb.from('app_data').select('key, updated_at').limit(5);
+  if (error) {
+    console.error('ERRO DE CONEXÃO:', error.message);
+    console.error('Detalhes:', error);
+  } else {
+    console.log('CONECTADO! Registros:', data.length);
+    console.table(data);
+  }
+};
 
 function _setupRealtime() {
   if (!_sbReady) return;
