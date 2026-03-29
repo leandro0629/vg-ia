@@ -2299,12 +2299,13 @@ async function _sbLoad(key) {
 const _sbQueue = {};
 const _sbTimers = {};
 async function _sbSave(key, value) {
-  if (!_sbReady) return;
+  if (!_sbReady) { console.log('[DEBUG] Supabase not ready'); return; }
+  console.log('[DEBUG] _sbSave called for:', key);
   try {
     const url = `${SUPABASE_URL}/rest/v1/app_data?key=eq.${encodeURIComponent(key)}`;
     const body = { key, data: value, updated_at: new Date().toISOString() };
+    console.log('[DEBUG] Attempting PATCH to:', url);
 
-    // Tenta UPSERT via PATCH
     const response = await fetch(url, {
       method: 'PATCH',
       headers: {
@@ -2315,12 +2316,14 @@ async function _sbSave(key, value) {
       body: JSON.stringify(body)
     });
 
-    if (response.status === 204) {
+    console.log('[DEBUG] PATCH response:', response.status);
+
+    if (response.status === 204 || response.status === 200) {
       console.log('[✓] Sincronizado:', key);
-    } else if (response.status === 404) {
-      // Se não existe, insere
+    } else {
+      console.log('[DEBUG] PATCH failed, tentando INSERT...');
       const insertUrl = `${SUPABASE_URL}/rest/v1/app_data`;
-      await fetch(insertUrl, {
+      const insertResp = await fetch(insertUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2328,10 +2331,11 @@ async function _sbSave(key, value) {
         },
         body: JSON.stringify(body)
       });
-      console.log('[✓] Criado:', key);
+      console.log('[DEBUG] INSERT response:', insertResp.status);
+      if (insertResp.ok) console.log('[✓] Criado:', key);
     }
   } catch(e) {
-    console.warn('[⚠] Sync failed:', key, e.message);
+    console.error('[ERROR] Sync failed:', key, e);
   }
 }
 
