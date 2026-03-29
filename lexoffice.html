@@ -2353,14 +2353,15 @@ window.testSupabase = async function() {
   console.log('KEY (primeiros 20):', SUPABASE_KEY.substring(0, 20) + '...');
   console.log('_sbReady:', _sbReady, '| _sb:', !!_sb);
   if (!_sb) { console.error('PROBLEMA: cliente Supabase não iniciado'); return; }
-  console.log('Testando leitura...');
-  const { data, error } = await _sb.from('app_data').select('key, updated_at').limit(5);
+
+  console.log('Testando INSERT via SDK...');
+  const testData = { key: '_test_' + Date.now(), data: { test: true }, updated_at: new Date().toISOString() };
+  const { data, error } = await _sb.from('app_data').insert([testData]);
+
   if (error) {
-    console.error('ERRO DE CONEXÃO:', error.message);
-    console.error('Detalhes:', error);
+    console.error('❌ ERRO:', error.message);
   } else {
-    console.log('CONECTADO! Registros:', data.length);
-    console.table(data);
+    console.log('✅ SUCESSO! Dados inseridos:', testData.key);
   }
 };
 
