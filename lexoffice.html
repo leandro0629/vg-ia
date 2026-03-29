@@ -2269,15 +2269,22 @@ const SUPABASE_KEY  = 'sb_publishable_WT-K6mJ3XQp7fqV1rg_QXg_M-jFE-D3';
 _sb = null;
 _sbReady = false;
 
-try {
-  if (SUPABASE_URL !== 'COLE_SUA_URL_AQUI') {
-    _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    _sbReady = true;
-    console.log('✅ Supabase conectado:', SUPABASE_URL);
-  } else {
-    console.warn('⚠️ Supabase não configurado - usando localStorage');
-  }
-} catch(e) { console.warn('❌ Supabase init error:', e); }
+function initSupabase() {
+  try {
+    if (SUPABASE_URL !== 'COLE_SUA_URL_AQUI' && window.supabase) {
+      _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      _sbReady = true;
+      console.log('✅ Supabase conectado:', SUPABASE_URL);
+    } else {
+      console.warn('⚠️ Supabase não configurado - usando localStorage');
+    }
+  } catch(e) { console.warn('❌ Supabase init error:', e); }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSupabase);
+} else {
+  initSupabase();
+}
 
 async function _sbLoad(key) {
   if (!_sbReady) return null;
