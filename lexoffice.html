@@ -2301,7 +2301,7 @@ function _sbSave(key, value) {
     delete _sbQueue[key];
     try {
       await _sb.from('app_data')
-        .upsert({ key, data, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+        .upsert({ key, data, updated_at: new Date().toISOString() }, { onConflict: ['key'] });
     } catch(e) { console.warn('Supabase save error:', e); }
   }, 2000);
 }
