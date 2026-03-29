@@ -2299,43 +2299,39 @@ async function _sbLoad(key) {
 const _sbQueue = {};
 const _sbTimers = {};
 async function _sbSave(key, value) {
-  if (!_sbReady) { console.log('[DEBUG] Supabase not ready'); return; }
-  console.log('[DEBUG] _sbSave called for:', key);
+  if (!_sbReady) return;
   try {
-    const url = `${SUPABASE_URL}/rest/v1/app_data?key=eq.${encodeURIComponent(key)}`;
+    const url = `${SUPABASE_URL}/rest/v1/app_data`;
     const body = { key, data: value, updated_at: new Date().toISOString() };
-    console.log('[DEBUG] Attempting PATCH to:', url);
 
     const response = await fetch(url, {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer': 'return=minimal'
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
       },
       body: JSON.stringify(body)
     });
 
-    console.log('[DEBUG] PATCH response:', response.status);
-
-    if (response.status === 204 || response.status === 200) {
-      console.log('[✓] Sincronizado:', key);
-    } else {
-      console.log('[DEBUG] PATCH failed, tentando INSERT...');
-      const insertUrl = `${SUPABASE_URL}/rest/v1/app_data`;
-      const insertResp = await fetch(insertUrl, {
-        method: 'POST',
+    if (response.ok || response.status === 201) {
+      console.log('[✓] Sincronizado com Supabase:', key);
+    } else if (response.status === 409) {
+      // Conflict - key já existe, atualiza
+      const updateUrl = `${SUPABASE_URL}/rest/v1/app_data?key=eq.${key}`;
+      await fetch(updateUrl, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`
         },
         body: JSON.stringify(body)
       });
-      console.log('[DEBUG] INSERT response:', insertResp.status);
-      if (insertResp.ok) console.log('[✓] Criado:', key);
+      console.log('[✓] Atualizado no Supabase:', key);
     }
   } catch(e) {
-    console.error('[ERROR] Sync failed:', key, e);
+    console.warn('[⚠] Supabase sync falhou (localStorage ok):', key);
   }
 }
 
