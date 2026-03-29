@@ -2292,7 +2292,8 @@ async function _sbLoad(key) {
 const _sbQueue = {};
 const _sbTimers = {};
 function _sbSave(key, value) {
-  if (!_sbReady) return;
+  if (!_sbReady) { console.log('[_sbSave] Supabase not ready'); return; }
+  console.log('[_sbSave] Saving', key, 'to Supabase...');
   _sbQueue[key] = value;
   clearTimeout(_sbTimers[key]);
   _sbTimers[key] = setTimeout(async () => {
@@ -2300,9 +2301,10 @@ function _sbSave(key, value) {
     if (data === undefined) return;
     delete _sbQueue[key];
     try {
-      await _sb.from('app_data')
+      const result = await _sb.from('app_data')
         .upsert({ key, data, updated_at: new Date().toISOString() }, { onConflict: ['key'] });
-    } catch(e) { console.warn('Supabase save error:', e); }
+      console.log('[_sbSave] Success!', result);
+    } catch(e) { console.error('[_sbSave] Error:', e); }
   }, 2000);
 }
 
