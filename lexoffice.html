@@ -2352,8 +2352,20 @@ async function _sbSaveWithRetry(key, value, attempt = 1) {
   }
 }
 
-async function _sbSave(key, value) {
-  _sbSaveWithRetry(key, value);
+function _sbSave(key, value) {
+  if (!_sbReady) return;
+  const body = JSON.stringify({ key, data: value, updated_at: new Date().toISOString() });
+  const url = `${SUPABASE_URL}/rest/v1/app_data`;
+
+  // Tenta sendBeacon primeiro (mais resiliente)
+  try {
+    const blob = new Blob([body], { type: 'application/json' });
+    navigator.sendBeacon(url, blob);
+    console.log('[beacon] Enviado:', key);
+  } catch(e) {
+    // Se falhar, tenta fetch com retry
+    _sbSaveWithRetry(key, value);
+  }
 }
 
 function _setupRealtime() {
