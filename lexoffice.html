@@ -2301,10 +2301,14 @@ function _sbSave(key, value) {
     if (data === undefined) return;
     delete _sbQueue[key];
     try {
-      const result = await _sb.from('app_data')
+      const { data: resData, error } = await _sb.from('app_data')
         .upsert({ key, data, updated_at: new Date().toISOString() }, { onConflict: ['key'] });
-      console.log('[_sbSave] Success!', result);
-    } catch(e) { console.error('[_sbSave] Error:', e); }
+      if (error) {
+        console.error('[_sbSave] Supabase error:', error);
+      } else {
+        console.log('[_sbSave] Success!', resData);
+      }
+    } catch(e) { console.error('[_sbSave] Try/catch error:', e); }
   }, 2000);
 }
 
