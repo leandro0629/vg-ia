@@ -103,8 +103,8 @@
       window.firebaseReady = true;
       console.log('[Firestore] ✅ Sincronização inicializada com sucesso');
 
-      // Listeners em tempo real desativados temporariamente
-      // setupRealtimeListeners();
+      // Listeners em tempo real com debouncing para evitar re-renders excessivos
+      setupRealtimeListeners();
     } catch (err) {
       console.warn('[Firestore] Erro na inicialização:', err);
       window.firebaseReady = true; // Continuar mesmo com erro
@@ -114,6 +114,23 @@
   // ============================================================
   // REAL-TIME LISTENERS
   // ============================================================
+  let pendingRenderUpdate = false;
+  let realtimeUpdateQueue = new Set();
+
+  function processRealtimeUpdates() {
+    if (realtimeUpdateQueue.size > 0 && currentPage && currentUser) {
+      const hasOpenModal = document.querySelector('.modal-overlay[style*="display: flex"]') ||
+                          document.getElementById('modalTask')?.style.display === 'flex';
+
+      if (!hasOpenModal) {
+        console.log('[Firestore] ⚡ Processando atualizações em fila');
+        realtimeUpdateQueue.clear();
+        renderPage(currentPage);
+      }
+    }
+    pendingRenderUpdate = false;
+  }
+
   function setupRealtimeListeners() {
     if (!db) return;
 
@@ -151,11 +168,13 @@
                   console.log('[Firestore] 🔄 Atividades compartilhadas atualizadas em tempo real');
                 }
 
-                // Re-renderizar página se está visível (mas não se há modal aberto)
-                const hasOpenModal = document.querySelector('.modal-overlay[style*="display: flex"]') ||
-                                     document.getElementById('modalTask')?.style.display === 'flex';
-                if (currentPage && currentUser && !hasOpenModal) {
-                  renderPage(currentPage);
+                // Fila a atualização em vez de renderizar imediatamente
+                realtimeUpdateQueue.add(key);
+
+                // Debounce: processa atualizações em fila após 300ms sem novas mudanças
+                if (!pendingRenderUpdate) {
+                  pendingRenderUpdate = true;
+                  setTimeout(processRealtimeUpdates, 300);
                 }
               }
             }
