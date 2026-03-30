@@ -6256,11 +6256,14 @@ function showLogoutConfirm() {
     _setupRealtime();
   }
 
-  const session = getSession();
-  if (session) {
-    const fresh = users.find(u => u.id === session.id);
-    enterApp(fresh || session);
-  }
+  // Aguardar Firestore carregar antes de tentar login automático
+  setTimeout(() => {
+    const session = getSession();
+    if (session) {
+      const fresh = users.find(u => u.id === session.id);
+      enterApp(fresh || session);
+    }
+  }, 1000);
 
   document.getElementById('loginEmail').addEventListener('keydown', e => {
     if (e.key === 'Enter') {
