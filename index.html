@@ -34,22 +34,10 @@
     'vgai_notif_alerts', 'vgai_user_profile', 'vgai_user_settings'
   ];
 
-  // Função para sincronizar dados com Firestore (não-bloqueante)
+  // Função para sincronizar dados com Firestore (DESABILITADA - quota excedida)
   function syncToFirestore(key, data) {
-    if (!db) return; // Firebase não inicializado
-    try {
-      const docRef = db.collection(FIRESTORE_COLLECTION).doc(key);
-      docRef.set({
-        key: key,
-        value: data,
-        timestamp: new Date(),
-        source: 'web-app'
-      }, { merge: true }).catch(err => {
-        console.warn(`[Firestore] Erro ao sincronizar ${key}:`, err.message);
-      });
-    } catch (err) {
-      console.warn('[Firestore] Erro:', err);
-    }
+    // Firestore desabilitado - usando apenas localStorage
+    // console.log('[Firestore] Sync desabilitado (quota excedida)', key);
   }
 
   // Função para carregar dados do Firestore
@@ -86,30 +74,9 @@
     }
   };
 
-  // Carregar todos os dados do Firestore na inicialização (se houver)
-  window.firebaseReady = false;
-  (async () => {
-    try {
-      console.log('[Firestore] Inicializando sincronização...');
-      for (const key of SYNC_KEYS) {
-        const cloudData = await loadFromFirestore(key);
-        if (cloudData) {
-          try {
-            localStorage.setItem(key, JSON.stringify(cloudData));
-            console.log(`[Firestore] Carregado ${key} da nuvem`);
-          } catch {}
-        }
-      }
-      window.firebaseReady = true;
-      console.log('[Firestore] ✅ Sincronização inicializada com sucesso');
-
-      // Listeners em tempo real com debouncing para evitar re-renders excessivos
-      setupRealtimeListeners();
-    } catch (err) {
-      console.warn('[Firestore] Erro na inicialização:', err);
-      window.firebaseReady = true; // Continuar mesmo com erro
-    }
-  })();
+  // Carregar todos os dados do Firestore (DESABILITADO - usando apenas localStorage)
+  window.firebaseReady = true;
+  console.log('[Sync] ✅ Usando localStorage apenas (Firestore quota excedida)');
 
   // ============================================================
   // REAL-TIME LISTENERS
@@ -132,8 +99,8 @@
   }
 
   function setupRealtimeListeners() {
-    if (!db) return;
-
+    // Listeners desabilitados - usando localStorage apenas
+    return;
     const keysToWatch = ['lex_tasks', 'lex_members', 'lex_prazos', 'lex_activity', 'lex_shared_ac'];
 
     keysToWatch.forEach(key => {
@@ -371,10 +338,10 @@
   .sidebar-profile:hover { background: var(--border); }
   .sidebar.collapsed .sidebar-profile { justify-content: center; padding: 10px; }
   .profile-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
+    width: 28px; height: 28px; border-radius: 50%;
     background: linear-gradient(135deg, var(--primary), #d97706);
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem; font-weight: 700; color: white; flex-shrink: 0;
+    font-size: 0.65rem; font-weight: 700; color: white; flex-shrink: 0;
   }
   .profile-info { flex: 1; min-width: 0; }
   .sidebar.collapsed .profile-info { display: none; }
@@ -687,7 +654,7 @@
 
   /* PROFILE DETAIL */
   .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
-  .profile-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; }
+  .profile-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; }
   .profile-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; }
   .profile-role { color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px; }
 
@@ -1495,10 +1462,8 @@
     <!-- Logo Section -->
     <div class="logo">
       <div class="logo-content">
-        <img src="logo vg.jpeg" alt="VanGuarda" class="logo-icon" style="width: 48px; height: 48px; object-fit: contain;">
         <div class="logo-text">
-          <div class="logo-title">VanGuarda</div>
-          <div class="logo-sub">Gestão</div>
+          <div class="logo-title" style="font-size: 1.1rem; font-weight: 700;">VanGuarda Gestão</div>
         </div>
       </div>
       <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Collapse sidebar">‹</button>
@@ -1877,7 +1842,7 @@
               <div style="display:grid; grid-template-columns:auto 1fr; gap:24px; max-width:600px">
                 <!-- Foto de Perfil -->
                 <div style="display:flex; flex-direction:column; align-items:center">
-                  <div id="profilePhotoPreview" style="width:120px; height:120px; border-radius:12px; background:var(--card); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-secondary); font-size:3rem">👤</div>
+                  <div id="profilePhotoPreview" style="width:80px; height:80px; border-radius:12px; background:var(--card); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-secondary); font-size:2rem">👤</div>
                   <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhotoChange()">
                   <button class="btn btn-secondary btn-sm" onclick="document.getElementById('profilePhotoInput').click()">Alterar Foto</button>
                 </div>
@@ -2070,6 +2035,14 @@
                   <div style="padding:12px; background:var(--card); border:1px solid var(--border); border-radius:8px">
                     <div style="font-size:0.85rem; color:var(--text-secondary)"><strong>Registros:</strong> <span id="sysRecordsCount">Carregando...</span></div>
                   </div>
+                </div>
+
+                <hr style="border:none; border-top:1px solid var(--border); margin:24px 0">
+
+                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">💾 Limpeza de Dados</h3>
+                <div style="display:flex; flex-direction:column; gap:12px">
+                  <button class="btn btn-secondary" onclick="clearAllAttachments()">🗑️ Limpar Todos os Anexos</button>
+                  <div style="font-size:0.85rem; color:var(--text-secondary)">Remove todos os arquivos anexados às tarefas para liberar espaço no navegador.</div>
                 </div>
 
                 <hr style="border:none; border-top:1px solid var(--border); margin:24px 0">
@@ -2717,7 +2690,7 @@ function loadUsers() {
 }
 function saveUsers(u, syncRemote = true) {
   localStorage.setItem(USERS_KEY, JSON.stringify(u));
-  if (syncRemote) _sbSave(USERS_KEY, u);
+  if (syncRemote && db) syncToFirestore(USERS_KEY, u);
 }
 
 let users = loadUsers();
@@ -2746,7 +2719,7 @@ const memberUsers = [
   { id: 'nicole', email: 'nicole@vgai.com', password: 'nicole123', profile: 'advogado', name: 'Nicole', memberId: 10 },
   { id: 'felipe', email: 'felipe@vgai.com', password: 'felipe123', profile: 'advogado', name: 'Felipe', memberId: 11 },
   { id: 'erika', email: 'erika@vgai.com', password: 'erika123', profile: 'advogado', name: 'Erika', memberId: 12 },
-  { id: 'leandro', email: 'leandro@vgai.com', password: 'leandro123', profile: 'estagiario', name: 'Leandro', memberId: 13 },
+  { id: 'leandro', email: 'leandrosmg0629@gmail.com', password: 'leandro123', profile: 'estagiario', name: 'Leandro Andrade', memberId: 13 },
   { id: 'roger', email: 'roger@vgai.com', password: 'roger123', profile: 'estagiario', name: 'Roger Cunha', memberId: 14 },
 ];
 
@@ -2831,8 +2804,20 @@ function updateUIForUser(user) {
   // Sidebar name/role
   const avatarEl = document.getElementById('sidebarAvatar');
   const member = members.find(m => m.name === user.name);
+  let photoUrl = null;
+
+  // Procurar foto em member.photo ou em vgai_user_profile.foto
   if (member && member.photo) {
-    avatarEl.innerHTML = `<img src="${member.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    photoUrl = member.photo;
+  } else {
+    const profileData = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
+    if (profileData.foto) {
+      photoUrl = profileData.foto;
+    }
+  }
+
+  if (photoUrl) {
+    avatarEl.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
   } else {
     avatarEl.textContent = initials(user.name);
   }
@@ -2954,18 +2939,13 @@ if (document.readyState === 'loading') {
 }
 
 async function _sbLoad(key) {
-  if (!_sbReady) return null;
-  try {
-    const { data, error } = await _sb.from('app_data').select('data').eq('key', key).maybeSingle();
-    if (error || !data) return null;
-    return data.data;
-  } catch(e) { return null; }
+  // Supabase desabilitado - usando apenas localStorage
+  return null;
 }
 
 async function _sbSave(key, value) {
-  // Por enquanto, apenas salva em localStorage
-  // Sincronização com Supabase será ativada quando a conexão funcionar
-  console.log('[local] Salvo em localStorage:', key);
+  // Sincronização via Firestore apenas (localStorage interceptado acima)
+  return;
 }
 
 // Diagnóstico — rode window.testSupabase() no console do navegador
@@ -2988,20 +2968,8 @@ window.testSupabase = async function() {
 };
 
 function _setupRealtime() {
-  if (!_sbReady) return;
-  _sb.channel('app-sync')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_data' }, payload => {
-      const { key, data: freshData } = payload.new;
-      if (key === STORAGE_KEYS.members)  { members  = freshData; }
-      else if (key === STORAGE_KEYS.tasks)    { tasks    = freshData; }
-      else if (key === STORAGE_KEYS.prazos)   { prazos   = freshData; }
-      else if (key === STORAGE_KEYS.activity) { activity = freshData; }
-      else if (key === STORAGE_KEYS.sharedAC)   { sharedAC   = freshData; }
-      else if (key === STORAGE_KEYS.municipios) { municipios = freshData; }
-      else if (key === USERS_KEY)               { users      = freshData; saveUsers(users, false); }
-      renderPage(currentPage);
-    })
-    .subscribe();
+  // Realtime desabilitado - usando localStorage
+  return;
 }
 
 // ============================================================
@@ -3022,8 +2990,8 @@ function save(key, data) {
       alert('Armazenamento local cheio. Remova anexos antigos ou limpe o cache do navegador.');
     }
   }
-  // Sincroniza com Supabase (fire-and-forget)
-  _sbSave(key, data);
+  // Sincroniza com Firestore (fire-and-forget)
+  if (db) syncToFirestore(key, data);
 }
 
 // Attachment data stored separately from tasks (flat object {attachId: base64})
@@ -3054,6 +3022,20 @@ function getAttachmentData(id) {
   const store = loadAttachments();
   return store[id] || null;
 }
+function clearAllAttachments() {
+  if (confirm('⚠️ Isso vai deletar TODOS os anexos das tarefas e liberar espaço no navegador.\n\nTem certeza?')) {
+    try {
+      localStorage.removeItem(ATTACH_KEY);
+      alert('✅ Anexos deletados! Espaço liberado.');
+      // Atualizar página de sistema para refletir novo espaço
+      if (currentPage === 'configuracoes') {
+        updateSystemStatus();
+      }
+    } catch(e) {
+      alert('Erro ao limpar anexos: ' + e.message);
+    }
+  }
+}
 
 let members = load(STORAGE_KEYS.members);
 let tasks = load(STORAGE_KEYS.tasks);
@@ -3079,7 +3061,7 @@ if (!members.length || localStorage.getItem('lex_data_ver') !== DATA_VERSION) {
     { id: 10, name: 'Nicole',      role: 'advogado',   area: 'Direito Público', email: 'nicole@vgai.com',     workload: 5, team: 3, teams: [3], seniority: 'junior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nicole' },
     { id: 11, name: 'Felipe',      role: 'advogado',   area: 'Direito Público', email: 'felipe@vgai.com',     workload: 5, team: 4, teams: [4], seniority: 'senior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felipe' },
     { id: 12, name: 'Erika',       role: 'advogado',   area: 'Direito Público', email: 'erika@vgai.com',      workload: 5, team: 4, teams: [4], seniority: 'junior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Erika' },
-    { id: 13, name: 'Leandro',     role: 'estagiario', inst: '',                email: 'leandro@vgai.com',     workload: 3, team: 4, teams: [4], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leandro' },
+    { id: 13, name: 'Leandro Andrade', role: 'estagiario', inst: '',                email: 'leandrosmg0629@gmail.com',     workload: 3, team: 4, teams: [4], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leandro' },
     { id: 14, name: 'Roger Cunha', role: 'estagiario', inst: '',                email: 'roger@vgai.com',       workload: 3, team: 3, teams: [3], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Roger' },
   ];
   save(STORAGE_KEYS.members, members);
@@ -4801,7 +4783,7 @@ let pendingAttachments = [];
 
 function handleFileSelect(input) {
   Array.from(input.files).forEach(file => {
-    if (file.size > 2 * 1024 * 1024) { alert(`"${file.name}" é maior que 2 MB e não pode ser anexado.\n\nAnexos ficam no armazenamento local do navegador — arquivos grandes enchem o espaço rapidamente.`); return; }
+    if (file.size > 1.5 * 1024 * 1024) { alert(`"${file.name}" é maior que 1.5 MB.\n\nOs anexos usam armazenamento local do navegador. Se ficar sem espaço, use Configurações > Sistema > Limpar Anexos.`); return; }
     const reader = new FileReader();
     reader.onload = e => {
       const attachId = 'att_' + Date.now() + '_' + Math.random().toString(36).slice(2);
@@ -6022,17 +6004,49 @@ function loadProfileConfig() {
 function handleProfilePhotoChange() {
   const input = document.getElementById('profilePhotoInput');
   if (input.files && input.files[0]) {
+    const file = input.files[0];
+
+    // Verificar tamanho (máx 500KB)
+    if (file.size > 500 * 1024) {
+      alert('Arquivo muito grande. Máximo 500KB.');
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
-      const photoData = e.target.result;
-      document.getElementById('profilePhotoPreview').innerHTML = `<img src="${photoData}" style="width:100%; height:100%; border-radius:8px; object-fit:cover;">`;
+      try {
+        const photoData = e.target.result;
+        document.getElementById('profilePhotoPreview').innerHTML = `<img src="${photoData}" style="width:100%; height:100%; border-radius:8px; object-fit:cover;">`;
 
-      // Save to localStorage temporarily
-      const profileData = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
-      profileData.foto = photoData;
-      localStorage.setItem('vgai_user_profile', JSON.stringify(profileData));
+        // Save to localStorage
+        const profileData = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
+        profileData.foto = photoData;
+        localStorage.setItem('vgai_user_profile', JSON.stringify(profileData));
+
+        // Também atualizar a foto do membro no array de members
+        const member = members.find(m => m.name === currentUser.name);
+        if (member) {
+          member.photo = photoData;
+          save(STORAGE_KEYS.members, members);
+        }
+
+        // Atualizar sidebar e página de equipe se estiver aberta
+        updateUIForUser(currentUser);
+        if (currentPage === 'equipe') {
+          renderTeam(teamFilter);
+        }
+
+        console.log('✅ Foto salva com sucesso');
+      } catch(err) {
+        console.error('Erro ao salvar foto:', err);
+        alert('Erro ao salvar foto. Tente uma imagem menor.');
+      }
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.onerror = () => {
+      console.error('Erro ao ler arquivo');
+      alert('Erro ao ler arquivo');
+    };
+    reader.readAsDataURL(file);
   }
 }
 
