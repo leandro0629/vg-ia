@@ -5332,17 +5332,27 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
     </div>
   `;
 
-  // Membros (clicável)
+  // Membros (clicável - unificado com Responsável)
   html += `
     <div onclick="showTaskMembersEditor(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
       onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
-      <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">👤 Membros</div>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <div style="display: flex; gap: -8px; align-items: center;">
-          ${assignee ? `<div style="width: 28px; height: 28px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.75rem; border: 2px solid var(--bg-secondary);">${assignee.name.charAt(0).toUpperCase()}</div>` : '<div style="width: 28px; height: 28px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">+</div>'}
+      <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 600;">👤 Membros & Responsável</div>
+      ${assignee ? `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #d97706); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.95rem; flex-shrink: 0;">
+            ${assignee.name.charAt(0).toUpperCase()}
+          </div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${assignee.name}</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">${roleLabel(assignee.role)}</div>
+          </div>
         </div>
-        <div style="color: var(--text-secondary); font-size: 0.85rem;">${assignee ? assignee.name : 'Atribuir'}</div>
-      </div>
+      ` : `
+        <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: 700;">+</div>
+          <div style="font-size: 0.9rem;">Atribuir membro</div>
+        </div>
+      `}
     </div>
   `;
 
@@ -5395,41 +5405,6 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
     </div>
   `;
 
-  // Data de Vencimento
-  if (due) {
-    const daysLeft = Math.ceil((due - new Date()) / 86400000);
-    let dateColor = '#5b8dee';
-    let dateLabel = due.toLocaleDateString('pt-BR');
-    let timeStatus = '';
-    if (daysLeft < 0) { dateColor = '#e05c5c'; timeStatus = ' (Vencida)'; }
-    else if (daysLeft === 0) { dateColor = '#e09a3a'; timeStatus = ' (Hoje)'; }
-    else if (daysLeft === 1) { dateColor = '#e09a3a'; timeStatus = ' (Amanhã)'; }
-
-    html += `
-      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
-        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Data de Vencimento</div>
-        <div style="color: ${dateColor}; font-weight: 600;">📅 ${dateLabel}${timeStatus}</div>
-      </div>
-    `;
-  }
-
-  // Responsável (Membros)
-  if (assignee) {
-    html += `
-      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
-        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">👤 Responsável</div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #d97706); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.9rem;">
-            ${assignee.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div style="font-weight: 600; color: var(--text-primary);">${assignee.name}</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary);">${roleLabel(assignee.role)}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
 
   // Processo
   if (t.process) {
