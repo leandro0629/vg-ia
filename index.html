@@ -2691,6 +2691,7 @@ function loadUsers() {
 function saveUsers(u, syncRemote = true) {
   localStorage.setItem(USERS_KEY, JSON.stringify(u));
   if (syncRemote && db) syncToFirestore(USERS_KEY, u);
+  if (syncRemote && _sb && _sbReady) _sbSave(USERS_KEY, u);
 }
 
 let users = loadUsers();
@@ -2939,13 +2940,38 @@ if (document.readyState === 'loading') {
 }
 
 async function _sbLoad(key) {
-  // Supabase desabilitado - usando apenas localStorage
-  return null;
+  if (!_sb || !_sbReady) return null;
+  try {
+    const { data, error } = await _sb.from('app_data').select('data').eq('key', key).single();
+    if (error) {
+      if (error.code !== 'PGRST116') { // PGRST116 = not found
+        console.warn(`[Supabase] Erro ao carregar ${key}:`, error.message);
+      }
+      return null;
+    }
+    console.log(`[Supabase] ✅ ${key} carregado`);
+    return data?.data || null;
+  } catch (e) {
+    console.warn(`[Supabase] Erro crítico ao carregar ${key}:`, e);
+    return null;
+  }
 }
 
 async function _sbSave(key, value) {
-  // Sincronização via Firestore apenas (localStorage interceptado acima)
-  return;
+  if (!_sb || !_sbReady) return;
+  try {
+    const { error } = await _sb.from('app_data').upsert(
+      { key, data: value, updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+    if (error) {
+      console.warn(`[Supabase] Erro ao salvar ${key}:`, error.message);
+    } else {
+      console.log(`[Supabase] ✅ ${key} sincronizado`);
+    }
+  } catch (e) {
+    console.warn(`[Supabase] Erro crítico ao salvar ${key}:`, e);
+  }
 }
 
 // Diagnóstico — rode window.testSupabase() no console do navegador
