@@ -93,7 +93,7 @@
       console.log('[Firestore] Inicializando sincronização...');
       for (const key of SYNC_KEYS) {
         const cloudData = await loadFromFirestore(key);
-        if (cloudData && !localStorage.getItem(key)) {
+        if (cloudData) {
           try {
             localStorage.setItem(key, JSON.stringify(cloudData));
             console.log(`[Firestore] Carregado ${key} da nuvem`);
