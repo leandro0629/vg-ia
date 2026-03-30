@@ -3463,6 +3463,7 @@ function toggleTask(id) {
   if (!t) return;
   t.done = !t.done;
   save(STORAGE_KEYS.tasks, tasks);
+  syncToFirestore('lex_tasks', tasks);
   addActivity(t.done ? `Tarefa "${t.title.substring(0,30)}..." concluída` : `Tarefa reaberta`, '#4caf7d');
   renderPage(currentPage);
 }
@@ -3537,10 +3538,12 @@ function deleteTask(id) {
     onUndo: () => {
       tasks.splice(idx, 0, removed);
       save(STORAGE_KEYS.tasks, tasks);
+      syncToFirestore('lex_tasks', tasks);
       renderPage(currentPage);
     },
     onExpire: () => {
       save(STORAGE_KEYS.tasks, tasks);
+      syncToFirestore('lex_tasks', tasks);
       addActivity(`Tarefa "${removed.title.substring(0, 30)}..." removida`, '#e05c5c');
     }
   });
@@ -3842,6 +3845,7 @@ function saveTask() {
     }
     tasks.push(t);
     save(STORAGE_KEYS.tasks, tasks);
+    syncToFirestore('lex_tasks', tasks);
     addActivity(`Tarefa "${title.substring(0,30)}..." criada`, '#5b8dee');
   }
   closeModal('modalTask');
@@ -4545,6 +4549,7 @@ function setTaskStatus(id, status) {
   t.kanbanStatus = status;
   t.done = (status === 'done');
   save(STORAGE_KEYS.tasks, tasks);
+  syncToFirestore('lex_tasks', tasks);
 }
 
 function filterKanban(f, btn) {
