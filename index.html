@@ -5324,7 +5324,7 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
   `;
 
   // Etiquetas (clicável)
-  const labelColors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff' };
+  const labelColors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff', ...t.customLabels };
   html += `
     <div onclick="showTaskLabelsEditor(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
       onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
@@ -5819,12 +5819,17 @@ function showTaskLabelsEditor() {
   const t = tasks.find(x => x.id === currentTaskDetailId);
   if (!t) return;
   if (!t.labels) t.labels = [];
+  if (!t.customLabels) t.customLabels = {};
 
   const labels = ['Urgente', 'Bug', 'Feature', 'Documentation', 'Review', 'Testing', 'Design', 'Backend'];
   const colors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff' };
 
+  // Combinar labels padrão com customizadas
+  const allLabels = [...labels, ...Object.keys(t.customLabels)];
+  const allColors = { ...colors, ...t.customLabels };
+
   let html = `
-    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; z-index: 10001; width: 420px; max-height: 650px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; z-index: 10001; width: 450px; max-height: 700px; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
       <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
         <h3 style="margin: 0; color: var(--text-primary);">🏷️ Etiquetas</h3>
         <button onclick="closeAllModals()" style="border: none; background: none; color: var(--text-secondary); cursor: pointer; font-size: 1.5rem;">✕</button>
@@ -5834,18 +5839,28 @@ function showTaskLabelsEditor() {
       <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
         <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Selecionadas:</div>
         <div style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 32px;">
-          ${t.labels.length > 0 ? t.labels.map(l => `<span style="padding: 6px 12px; background: ${colors[l] || '#5b8dee'}; color: white; border-radius: 20px; font-size: 0.85rem;">${l}</span>`).join('') : '<span style="color: var(--text-secondary);">Nenhuma</span>'}
+          ${t.labels.length > 0 ? t.labels.map(l => `<span style="padding: 6px 12px; background: ${allColors[l] || '#5b8dee'}; color: white; border-radius: 20px; font-size: 0.85rem;">${l}</span>`).join('') : '<span style="color: var(--text-secondary);">Nenhuma</span>'}
         </div>
       </div>
 
       <!-- Disponíveis -->
       <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 600;">Disponíveis:</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;">
-        ${labels.map(label => `
-          <div onclick="toggleLabel(${currentTaskDetailId}, '${label}')" style="padding: 10px; background: ${colors[label]}; color: white; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; ${t.labels.includes(label) ? 'opacity: 0.5;' : 'opacity: 1;'}">
+        ${allLabels.map(label => `
+          <div onclick="toggleLabel(${currentTaskDetailId}, '${label}')" style="padding: 10px; background: ${allColors[label]}; color: white; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; ${t.labels.includes(label) ? 'opacity: 0.5;' : 'opacity: 1;'}">
             ${label}
           </div>
         `).join('')}
+      </div>
+
+      <!-- Criar Nova Etiqueta -->
+      <div style="margin-bottom: 20px; padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 600;">➕ Nova Etiqueta:</div>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="newLabelName_${t.id}" placeholder="Nome da etiqueta" style="flex: 1; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 0.9rem;">
+          <input type="color" id="newLabelColor_${t.id}" value="#5b8dee" style="width: 50px; padding: 4px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;">
+          <button onclick="addCustomLabel(${t.id})" style="padding: 8px 12px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Adicionar</button>
+        </div>
       </div>
 
       <!-- Botões -->
@@ -5885,6 +5900,36 @@ function saveLabels(taskId) {
   addActivity('Etiquetas atualizadas');
   closeAllModals();
   openTaskDetail(taskId);
+}
+
+// Adicionar etiqueta customizada
+function addCustomLabel(taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+  if (!t.customLabels) t.customLabels = {};
+
+  const nameInput = document.getElementById(`newLabelName_${taskId}`);
+  const colorInput = document.getElementById(`newLabelColor_${taskId}`);
+
+  const labelName = nameInput ? nameInput.value.trim() : '';
+  const labelColor = colorInput ? colorInput.value : '#5b8dee';
+
+  if (!labelName) {
+    alert('Digite um nome para a etiqueta');
+    return;
+  }
+
+  // Adicionar à lista de customLabels
+  t.customLabels[labelName] = labelColor;
+
+  // Automaticamente selecionar a etiqueta
+  if (!t.labels.includes(labelName)) {
+    t.labels.push(labelName);
+  }
+
+  // Rerender o modal
+  closeAllModals();
+  showTaskLabelsEditor();
 }
 
 // Fechar modais
