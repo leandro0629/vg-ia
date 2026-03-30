@@ -2993,26 +2993,6 @@ window.testSupabase = async function() {
   }
 };
 
-// Sincronizar usuários com Supabase — rode window.syncUsersToSupabase() no console
-function syncUsersToSupabase() {
-  console.log('=== SINCRONIZANDO USUÁRIOS COM SUPABASE ===');
-  if (!_sb || !_sbReady) {
-    console.error('❌ Supabase não está inicializado');
-    return;
-  }
-
-  const currentUsers = loadUsers();
-  console.log(`📤 Enviando ${currentUsers.length} usuários para Supabase...`);
-
-  _sbSave(USERS_KEY, currentUsers).then(() => {
-    console.log('✅ Usuários sincronizados com sucesso!');
-    console.log('Usuários:', currentUsers.map(u => ({ id: u.id, name: u.name, email: u.email })));
-  }).catch(e => {
-    console.error('❌ Erro ao sincronizar:', e);
-  });
-}
-window.syncUsersToSupabase = syncUsersToSupabase;
-
 function _setupRealtime() {
   // Realtime desabilitado - usando localStorage
   return;
@@ -6411,6 +6391,25 @@ function showLogoutConfirm() {
   });
   checkDeadlineNotifications();
 })();
+
+// Sincronizar usuários com Supabase — rode window.syncUsersToSupabase() no console
+window.syncUsersToSupabase = function() {
+  console.log('=== SINCRONIZANDO USUÁRIOS COM SUPABASE ===');
+  if (!_sb || !_sbReady) {
+    console.error('❌ Supabase não está inicializado');
+    return;
+  }
+
+  const currentUsers = loadUsers();
+  console.log(`📤 Enviando ${currentUsers.length} usuários para Supabase...`);
+
+  _sbSave(USERS_KEY, currentUsers).then(() => {
+    console.log('✅ Usuários sincronizados com sucesso!');
+    console.log('Usuários:', currentUsers.map(u => ({ id: u.id, name: u.name, email: u.email })));
+  }).catch(e => {
+    console.error('❌ Erro ao sincronizar:', e);
+  });
+};
 </script>
 </body>
 </html>
