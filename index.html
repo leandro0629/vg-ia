@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAjx_zBDxGq45JvvZhRrKD5yrb3cJXUoy4",
@@ -3308,7 +3309,10 @@ function renderDashboard() {
     return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
       <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:1.1rem">${info.icon||teamId}</div>
       <div style="flex:1"><div style="font-size:0.85rem;font-weight:500">${info.name}</div><div style="font-size:0.72rem;color:var(--text-secondary)">${info.area} · ${teamMembers.length} membros</div></div>
-      <span class="badge ${mt>4?'badge-danger':mt>2?'badge-warn':'badge-success'}">${mt} tarefas</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${createAvatarGroupHTML(teamMembers, 3, 'sm')}
+        <span class="badge ${mt>4?'badge-danger':mt>2?'badge-warn':'badge-success'}">${mt}</span>
+      </div>
     </div>`;
   }).join('');
 
@@ -3355,7 +3359,10 @@ function renderTeam(filter) {
             <div class="team-name">${info.name}</div>
             <div class="team-area">Órgão: <strong>${info.area}</strong></div>
           </div>
-          <span class="badge badge-muted">${teamMembers.length} membros</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            ${createAvatarGroupHTML(teamMembers, 4, 'sm')}
+            <span class="badge badge-muted">${teamMembers.length} membros</span>
+          </div>
         </div>
         <div class="team-card-body">
           ${socios.map(m => `
@@ -6410,6 +6417,82 @@ window.syncUsersToSupabase = function() {
     console.error('❌ Erro ao sincronizar:', e);
   });
 };
+
+// ============================================================
+// AVATAR GROUP COMPONENT (Vanilla JS)
+// ============================================================
+function createAvatarGroupHTML(items, maxVisible = 5, size = 'md') {
+  const sizeClasses = {
+    sm: 'h-8 w-8',
+    md: 'h-10 w-10',
+    lg: 'h-12 w-12'
+  };
+
+  const sizeClass = sizeClasses[size] || sizeClasses.md;
+  const visibleItems = items.slice(0, maxVisible);
+  const remainingCount = items.length - maxVisible;
+
+  let html = `<div class="avatar-group" style="display: flex; align-items: center; gap: -0.5rem;">`;
+
+  visibleItems.forEach((item, index) => {
+    const marginLeft = index === 0 ? '0' : '-0.5rem';
+    const zIndex = visibleItems.length - index;
+    const photoUrl = item.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=random`;
+
+    html += `
+      <div class="avatar-item" style="position: relative; margin-left: ${marginLeft}; z-index: ${zIndex}; cursor: pointer;"
+           onmouseover="showAvatarTooltip(this, '${item.name}', '${item.designation || item.role || 'Membro'}')"
+           onmouseout="hideAvatarTooltip()">
+        <img src="${photoUrl}"
+             alt="${item.name}"
+             style="width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 2px solid var(--bg); object-fit: cover; transition: transform 0.2s;"
+             onmouseover="this.style.transform='scale(1.05)'"
+             onmouseout="this.style.transform='scale(1)'"
+             onclick="showProfile(${item.id})">
+      </div>
+    `;
+  });
+
+  if (remainingCount > 0) {
+    html += `
+      <div class="avatar-more" style="display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem;
+           margin-left: -0.5rem; border-radius: 50%; border: 2px solid var(--bg); background: var(--muted);
+           color: var(--text-secondary); font-weight: 600; font-size: 0.75rem;">
+        +${remainingCount}
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function showAvatarTooltip(element, name, designation) {
+  let tooltip = document.getElementById('avatar-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.id = 'avatar-tooltip';
+    document.body.appendChild(tooltip);
+  }
+
+  const rect = element.getBoundingClientRect();
+  tooltip.innerHTML = `
+    <div style="background: white; border-radius: 8px; padding: 8px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+         position: fixed; z-index: 9999; white-space: nowrap; font-size: 0.75rem;">
+      <div style="font-weight: 600; color: #1a1a1a; margin-bottom: 2px;">${name}</div>
+      <div style="color: #666; font-size: 0.7rem;">${designation}</div>
+    </div>
+  `;
+
+  tooltip.style.display = 'block';
+  tooltip.style.top = (rect.top - 50) + 'px';
+  tooltip.style.left = (rect.left + rect.width / 2 - 60) + 'px';
+}
+
+function hideAvatarTooltip() {
+  const tooltip = document.getElementById('avatar-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
+}
 </script>
 </body>
 </html>
