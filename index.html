@@ -4753,6 +4753,11 @@ function kanCardHTML(t) {
   const hist = t.kanbanHistory || [];
   const histText = hist.length ? `<span class="kan-history-badge">📋 ${hist.length} mov.</span>` : '';
   const tipoBadge = t.tipo ? `<div style="margin-bottom:4px"><span class="tipo-badge">${tipoLabel(t.tipo)}</span></div>` : '';
+
+  // Labels/Etiquetas
+  const labelColors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff', ...(t.customLabels || {}) };
+  const labelsHTML = t.labels && t.labels.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${t.labels.map(l => `<span style="padding:2px 6px;background:${labelColors[l] || '#5b8dee'};color:white;border-radius:3px;font-size:0.65rem;font-weight:600">${l}</span>`).join('')}</div>` : '';
+
   return `<div class="kanban-card" draggable="true" data-id="${t.id}" onclick="openTaskDetail(${t.id})" style="cursor:pointer">
     <div class="kanban-card-top">
       <div class="kanban-card-title">${t.title}</div>
@@ -4761,6 +4766,7 @@ function kanCardHTML(t) {
     ${tipoBadge}
     ${t.process ? `<div class="kanban-card-process">📁 ${t.process}</div>` : ''}
     ${attachCount ? `<div class="kanban-card-process kanban-card-attach" onclick="event.stopPropagation();openAttachments(${t.id})" style="cursor:pointer;margin-top:4px">📎 ${attachCount} anexo${attachCount > 1 ? 's' : ''}</div>` : ''}
+    ${labelsHTML}
     ${(cl.length || hist.length) ? `<div style="display:flex;gap:6px;margin-top:4px">${clText}${histText}</div>` : ''}
     <div class="kanban-card-footer">
       <div class="kanban-card-assignee">
