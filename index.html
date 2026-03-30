@@ -6258,6 +6258,26 @@ function exportData() {
   showNotification('✅ Dados exportados!', 'success');
 }
 
+function clearActivities() {
+  if (confirm('⚠️ Tem certeza que deseja excluir TODAS as atividades? Esta ação não pode ser desfeita.')) {
+    // Limpar localStorage
+    localStorage.setItem('lex_activity', JSON.stringify([]));
+    activity = [];
+
+    // Sincronizar com Firestore
+    if (db) {
+      syncToFirestore('lex_activity', []);
+    }
+
+    showNotification('✅ Todas as atividades foram excluídas!', 'success');
+
+    // Re-renderizar a página se estiver na aba de atividades
+    if (currentPage) {
+      setTimeout(() => renderPage(currentPage), 500);
+    }
+  }
+}
+
 function showClearDataConfirm() {
   if (confirm('⚠️ Tem certeza que deseja limpar o cache local? Esta ação não pode ser desfeita.')) {
     const keys = ['lex_members', 'lex_tasks', 'lex_prazos', 'lex_activity', 'lex_shared_ac', 'lex_users', 'vgai_user_profile', 'vgai_user_settings'];
