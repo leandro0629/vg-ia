@@ -5866,13 +5866,12 @@ function showTaskLabelsEditor() {
 
     <!-- Etiquetas Disponíveis -->
     <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Disponíveis:</div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;" id="labelsGrid_${currentTaskDetailId}">
       ${availableLabels.map(label => `
-        <button onclick="addTempLabel('${label.name}', ${currentTaskDetailId})"
+        <button data-label="${label.name}" data-color="${label.color}" data-task-id="${currentTaskDetailId}"
           style="padding: 10px; background: ${label.color}; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; ${window.tempLabels.includes(label.name) ? 'opacity: 0.5; border: 2px solid white;' : 'opacity: 1;'}"
-          id="btn_${label.name}_${currentTaskDetailId}"
-          onmouseover="this.style.opacity='0.85'"
-          onmouseout="this.style.opacity='${window.tempLabels.includes(label.name) ? '0.5' : '1'}'">
+          id="btn_${label.name.replace(/\s+/g, '_')}_${currentTaskDetailId}"
+          class="label-btn">
           ${label.name}
         </button>
       `).join('')}
@@ -5907,6 +5906,18 @@ function showTaskLabelsEditor() {
   `;
 
   document.body.appendChild(modal);
+
+  // Adicionar event listeners aos botões de etiquetas
+  setTimeout(() => {
+    document.querySelectorAll('.label-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const label = this.getAttribute('data-label');
+        const taskId = parseInt(this.getAttribute('data-task-id'));
+        addTempLabel(label, taskId);
+      });
+    });
+  }, 50);
 }
 
 // Adicionar label temporariamente
