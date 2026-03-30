@@ -102,11 +102,71 @@
       }
       window.firebaseReady = true;
       console.log('[Firestore] ✅ Sincronização inicializada com sucesso');
+
+      // Adicionar listeners em tempo real para atualizações
+      setupRealtimeListeners();
     } catch (err) {
       console.warn('[Firestore] Erro na inicialização:', err);
       window.firebaseReady = true; // Continuar mesmo com erro
     }
   })();
+
+  // ============================================================
+  // REAL-TIME LISTENERS
+  // ============================================================
+  function setupRealtimeListeners() {
+    if (!db) return;
+
+    const keysToWatch = ['lex_tasks', 'lex_members', 'lex_prazos', 'lex_activity', 'lex_shared_ac'];
+
+    keysToWatch.forEach(key => {
+      try {
+        db.collection('vgai_data').doc(key).onSnapshot(
+          (doc) => {
+            if (doc.exists) {
+              const data = doc.data();
+              const newValue = data.value;
+
+              // Verificar se os dados mudaram
+              const currentValue = JSON.parse(localStorage.getItem(key) || 'null');
+              if (JSON.stringify(currentValue) !== JSON.stringify(newValue)) {
+                // Dados mudaram - atualizar localStorage e variáveis globais
+                localStorage.setItem(key, JSON.stringify(newValue));
+
+                // Atualizar variáveis globais
+                if (key === 'lex_tasks') {
+                  tasks = newValue;
+                  console.log('[Firestore] 🔄 Tarefas atualizadas em tempo real');
+                } else if (key === 'lex_members') {
+                  members = newValue;
+                  console.log('[Firestore] 🔄 Membros atualizados em tempo real');
+                } else if (key === 'lex_prazos') {
+                  prazos = newValue;
+                  console.log('[Firestore] 🔄 Prazos atualizados em tempo real');
+                } else if (key === 'lex_activity') {
+                  activity = newValue;
+                  console.log('[Firestore] 🔄 Atividades atualizadas em tempo real');
+                } else if (key === 'lex_shared_ac') {
+                  sharedAC = newValue;
+                  console.log('[Firestore] 🔄 Atividades compartilhadas atualizadas em tempo real');
+                }
+
+                // Re-renderizar página se está visível
+                if (currentPage && currentUser) {
+                  renderPage(currentPage);
+                }
+              }
+            }
+          },
+          (error) => {
+            console.warn(`[Firestore] Erro ao escutar ${key}:`, error.message);
+          }
+        );
+      } catch (err) {
+        console.warn(`[Firestore] Erro ao configurar listener para ${key}:`, err);
+      }
+    });
+  }
 </script>
 <style>
   :root {
