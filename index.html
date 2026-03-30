@@ -5813,10 +5813,48 @@ function drawRelChart(visibleMembers, today) {
 // CONFIGURAÇÕES - SETTINGS PAGE
 // ============================================================
 
+// Show notification toast
+function showNotification(message, type = 'info') {
+  const container = document.getElementById('undoToastContainer');
+  const toastId = 'notif-' + Date.now();
+  const toast = document.createElement('div');
+  toast.id = toastId;
+  toast.className = 'undo-toast';
+  toast.style.background = type === 'success' ? 'rgba(76, 175, 125, 0.1)' :
+                           type === 'danger' ? 'rgba(224, 92, 92, 0.1)' :
+                           'var(--bg-secondary)';
+  toast.style.borderColor = type === 'success' ? 'rgba(76, 175, 125, 0.3)' :
+                            type === 'danger' ? 'rgba(224, 92, 92, 0.3)' :
+                            'var(--border)';
+  toast.innerHTML = `
+    <div class="undo-toast-text">
+      <div class="undo-toast-title">${message}</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" style="margin-left: auto" onclick="this.parentElement.remove()">✕</button>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    if (document.getElementById(toastId)) {
+      document.getElementById(toastId).remove();
+    }
+  }, 4000);
+}
+
 // Load configuration page
 function loadConfigPage() {
   loadProfileConfig();
+  loadEscritorioConfig();
+  resetNotificacoesConfig();
+  resetAparenciaConfig();
   updateSystemInfo();
+  updateThemeButtons();
+
+  // Set font size from settings
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+  if (settingsData.fontSize) {
+    document.getElementById('configFontSize').value = settingsData.fontSize;
+    document.getElementById('fontSizeLabel').textContent = Math.round(settingsData.fontSize * 100) + '%';
+  }
 }
 
 // Switch between config tabs
@@ -5831,6 +5869,12 @@ function switchConfigTab(tab) {
     tabEl.style.display = 'block';
     const btnEl = document.getElementById(`tab-config-${tab}`);
     if (btnEl) btnEl.classList.add('active');
+
+    // Load tab data
+    if (tab === 'escritorio') loadEscritorioConfig();
+    else if (tab === 'notificacoes') resetNotificacoesConfig();
+    else if (tab === 'aparencia') resetAparenciaConfig();
+    else if (tab === 'sistema') updateSystemInfo();
   }
 }
 
