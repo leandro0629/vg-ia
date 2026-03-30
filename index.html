@@ -1414,7 +1414,7 @@
 
     <!-- Search Bar (Optional) -->
     <div class="sidebar-search">
-      <input type="text" class="search-input" placeholder="Buscar..." />
+      <input type="text" class="search-input" placeholder="Buscar..." oninput="openGlobalSearchAndSearch(this.value)" />
     </div>
 
     <!-- Navigation -->
@@ -1464,12 +1464,13 @@
 
     <!-- Bottom Profile & Menu -->
     <div class="sidebar-bottom">
-      <div class="sidebar-profile" onclick="toggleUserMenu()">
+      <div class="sidebar-profile" onclick="toggleUserMenu()" title="Clique para opções">
         <div class="profile-avatar" id="sidebarAvatar">AD</div>
         <div class="profile-info">
           <div class="profile-name" id="sidebarName">Administrador</div>
           <div class="profile-role" id="sidebarRole">Sócio-Gestor</div>
         </div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary);">⋮</div>
       </div>
 
       <!-- User Menu -->
@@ -4594,6 +4595,11 @@ function applyTheme() {
 function openGlobalSearch() {
   document.getElementById('globalSearchOverlay').classList.add('open');
   setTimeout(() => document.getElementById('globalSearchInput').focus(), 50);
+}
+function openGlobalSearchAndSearch(val) {
+  openGlobalSearch();
+  document.getElementById('globalSearchInput').value = val;
+  runGlobalSearch(val);
 }
 function closeGlobalSearch() {
   document.getElementById('globalSearchOverlay').classList.remove('open');
