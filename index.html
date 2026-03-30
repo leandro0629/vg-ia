@@ -5241,46 +5241,33 @@ function openTaskDetail(id) {
     let html = `
       <div style="display: flex; gap: 20px; height: 100%; overflow: hidden;">
 
-        <!-- ESQUERDA: Detalhes (com abas) -->
+        <!-- ESQUERDA: Detalhes + Checklist + Editar (Tudo junto) -->
         <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+          <!-- Conteúdo Único (Scrollável) -->
+          <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; padding-right: 8px;">
 
-          <!-- Abas (em uma só linha) -->
-          <div style="display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; align-items: center;">
-            <button class="task-detail-tab active" data-tab="detalhes"
-              style="padding: 8px 14px; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; font-weight: 500; font-size: 0.9rem; white-space: nowrap;"
-              onclick="switchTaskDetailTab('detalhes', this)">
-              📋 Detalhes
-            </button>
-            <div style="width: 1px; height: 20px; background: var(--border);"></div>
-            <button class="task-detail-tab" data-tab="checklist"
-              style="padding: 8px 14px; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; font-weight: 500; font-size: 0.9rem; white-space: nowrap;"
-              onclick="switchTaskDetailTab('checklist', this)">
-              ✓ Checklist
-            </button>
-            <div style="width: 1px; height: 20px; background: var(--border);"></div>
-            <button class="task-detail-tab" data-tab="editar"
-              style="padding: 8px 14px; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; font-weight: 500; font-size: 0.9rem; white-space: nowrap;"
-              onclick="switchTaskDetailTab('editar', this)">
-              ✏️ Editar
-            </button>
-          </div>
-
-          <!-- Conteúdo das Abas (Scrollável) -->
-          <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
-
-            <!-- ABA: DETALHES -->
-            <div class="task-detail-pane active" data-pane="detalhes">
-              ${renderTaskDetailPane(t, assignee, municipio, due)}
+            <!-- SEÇÃO 1: DETALHES -->
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">📋 Detalhes</div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${renderTaskDetailPane(t, assignee, municipio, due)}
+              </div>
             </div>
 
-            <!-- ABA: CHECKLIST -->
-            <div class="task-detail-pane" data-pane="checklist" style="display: none;">
-              ${renderTaskChecklistPane(t)}
+            <!-- SEÇÃO 2: CHECKLIST -->
+            <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">✓ Checklist</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                ${renderTaskChecklistPane(t)}
+              </div>
             </div>
 
-            <!-- ABA: EDITAR -->
-            <div class="task-detail-pane" data-pane="editar" style="display: none;">
-              ${renderTaskEditPane(t, assignee, municipio)}
+            <!-- SEÇÃO 3: EDITAR -->
+            <div style="border-top: 1px solid var(--border); padding-top: 16px; padding-bottom: 16px;">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">✏️ Editar Tarefa</div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${renderTaskEditPane(t, assignee, municipio)}
+              </div>
             </div>
           </div>
         </div>
