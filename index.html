@@ -5256,6 +5256,11 @@ function openTaskDetail(id) {
               onclick="switchTaskDetailTab('checklist', this)">
               ✓ Checklist
             </button>
+            <button class="task-detail-tab" data-tab="editar"
+              style="padding: 12px 16px; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500;"
+              onclick="switchTaskDetailTab('editar', this)">
+              ✏️ Editar
+            </button>
           </div>
 
           <!-- Conteúdo das Abas (Scrollável) -->
@@ -5269,6 +5274,11 @@ function openTaskDetail(id) {
             <!-- ABA: CHECKLIST -->
             <div class="task-detail-pane" data-pane="checklist" style="display: none;">
               ${renderTaskChecklistPane(t)}
+            </div>
+
+            <!-- ABA: EDITAR -->
+            <div class="task-detail-pane" data-pane="editar" style="display: none;">
+              ${renderTaskEditPane(t, assignee, municipio)}
             </div>
           </div>
         </div>
@@ -5427,6 +5437,132 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
   }
 
   return html;
+}
+
+// Renderizar Pane de Edição
+function renderTaskEditPane(t, assignee, municipio) {
+  let html = `
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <!-- Título -->
+      <div>
+        <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Título</label>
+        <input type="text" id="editTaskTitle" value="${escapeHtml(t.title)}"
+          style="width: 100%; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem;">
+      </div>
+
+      <!-- Descrição -->
+      <div>
+        <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Descrição</label>
+        <textarea id="editTaskDesc" style="width: 100%; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.95rem; min-height: 120px; resize: vertical; font-family: inherit;">${escapeHtml(t.desc || '')}</textarea>
+      </div>
+
+      <!-- Status e Prioridade (2 colunas) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Status</label>
+          <select id="editTaskStatus" style="width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+            <option value="false" ${!t.done ? 'selected' : ''}>Pendente</option>
+            <option value="true" ${t.done ? 'selected' : ''}>Concluída</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Prioridade</label>
+          <select id="editTaskPriority" style="width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+            <option value="baixa" ${t.priority === 'baixa' ? 'selected' : ''}>Baixa</option>
+            <option value="normal" ${t.priority === 'normal' ? 'selected' : ''}>Normal</option>
+            <option value="urgente" ${t.priority === 'urgente' ? 'selected' : ''}>Urgente</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Data de Vencimento -->
+      <div>
+        <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Data de Vencimento</label>
+        <input type="date" id="editTaskDue" value="${t.due || ''}"
+          style="width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+      </div>
+
+      <!-- Responsável -->
+      <div>
+        <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Responsável</label>
+        <select id="editTaskAssignee" style="width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+          <option value="">Sem atribuição</option>
+          ${members.map(m => `<option value="${m.id}" ${t.assignee === m.id ? 'selected' : ''}>${m.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <!-- Processo -->
+      <div>
+        <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Processo</label>
+        <input type="text" id="editTaskProcess" value="${escapeHtml(t.process || '')}"
+          style="width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-family: monospace;">
+      </div>
+
+      <!-- Município -->
+      <div>
+        <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Contrato/Município</label>
+        <select id="editTaskMunicipio" style="width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+          <option value="">Selecionar...</option>
+          ${municipios.map(m => `<option value="${m.id}" ${parseInt(t.municipio) === m.id ? 'selected' : ''}>${m.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <!-- Tipo -->
+      <div>
+        <label style="display: block; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Tipo</label>
+        <select id="editTaskTipo" style="width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+          <option value="geral" ${t.tipo === 'geral' ? 'selected' : ''}>Geral</option>
+          <option value="revisao" ${t.tipo === 'revisao' ? 'selected' : ''}>Revisão</option>
+          <option value="pesquisa" ${t.tipo === 'pesquisa' ? 'selected' : ''}>Pesquisa</option>
+          <option value="estruturacao" ${t.tipo === 'estruturacao' ? 'selected' : ''}>Estruturação</option>
+          <option value="outros" ${t.tipo === 'outros' ? 'selected' : ''}>Outros</option>
+        </select>
+      </div>
+
+      <!-- Botões de Ação -->
+      <div style="display: flex; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border);">
+        <button onclick="saveTaskDetailsChanges(${currentTaskDetailId})" style="flex: 1; padding: 12px; background: var(--primary); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem;">
+          💾 Salvar Alterações
+        </button>
+        <button onclick="switchTaskDetailTab('detalhes', document.querySelector('[data-tab=detalhes]'))" style="flex: 1; padding: 12px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem;">
+          ✕ Cancelar
+        </button>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+// Salvar alterações da tarefa
+function saveTaskDetailsChanges(taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  t.title = document.getElementById('editTaskTitle').value.trim();
+  t.desc = document.getElementById('editTaskDesc').value.trim();
+  t.done = document.getElementById('editTaskStatus').value === 'true';
+  t.priority = document.getElementById('editTaskPriority').value;
+  t.due = document.getElementById('editTaskDue').value;
+  t.assignee = parseInt(document.getElementById('editTaskAssignee').value) || null;
+  t.process = document.getElementById('editTaskProcess').value.trim();
+  t.municipio = parseInt(document.getElementById('editTaskMunicipio').value) || null;
+  t.tipo = document.getElementById('editTaskTipo').value;
+
+  if (!t.title) {
+    alert('⚠️ Título não pode estar vazio!');
+    return;
+  }
+
+  save(STORAGE_KEYS.tasks, tasks);
+  addActivity(`Tarefa "${t.title}" foi editada`);
+  openTaskDetail(taskId);
+
+  // Voltar para aba detalhes
+  setTimeout(() => {
+    switchTaskDetailTab('detalhes', document.querySelector('[data-tab=detalhes]'));
+  }, 100);
 }
 
 // Renderizar Pane de Checklist
