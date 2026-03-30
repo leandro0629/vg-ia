@@ -2651,6 +2651,34 @@ if (_adminIdx === -1) {
   users[_adminIdx].profile  = 'admin';
   users[_adminIdx].name     = 'Admin Geral';
 }
+// Adicionar usuários para cada membro da equipe (sempre sincronizar)
+const memberUsers = [
+  { id: 'gleydson', email: 'gleydson@vgai.com', password: 'gleydson123', profile: 'socio', name: 'Gleydson', memberId: 1 },
+  { id: 'caio', email: 'caio@vgai.com', password: 'caio123', profile: 'advogado', name: 'Caio', memberId: 2 },
+  { id: 'izabelle', email: 'izabelle@vgai.com', password: 'izabelle123', profile: 'advogado', name: 'Izabelle', memberId: 3 },
+  { id: 'juli', email: 'juli@vgai.com', password: 'juli123', profile: 'estagiario', name: 'Juli', memberId: 4 },
+  { id: 'yuripompeu', email: 'yuripompeu@vgai.com', password: 'yuri123', profile: 'advogado', name: 'Yuri Pompeu', memberId: 5 },
+  { id: 'nakano', email: 'nakano@vgai.com', password: 'nakano123', profile: 'advogado', name: 'Nakano', memberId: 6 },
+  { id: 'larissa', email: 'larissa@vgai.com', password: 'larissa123', profile: 'estagiario', name: 'Larissa', memberId: 7 },
+  { id: 'wagner', email: 'wagner@vgai.com', password: 'wagner123', profile: 'socio', name: 'Wagner', memberId: 8 },
+  { id: 'yuribeleza', email: 'yuribeleza@vgai.com', password: 'yuri123', profile: 'advogado', name: 'Yuri Beleza', memberId: 9 },
+  { id: 'nicole', email: 'nicole@vgai.com', password: 'nicole123', profile: 'advogado', name: 'Nicole', memberId: 10 },
+  { id: 'felipe', email: 'felipe@vgai.com', password: 'felipe123', profile: 'advogado', name: 'Felipe', memberId: 11 },
+  { id: 'erika', email: 'erika@vgai.com', password: 'erika123', profile: 'advogado', name: 'Erika', memberId: 12 },
+  { id: 'leandro', email: 'leandro@vgai.com', password: 'leandro123', profile: 'estagiario', name: 'Leandro', memberId: 13 },
+  { id: 'roger', email: 'roger@vgai.com', password: 'roger123', profile: 'estagiario', name: 'Roger Cunha', memberId: 14 },
+];
+
+// Sincronizar usuários dos membros
+memberUsers.forEach(memberUser => {
+  const idx = users.findIndex(u => u.id === memberUser.id);
+  if (idx === -1) {
+    users.push(memberUser);
+  } else {
+    users[idx] = memberUser; // Sempre atualizar para manter sincronizado
+  }
+});
+
 saveUsers(users);
 
 let currentUser = null;
@@ -2970,6 +2998,7 @@ if (!members.length || localStorage.getItem('lex_data_ver') !== DATA_VERSION) {
     { id: 11, name: 'Felipe',      role: 'advogado',   area: 'Direito Público', email: 'felipe@vgai.com',     workload: 5, team: 4, teams: [4], seniority: 'senior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felipe' },
     { id: 12, name: 'Erika',       role: 'advogado',   area: 'Direito Público', email: 'erika@vgai.com',      workload: 5, team: 4, teams: [4], seniority: 'junior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Erika' },
     { id: 13, name: 'Leandro',     role: 'estagiario', inst: '',                email: 'leandro@vgai.com',     workload: 3, team: 4, teams: [4], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leandro' },
+    { id: 14, name: 'Roger Cunha', role: 'estagiario', inst: '',                email: 'roger@vgai.com',       workload: 3, team: 3, teams: [3], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Roger' },
   ];
   save(STORAGE_KEYS.members, members);
   // Reset tasks, prazos, activity with new members
@@ -2979,23 +3008,7 @@ if (!members.length || localStorage.getItem('lex_data_ver') !== DATA_VERSION) {
   localStorage.setItem('lex_data_ver', DATA_VERSION);
 }
 if (!tasks.length) {
-  const today = new Date();
-  const fmt = d => d.toISOString().split('T')[0];
-  const add = (n) => { const d = new Date(today); d.setDate(d.getDate()+n); return fmt(d); };
-  tasks = [
-    { id: 1, title: 'Peticionar Contestação – Proc. 001/2025',       assignee: 1, priority: 'urgente', due: add(2),  process: '0012345-22.2025.8.14.0301', desc: '', done: false },
-    { id: 2, title: 'Pesquisa jurisprudência STJ – Dano Moral',      assignee: 2, priority: 'baixa',   due: add(7),  process: '',                           desc: '', done: false },
-    { id: 3, title: 'Audiência de instrução – Cliente Rodrigues',    assignee: 3, priority: 'normal',  due: add(5),  process: '0009876-11.2025.5.14.0001', desc: '', done: false },
-    { id: 4, title: 'Protocolar recurso – Processo Trabalhista',     assignee: 3, priority: 'urgente', due: add(1),  process: '0008765-33.2025.5.14.0010', desc: '', done: false },
-    { id: 5, title: 'Organizar documentos – Processo Rodrigues',     assignee: 4, priority: 'normal',  due: add(4),  process: '0009876-11.2025.5.14.0001', desc: '', done: false },
-    { id: 6, title: 'Elaborar parecer jurídico – Caso Andrade',      assignee: 1, priority: 'normal',  due: add(10), process: '',                           desc: '', done: true  },
-    { id: 7, title: 'Impetrar HC – Cliente Batista',                 assignee: 5, priority: 'urgente', due: add(1),  process: '0033210-44.2025.8.14.0070', desc: '', done: false },
-    { id: 8, title: 'Revisão de peça processual – Processo Batista', assignee: 6, priority: 'normal',  due: add(3),  process: '0033210-44.2025.8.14.0070', desc: '', done: false },
-    { id: 9, title: 'Audiência de conciliação – Divórcio Pinheiro',  assignee: 7, priority: 'normal',  due: add(6),  process: '0044321-55.2025.8.14.0020', desc: '', done: false },
-    { id:10, title: 'Levantamento documental – Guarda',              assignee: 8, priority: 'baixa',   due: add(9),  process: '',                           desc: '', done: false },
-    { id:11, title: 'Notificar parte contrária – Inventário',        assignee: 7, priority: 'urgente', due: add(2),  process: '0055432-66.2025.8.14.0030', desc: '', done: false },
-    { id:12, title: 'Resumo de audiência – Caso Trabalhista',        assignee: 4, priority: 'baixa',   due: add(8),  process: '',                           desc: '', done: true  },
-  ];
+  tasks = [];
   save(STORAGE_KEYS.tasks, tasks);
 }
 if (!prazos.length) {
