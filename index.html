@@ -5846,11 +5846,17 @@ function showTaskLabelsEditor() {
       <!-- Disponíveis -->
       <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 10px; font-weight: 600;">Disponíveis:</div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;">
-        ${allLabels.map(label => `
-          <div onclick="toggleLabel(${currentTaskDetailId}, '${label}')" style="padding: 10px; background: ${allColors[label]}; color: white; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; ${t.labels.includes(label) ? 'opacity: 0.5;' : 'opacity: 1;'}">
-            ${label}
-          </div>
-        `).join('')}
+        ${allLabels.map(label => {
+          const isCustom = Object.keys(t.customLabels).includes(label);
+          return `
+            <div style="position: relative;">
+              <div onclick="toggleLabel(${currentTaskDetailId}, '${label}')" style="padding: 10px; background: ${allColors[label]}; color: white; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; ${t.labels.includes(label) ? 'opacity: 0.5;' : 'opacity: 1;'}">
+                ${label}
+              </div>
+              ${isCustom ? `<button onclick="removeCustomLabel(${currentTaskDetailId}, '${label}')" style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #e05c5c; color: white; border: none; cursor: pointer; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">✕</button>` : ''}
+            </div>
+          `;
+        }).join('')}
       </div>
 
       <!-- Criar Nova Etiqueta -->
@@ -5925,6 +5931,25 @@ function addCustomLabel(taskId) {
   // Automaticamente selecionar a etiqueta
   if (!t.labels.includes(labelName)) {
     t.labels.push(labelName);
+  }
+
+  // Rerender o modal
+  closeAllModals();
+  showTaskLabelsEditor();
+}
+
+// Remover etiqueta customizada
+function removeCustomLabel(taskId, labelName) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+  if (!t.customLabels) t.customLabels = {};
+
+  // Remover de customLabels
+  delete t.customLabels[labelName];
+
+  // Se estava selecionada, remover de labels também
+  if (t.labels && t.labels.includes(labelName)) {
+    t.labels = t.labels.filter(l => l !== labelName);
   }
 
   // Rerender o modal
