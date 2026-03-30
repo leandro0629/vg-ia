@@ -2585,26 +2585,26 @@ const USERS_KEY = 'lex_users';
 const ALL_PAGES = ['dashboard','equipe','missoes','atividades','municipios','usuarios','estagiarios','relatorios','calendario'];
 const PERMISSIONS = {
   admin: {
-    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','estagiarios','relatorios','calendario'],
+    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','estagiarios','relatorios','calendario','configuracoes'],
     canAddMembers: true, canDeleteMembers: true, canDeleteTasks: true,
     canSeeAllTasks: true, canAddPrazos: true, canDelegate: true,
     canManageUsers: true,
     label: 'Admin Geral', pillClass: 'role-admin'
   },
   socio: {
-    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','estagiarios','relatorios','calendario'],
+    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','estagiarios','relatorios','calendario','configuracoes'],
     canAddMembers: true, canDeleteMembers: true, canDeleteTasks: true,
     canSeeAllTasks: true, canAddPrazos: true, canDelegate: true,
     label: 'Sócio-Gestor', pillClass: 'role-socio'
   },
   advogado: {
-    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','relatorios','calendario'],
+    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','relatorios','calendario','configuracoes'],
     canAddMembers: false, canDeleteMembers: false, canDeleteTasks: true,
     canSeeAllTasks: true, canAddPrazos: true, canDelegate: true,
     label: 'Advogado(a)', pillClass: 'role-advogado'
   },
   estagiario: {
-    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','relatorios','calendario'],
+    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','relatorios','calendario','configuracoes'],
     canAddMembers: false, canDeleteMembers: false, canDeleteTasks: false,
     canSeeAllTasks: true, canAddPrazos: false, canDelegate: false,
     label: 'Estagiário(a)', pillClass: 'role-estagiario'
@@ -3050,7 +3050,7 @@ function navigate(page) {
   const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
   if (navEl) navEl.classList.add('active');
   currentPage = page;
-  const titles = { dashboard:'Dashboard', equipe:'Equipe', missoes:'Missões', atividades:'Atividades Compartilhadas', prazos:'Prazos Processuais', municipios:'Contratos', advogados:'Advogados', estagiarios:'Estagiários', relatorios:'Relatórios', usuarios:'Usuários', calendario:'Calendário Jurídico' };
+  const titles = { dashboard:'Dashboard', equipe:'Equipe', missoes:'Missões', atividades:'Atividades Compartilhadas', prazos:'Prazos Processuais', municipios:'Contratos', advogados:'Advogados', estagiarios:'Estagiários', relatorios:'Relatórios', usuarios:'Usuários', calendario:'Calendário Jurídico', configuracoes:'Configurações' };
   document.getElementById('pageTitle').textContent = titles[page] || page;
   updateAddButton();
   renderPage(page);
