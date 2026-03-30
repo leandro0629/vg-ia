@@ -31,7 +31,7 @@
     'lex_members', 'lex_tasks', 'lex_prazos', 'lex_activity',
     'lex_shared_ac', 'lex_municipios', 'lex_attachments',
     'lex_users', 'lex_session', 'lex_data_ver', 'vgai_theme',
-    'vgai_notif_alerts'
+    'vgai_notif_alerts', 'vgai_user_profile', 'vgai_user_settings'
   ];
 
   // Função para sincronizar dados com Firestore (não-bloqueante)
@@ -1460,6 +1460,15 @@
           <span class="nav-item-label">Estagiários</span>
         </div>
       </div>
+
+      <!-- System Section -->
+      <div class="nav-section">
+        <div class="nav-label">Sistema</div>
+        <div class="nav-item" data-page="configuracoes" onclick="navigate('configuracoes'); closeSidebarMobile();">
+          <span class="icon">⚙️</span>
+          <span class="nav-item-label">Configurações</span>
+        </div>
+      </div>
     </nav>
 
     <!-- Bottom Profile & Menu -->
@@ -1750,6 +1759,226 @@
                   <thead><tr><th>Prazo</th><th>Processo</th><th>Responsável</th><th>Data</th><th>Status</th><th></th></tr></thead>
                   <tbody id="prazoBody"></tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIGURAÇÕES -->
+      <div class="page" id="page-configuracoes">
+        <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:8px">
+          <button class="missao-tab active" id="tab-config-perfil" onclick="switchConfigTab('perfil')">👤 Perfil</button>
+          <button class="missao-tab" id="tab-config-escritorio" onclick="switchConfigTab('escritorio')">🏢 Escritório</button>
+          <button class="missao-tab" id="tab-config-notificacoes" onclick="switchConfigTab('notificacoes')">🔔 Notificações</button>
+          <button class="missao-tab" id="tab-config-aparencia" onclick="switchConfigTab('aparencia')">🎨 Aparência</button>
+          <button class="missao-tab" id="tab-config-sistema" onclick="switchConfigTab('sistema')">⚡ Sistema</button>
+        </div>
+
+        <!-- TAB: PERFIL -->
+        <div id="config-perfil" class="config-tab active">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Perfil Pessoal</span>
+            </div>
+            <div class="card-body">
+              <div style="display:grid; grid-template-columns:auto 1fr; gap:24px; max-width:600px">
+                <!-- Foto de Perfil -->
+                <div style="display:flex; flex-direction:column; align-items:center">
+                  <div id="profilePhotoPreview" style="width:120px; height:120px; border-radius:12px; background:var(--card); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-secondary); font-size:3rem">👤</div>
+                  <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handleProfilePhotoChange()">
+                  <button class="btn btn-secondary btn-sm" onclick="document.getElementById('profilePhotoInput').click()">Alterar Foto</button>
+                </div>
+
+                <!-- Formulário de Perfil -->
+                <div style="display:flex; flex-direction:column; gap:16px">
+                  <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" id="configNome" class="form-input" placeholder="Seu nome completo">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" id="configEmail" class="form-input" placeholder="seu@email.com">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Telefone</label>
+                    <input type="tel" id="configTelefone" class="form-input" placeholder="(XX) XXXXX-XXXX">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Cargo</label>
+                    <input type="text" id="configCargo" class="form-input" placeholder="Ex: Advogado Sênior">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Número OAB</label>
+                    <input type="text" id="configOAB" class="form-input" placeholder="Ex: 123456/SP">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Biografia</label>
+                    <textarea id="configBio" class="form-input" placeholder="Descreva brevemente seu perfil profissional..." style="resize:vertical; min-height:100px"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:24px; display:flex; gap:12px; justify-content:flex-start">
+                <button class="btn btn-primary" onclick="saveProfileConfig()">💾 Salvar Alterações</button>
+                <button class="btn btn-secondary" onclick="resetProfileConfig()">↻ Descartar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ESCRITÓRIO -->
+        <div id="config-escritorio" class="config-tab" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Informações do Escritório</span>
+            </div>
+            <div class="card-body" style="max-width:600px">
+              <div style="display:flex; flex-direction:column; gap:16px">
+                <div class="form-group">
+                  <label class="form-label">Nome do Escritório</label>
+                  <input type="text" id="configEscritorio" class="form-input" placeholder="Nome da firma">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CNPJ</label>
+                  <input type="text" id="configCNPJ" class="form-input" placeholder="XX.XXX.XXX/0001-XX">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Endereço</label>
+                  <input type="text" id="configEndereco" class="form-input" placeholder="Rua, número, complemento">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Telefone da Firma</label>
+                  <input type="tel" id="configTelefoneFirma" class="form-input" placeholder="(XX) XXXXX-XXXX">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">E-mail da Firma</label>
+                  <input type="email" id="configEmailFirma" class="form-input" placeholder="contato@firma.com">
+                </div>
+              </div>
+              <div style="margin-top:24px; display:flex; gap:12px; justify-content:flex-start">
+                <button class="btn btn-primary" onclick="saveEscritorioConfig()">💾 Salvar Alterações</button>
+                <button class="btn btn-secondary" onclick="resetEscritorioConfig()">↻ Descartar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: NOTIFICAÇÕES -->
+        <div id="config-notificacoes" class="config-tab" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Preferências de Notificação</span>
+            </div>
+            <div class="card-body" style="max-width:600px">
+              <div style="display:flex; flex-direction:column; gap:16px">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--border); border-radius:8px">
+                  <div>
+                    <div style="font-weight:600">Notificações de Prazos</div>
+                    <div style="font-size:0.85rem; color:var(--text-secondary)">Aviso quando um prazo está próximo</div>
+                  </div>
+                  <input type="checkbox" id="configNotifPrazos" class="form-checkbox" checked>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--border); border-radius:8px">
+                  <div>
+                    <div style="font-weight:600">Notificações de Tarefas</div>
+                    <div style="font-size:0.85rem; color:var(--text-secondary)">Aviso sobre tarefas atribuídas</div>
+                  </div>
+                  <input type="checkbox" id="configNotifTarefas" class="form-checkbox" checked>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--border); border-radius:8px">
+                  <div>
+                    <div style="font-weight:600">Notificações de Equipe</div>
+                    <div style="font-size:0.85rem; color:var(--text-secondary)">Atividades dos colegas</div>
+                  </div>
+                  <input type="checkbox" id="configNotifEquipe" class="form-checkbox" checked>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--border); border-radius:8px">
+                  <div>
+                    <div style="font-weight:600">Notificações de Sistema</div>
+                    <div style="font-size:0.85rem; color:var(--text-secondary)">Atualizações e manutenção</div>
+                  </div>
+                  <input type="checkbox" id="configNotifSistema" class="form-checkbox" checked>
+                </div>
+              </div>
+              <div style="margin-top:24px; display:flex; gap:12px; justify-content:flex-start">
+                <button class="btn btn-primary" onclick="saveNotificacoesConfig()">💾 Salvar Preferências</button>
+                <button class="btn btn-secondary" onclick="resetNotificacoesConfig()">↻ Descartar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: APARÊNCIA -->
+        <div id="config-aparencia" class="config-tab" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Preferências de Aparência</span>
+            </div>
+            <div class="card-body" style="max-width:600px">
+              <div style="display:flex; flex-direction:column; gap:16px">
+                <div class="form-group">
+                  <label class="form-label">Tema</label>
+                  <div style="display:flex; gap:12px; margin-top:8px">
+                    <button class="btn btn-secondary" id="themeDarkBtn" onclick="setThemePreference('dark')" style="flex:1">🌙 Escuro</button>
+                    <button class="btn btn-secondary" id="themeLightBtn" onclick="setThemePreference('light')" style="flex:1">☀️ Claro</button>
+                    <button class="btn btn-secondary" id="themeAutoBtn" onclick="setThemePreference('auto')" style="flex:1">🔄 Automático</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Tamanho de Fonte</label>
+                  <div style="display:flex; gap:8px; align-items:center">
+                    <input type="range" id="configFontSize" min="0.85" max="1.15" step="0.05" value="1" style="flex:1">
+                    <span id="fontSizeLabel" style="min-width:40px; text-align:right">100%</span>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--border); border-radius:8px">
+                  <div>
+                    <div style="font-weight:600">Sidebar Colapsada</div>
+                    <div style="font-size:0.85rem; color:var(--text-secondary)">Reduzir sidebar por padrão</div>
+                  </div>
+                  <input type="checkbox" id="configSidebarCollapsed" class="form-checkbox">
+                </div>
+              </div>
+              <div style="margin-top:24px; display:flex; gap:12px; justify-content:flex-start">
+                <button class="btn btn-primary" onclick="saveAparenciaConfig()">💾 Salvar Preferências</button>
+                <button class="btn btn-secondary" onclick="resetAparenciaConfig()">↻ Descartar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: SISTEMA -->
+        <div id="config-sistema" class="config-tab" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Configurações do Sistema</span>
+            </div>
+            <div class="card-body">
+              <div style="max-width:600px">
+                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">Dados & Sincronização</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px">
+                  <button class="btn btn-secondary" onclick="syncWithFirestore()">🔄 Sincronizar com Nuvem</button>
+                  <button class="btn btn-secondary" onclick="exportData()">📥 Exportar Dados</button>
+                  <button class="btn btn-secondary" onclick="showClearDataConfirm()">🗑️ Limpar Cache Local</button>
+                </div>
+
+                <hr style="border:none; border-top:1px solid var(--border); margin:24px 0">
+
+                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">Privacidade & Segurança</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px">
+                  <button class="btn btn-secondary" onclick="showChangePasswordModal()">🔑 Alterar Senha</button>
+                  <button class="btn btn-secondary danger" onclick="showLogoutConfirm()">↩ Sair da Conta</button>
+                </div>
+
+                <hr style="border:none; border-top:1px solid var(--border); margin:24px 0">
+
+                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">Informações do Sistema</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; font-size:0.9rem; color:var(--text-secondary)">
+                  <div><strong>Versão:</strong> VG IA 2.0.0</div>
+                  <div><strong>Ambiente:</strong> <span id="sysEnv">Web App</span></div>
+                  <div><strong>Data de Sincronização:</strong> <span id="sysLastSync">Nunca</span></div>
+                  <div><strong>Tamanho de Cache:</strong> <span id="sysCacheSize">Carregando...</span></div>
+                </div>
               </div>
             </div>
           </div>
@@ -2831,6 +3060,7 @@ function renderPage(page) {
   else if (page === 'municipios') renderMunicipios();
   else if (page === 'relatorios') renderRelatorios();
   else if (page === 'calendario') switchCalendarView('mes');
+  else if (page === 'configuracoes') loadConfigPage();
 }
 
 // ============================================================
@@ -5566,6 +5796,310 @@ function drawRelChart(visibleMembers, today) {
     ctx.textAlign = 'center';
     ctx.fillText(d.name, cx + barW / 2, padT + chartH + 16);
   });
+}
+
+// ============================================================
+// CONFIGURAÇÕES - SETTINGS PAGE
+// ============================================================
+
+// Load configuration page
+function loadConfigPage() {
+  loadProfileConfig();
+  updateSystemInfo();
+}
+
+// Switch between config tabs
+function switchConfigTab(tab) {
+  // Hide all tabs
+  document.querySelectorAll('.config-tab').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.missao-tab').forEach(t => t.classList.remove('active'));
+
+  // Show selected tab
+  const tabEl = document.getElementById(`config-${tab}`);
+  if (tabEl) {
+    tabEl.style.display = 'block';
+    const btnEl = document.getElementById(`tab-config-${tab}`);
+    if (btnEl) btnEl.classList.add('active');
+  }
+}
+
+// ===== PERFIL TAB =====
+function loadProfileConfig() {
+  // Load from Firestore or localStorage
+  const profileData = localStorage.getItem('vgai_user_profile');
+  if (profileData) {
+    try {
+      const data = JSON.parse(profileData);
+      document.getElementById('configNome').value = data.nome || currentUser.name || '';
+      document.getElementById('configEmail').value = data.email || currentUser.email || '';
+      document.getElementById('configTelefone').value = data.telefone || '';
+      document.getElementById('configCargo').value = data.cargo || currentUser.profile || '';
+      document.getElementById('configOAB').value = data.oab || '';
+      document.getElementById('configBio').value = data.bio || '';
+
+      // Load photo if exists
+      if (data.foto) {
+        document.getElementById('profilePhotoPreview').innerHTML = `<img src="${data.foto}" style="width:100%; height:100%; border-radius:8px; object-fit:cover;">`;
+      }
+    } catch(e) {
+      console.warn('Erro ao carregar perfil:', e);
+    }
+  } else {
+    document.getElementById('configNome').value = currentUser.name || '';
+    document.getElementById('configEmail').value = currentUser.email || '';
+    document.getElementById('configCargo').value = currentUser.profile || '';
+  }
+}
+
+function handleProfilePhotoChange() {
+  const input = document.getElementById('profilePhotoInput');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const photoData = e.target.result;
+      document.getElementById('profilePhotoPreview').innerHTML = `<img src="${photoData}" style="width:100%; height:100%; border-radius:8px; object-fit:cover;">`;
+
+      // Save to localStorage temporarily
+      const profileData = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
+      profileData.foto = photoData;
+      localStorage.setItem('vgai_user_profile', JSON.stringify(profileData));
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function saveProfileConfig() {
+  const profileData = {
+    nome: document.getElementById('configNome').value,
+    email: document.getElementById('configEmail').value,
+    telefone: document.getElementById('configTelefone').value,
+    cargo: document.getElementById('configCargo').value,
+    oab: document.getElementById('configOAB').value,
+    bio: document.getElementById('configBio').value,
+    updatedAt: new Date().toISOString()
+  };
+
+  // Get existing data to preserve foto
+  const existing = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
+  if (existing.foto) profileData.foto = existing.foto;
+
+  localStorage.setItem('vgai_user_profile', JSON.stringify(profileData));
+
+  // Sync to Firestore
+  syncToFirestore('vgai_user_profile', profileData);
+
+  // Update sidebar if nome changed
+  if (profileData.nome) {
+    currentUser.name = profileData.nome;
+    document.getElementById('sidebarName').textContent = profileData.nome;
+  }
+
+  showNotification('✅ Perfil salvo com sucesso!', 'success');
+}
+
+function resetProfileConfig() {
+  loadProfileConfig();
+}
+
+// ===== ESCRITÓRIO TAB =====
+function loadEscritorioConfig() {
+  const settingsData = localStorage.getItem('vgai_user_settings');
+  if (settingsData) {
+    try {
+      const data = JSON.parse(settingsData);
+      document.getElementById('configEscritorio').value = data.escritorio || '';
+      document.getElementById('configCNPJ').value = data.cnpj || '';
+      document.getElementById('configEndereco').value = data.endereco || '';
+      document.getElementById('configTelefoneFirma').value = data.telefone_firma || '';
+      document.getElementById('configEmailFirma').value = data.email_firma || '';
+    } catch(e) {
+      console.warn('Erro ao carregar escritório:', e);
+    }
+  }
+}
+
+function saveEscritorioConfig() {
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+
+  settingsData.escritorio = document.getElementById('configEscritorio').value;
+  settingsData.cnpj = document.getElementById('configCNPJ').value;
+  settingsData.endereco = document.getElementById('configEndereco').value;
+  settingsData.telefone_firma = document.getElementById('configTelefoneFirma').value;
+  settingsData.email_firma = document.getElementById('configEmailFirma').value;
+  settingsData.updatedAt = new Date().toISOString();
+
+  localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
+  syncToFirestore('vgai_user_settings', settingsData);
+
+  showNotification('✅ Dados do escritório salvos!', 'success');
+}
+
+function resetEscritorioConfig() {
+  loadEscritorioConfig();
+}
+
+// ===== NOTIFICAÇÕES TAB =====
+function saveNotificacoesConfig() {
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+
+  settingsData.notif_prazos = document.getElementById('configNotifPrazos').checked;
+  settingsData.notif_tarefas = document.getElementById('configNotifTarefas').checked;
+  settingsData.notif_equipe = document.getElementById('configNotifEquipe').checked;
+  settingsData.notif_sistema = document.getElementById('configNotifSistema').checked;
+  settingsData.updatedAt = new Date().toISOString();
+
+  localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
+  syncToFirestore('vgai_user_settings', settingsData);
+
+  showNotification('✅ Notificações configuradas!', 'success');
+}
+
+function resetNotificacoesConfig() {
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+  document.getElementById('configNotifPrazos').checked = settingsData.notif_prazos !== false;
+  document.getElementById('configNotifTarefas').checked = settingsData.notif_tarefas !== false;
+  document.getElementById('configNotifEquipe').checked = settingsData.notif_equipe !== false;
+  document.getElementById('configNotifSistema').checked = settingsData.notif_sistema !== false;
+}
+
+// ===== APARÊNCIA TAB =====
+function setThemePreference(theme) {
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+  settingsData.theme = theme;
+  settingsData.updatedAt = new Date().toISOString();
+  localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
+  syncToFirestore('vgai_user_settings', settingsData);
+
+  updateThemeButtons();
+  showNotification('✅ Tema alterado!', 'success');
+}
+
+function updateThemeButtons() {
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+  const theme = settingsData.theme || 'dark';
+
+  document.getElementById('themeDarkBtn').classList.remove('btn-primary');
+  document.getElementById('themeLightBtn').classList.remove('btn-primary');
+  document.getElementById('themeAutoBtn').classList.remove('btn-primary');
+
+  if (theme === 'dark') document.getElementById('themeDarkBtn').classList.add('btn-primary');
+  else if (theme === 'light') document.getElementById('themeLightBtn').classList.add('btn-primary');
+  else document.getElementById('themeAutoBtn').classList.add('btn-primary');
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'configFontSize') {
+    const size = e.target.value;
+    document.getElementById('fontSizeLabel').textContent = Math.round(size * 100) + '%';
+    document.documentElement.style.fontSize = (size * 16) + 'px';
+
+    const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+    settingsData.fontSize = size;
+    localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
+  }
+});
+
+function saveAparenciaConfig() {
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+  settingsData.fontSize = document.getElementById('configFontSize').value;
+  settingsData.sidebarCollapsed = document.getElementById('configSidebarCollapsed').checked;
+  settingsData.updatedAt = new Date().toISOString();
+
+  localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
+  syncToFirestore('vgai_user_settings', settingsData);
+
+  showNotification('✅ Preferências de aparência salvas!', 'success');
+}
+
+function resetAparenciaConfig() {
+  const settingsData = JSON.parse(localStorage.getItem('vgai_user_settings') || '{}');
+  document.getElementById('configFontSize').value = settingsData.fontSize || 1;
+  document.getElementById('configSidebarCollapsed').checked = settingsData.sidebarCollapsed || false;
+  updateThemeButtons();
+}
+
+// ===== SISTEMA TAB =====
+function updateSystemInfo() {
+  const lastSync = localStorage.getItem('vgai_last_sync') || 'Nunca';
+  document.getElementById('sysLastSync').textContent = lastSync;
+
+  // Calculate cache size
+  let totalSize = 0;
+  for (let key in localStorage) {
+    if (key.startsWith('lex_') || key.startsWith('vgai_')) {
+      totalSize += localStorage[key].length;
+    }
+  }
+  const cacheSizeMB = (totalSize / 1024 / 1024).toFixed(2);
+  document.getElementById('sysCacheSize').textContent = cacheSizeMB + ' MB';
+}
+
+function syncWithFirestore() {
+  showNotification('🔄 Sincronizando com Firestore...', 'info');
+
+  // Trigger sync by updating localStorage
+  const keys = ['lex_members', 'lex_tasks', 'lex_prazos', 'lex_activity', 'lex_shared_ac', 'lex_users'];
+  keys.forEach(key => {
+    const data = localStorage.getItem(key);
+    if (data) {
+      try {
+        syncToFirestore(key, JSON.parse(data));
+      } catch(e) {
+        console.warn(`Erro ao sincronizar ${key}:`, e);
+      }
+    }
+  });
+
+  localStorage.setItem('vgai_last_sync', new Date().toLocaleString());
+  document.getElementById('sysLastSync').textContent = new Date().toLocaleString();
+
+  setTimeout(() => showNotification('✅ Sincronização concluída!', 'success'), 1000);
+}
+
+function exportData() {
+  const exportData = {};
+  const keys = ['lex_members', 'lex_tasks', 'lex_prazos', 'lex_activity', 'lex_shared_ac', 'lex_users', 'vgai_user_profile', 'vgai_user_settings'];
+
+  keys.forEach(key => {
+    const data = localStorage.getItem(key);
+    if (data) {
+      try {
+        exportData[key] = JSON.parse(data);
+      } catch(e) {
+        exportData[key] = data;
+      }
+    }
+  });
+
+  const dataStr = JSON.stringify(exportData, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `vgai_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  showNotification('✅ Dados exportados!', 'success');
+}
+
+function showClearDataConfirm() {
+  if (confirm('⚠️ Tem certeza que deseja limpar o cache local? Esta ação não pode ser desfeita.')) {
+    const keys = ['lex_members', 'lex_tasks', 'lex_prazos', 'lex_activity', 'lex_shared_ac', 'lex_users', 'vgai_user_profile', 'vgai_user_settings'];
+    keys.forEach(key => localStorage.removeItem(key));
+    showNotification('✅ Cache limpo! Atualizando página...', 'success');
+    setTimeout(() => location.reload(), 1000);
+  }
+}
+
+function showChangePasswordModal() {
+  showChangePassword();
+}
+
+function showLogoutConfirm() {
+  if (confirm('Tem certeza que deseja sair? Sua sessão será encerrada.')) {
+    doLogout();
+  }
 }
 
 // ============================================================
