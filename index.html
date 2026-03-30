@@ -6289,9 +6289,25 @@ function editFieldInline(taskId, fieldName, currentValue) {
 
   // Criar input para edição
   const isLongText = fieldName === 'desc';
+  const isDateField = fieldName === 'due';
   const inputElement = document.createElement(isLongText ? 'textarea' : 'input');
 
-  inputElement.value = currentValue;
+  if (isDateField) {
+    inputElement.type = 'date';
+    // Converter data para formato YYYY-MM-DD se necessário
+    let dateValue = currentValue;
+    if (dateValue && dateValue.includes('/')) {
+      // Se estiver em DD/MM/YYYY, converter para YYYY-MM-DD
+      const parts = dateValue.split('/');
+      if (parts.length === 3) {
+        dateValue = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+    }
+    inputElement.value = dateValue || '';
+  } else {
+    inputElement.value = currentValue;
+  }
+
   inputElement.style.cssText = `
     width: 100%;
     padding: 8px 12px;
@@ -6308,6 +6324,11 @@ function editFieldInline(taskId, fieldName, currentValue) {
   if (isLongText) {
     inputElement.style.minHeight = '100px';
     inputElement.style.resize = 'vertical';
+  }
+
+  if (isDateField) {
+    inputElement.style.height = '40px';
+    inputElement.style.cursor = 'pointer';
   }
 
   // Criar botões de ação
