@@ -2091,14 +2091,7 @@
     <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
       <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 16px;">
         <span class="modal-title" id="taskDetailTitle" style="margin: 0;">Detalhes da Tarefa</span>
-        <div style="display:flex; gap:8px">
-          <button class="btn btn-ghost btn-sm" id="taskDetailAddBtn" onclick="showTaskActionMenu()" style="white-space: nowrap;">➕ Adicionar</button>
-          <button class="btn btn-ghost btn-sm" id="taskDetailEtiquetasBtn" onclick="showTaskLabelsEditor()" style="white-space: nowrap;">🏷️ Etiquetas</button>
-          <button class="btn btn-ghost btn-sm" id="taskDetailChecklistBtn" onclick="showTaskChecklistEditor()" style="white-space: nowrap;">✓ Checklist</button>
-          <button class="btn btn-ghost btn-sm" id="taskDetailAnexoBtn" onclick="showTaskAttachmentEditor()" style="white-space: nowrap;">📎 Anexo</button>
-          <button class="btn btn-ghost btn-sm" id="taskDetailEditBtn" onclick="document.getElementById('taskEditId').value = currentTaskDetailId; openEditTask(currentTaskDetailId); closeModal('modalTaskDetail')">✏️ Editar</button>
-          <button class="modal-close" onclick="closeModal('modalTaskDetail')">✕</button>
-        </div>
+        <button class="modal-close" onclick="closeModal('modalTaskDetail')">✕</button>
       </div>
     </div>
     <div class="modal-body" id="taskDetailContent" style="flex: 1; overflow-y: auto; padding: 24px;"></div>
@@ -5316,15 +5309,61 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
     </div>
   `;
 
-  // Status, Prioridade (2 colunas)
+  // Membros (clicável)
+  html += `
+    <div onclick="showTaskMembersEditor(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
+      onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
+      <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">👤 Membros</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; gap: -8px; align-items: center;">
+          ${assignee ? `<div style="width: 28px; height: 28px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.75rem; border: 2px solid var(--bg-secondary);">${assignee.name.charAt(0).toUpperCase()}</div>` : '<div style="width: 28px; height: 28px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">+</div>'}
+        </div>
+        <div style="color: var(--text-secondary); font-size: 0.85rem;">${assignee ? assignee.name : 'Atribuir'}</div>
+      </div>
+    </div>
+  `;
+
+  // Etiquetas (clicável)
+  html += `
+    <div onclick="showTaskLabelsEditor(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
+      onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
+      <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">🏷️ Etiquetas</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        ${t.labels && t.labels.length > 0 ? t.labels.map(l => `<span style="padding: 4px 8px; background: var(--primary); color: #000; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${l}</span>`).join('') : '<span style="color: var(--text-secondary); font-size: 0.85rem;">Adicionar etiquetas</span>'}
+      </div>
+    </div>
+  `;
+
+  // Data Entrega (clicável)
+  if (due) {
+    const daysLeft = Math.ceil((due - new Date()) / 86400000);
+    let dateColor = '#5b8dee';
+    let dateLabel = due.toLocaleDateString('pt-BR');
+    let timeStatus = '';
+    if (daysLeft < 0) { dateColor = '#e05c5c'; timeStatus = ' (Vencida)'; }
+    else if (daysLeft === 0) { dateColor = '#e09a3a'; timeStatus = ' (Hoje)'; }
+    else if (daysLeft === 1) { dateColor = '#e09a3a'; timeStatus = ' (Amanhã)'; }
+
+    html += `
+      <div onclick="editFieldInline(${t.id}, 'due', '${t.due}')" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
+        onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">📅 Data Entrega</div>
+        <div style="color: ${dateColor}; font-weight: 600;">${dateLabel}${timeStatus}</div>
+      </div>
+    `;
+  }
+
+  // Status, Prioridade (2 colunas - clicáveis)
   html += `
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
-        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Status</div>
+      <div onclick="toggleTaskStatus(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
+        onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">Status</div>
         <div style="color: ${t.done ? '#4caf7d' : '#e09a3a'}; font-weight: 600; font-size: 0.95rem;">${t.done ? '✓ Concluída' : '○ Pendente'}</div>
       </div>
-      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
-        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Prioridade</div>
+      <div onclick="cycleTaskPriority(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
+        onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">Prioridade</div>
         <div style="color: ${t.priority === 'urgente' ? '#e05c5c' : t.priority === 'normal' ? '#5b8dee' : '#a0a8c0'}; font-weight: 600; font-size: 0.95rem;">
           ${t.priority === 'urgente' ? '🔴 Urgente' : t.priority === 'normal' ? '🟡 Normal' : '🟢 Baixa'}
         </div>
@@ -5964,6 +6003,74 @@ function removeAttachment(taskId, idx) {
   save(STORAGE_KEYS.tasks, tasks);
   openTaskDetail(taskId);
   showTaskAttachmentEditor();
+}
+
+// Toggle Status da tarefa
+function toggleTaskStatus(taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  t.done = !t.done;
+  save(STORAGE_KEYS.tasks, tasks);
+  addActivity(`Tarefa marcada como ${t.done ? 'concluída' : 'pendente'}`);
+  openTaskDetail(taskId);
+}
+
+// Ciclar Prioridade
+function cycleTaskPriority(taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  const priorities = ['baixa', 'normal', 'urgente'];
+  const currentIdx = priorities.indexOf(t.priority);
+  t.priority = priorities[(currentIdx + 1) % priorities.length];
+
+  save(STORAGE_KEYS.tasks, tasks);
+  addActivity(`Prioridade alterada para ${t.priority}`);
+  openTaskDetail(taskId);
+}
+
+// Editor de Membros (simplificado)
+function showTaskMembersEditor(taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; z-index: 10001; width: 350px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  `;
+
+  modal.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="margin: 0; color: var(--text-primary);">👤 Atribuir Membro</h3>
+      <button onclick="this.closest('div').parentElement.remove()" style="border: none; background: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem;">✕</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      ${members.map(m => `
+        <button onclick="assignTaskMember(${taskId}, ${m.id})" style="padding: 10px; text-align: left; border: 1px solid var(--border); background: ${t.assignee === m.id ? 'var(--primary)' : 'var(--bg-secondary)'}; color: ${t.assignee === m.id ? '#000' : 'var(--text-primary)'}; border-radius: 6px; cursor: pointer; font-weight: 600;">
+          ${m.name}
+        </button>
+      `).join('')}
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+// Atribuir membro
+function assignTaskMember(taskId, memberId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  t.assignee = memberId;
+  save(STORAGE_KEYS.tasks, tasks);
+  addActivity(`Tarefa atribuída a ${members.find(m => m.id === memberId)?.name || 'membro'}`);
+  document.querySelectorAll('div[style*="position: fixed"]').forEach(el => el.remove());
+  openTaskDetail(taskId);
 }
 
 // Editar campo inline ao clicar
