@@ -5262,13 +5262,6 @@ function openTaskDetail(id) {
               </div>
             </div>
 
-            <!-- SEÇÃO 3: EDITAR -->
-            <div style="border-top: 1px solid var(--border); padding-top: 16px; padding-bottom: 16px;">
-              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">✏️ Editar Tarefa</div>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                ${renderTaskEditPane(t, assignee, municipio)}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -5311,8 +5304,17 @@ function openTaskDetail(id) {
 function renderTaskDetailPane(t, assignee, municipio, due) {
   let html = '';
 
-  // Header com título
-  html += `<div style="padding-bottom: 12px; border-bottom: 1px solid var(--border);"><h3 style="margin: 0; color: var(--text-primary); font-size: 1.1rem;">${t.title}</h3></div>`;
+  // Header com título (editável ao clicar)
+  html += `
+    <div style="padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+      <h3 id="taskTitle_${t.id}" style="margin: 0; color: var(--text-primary); font-size: 1.1rem; cursor: pointer; padding: 8px; border-radius: 6px; transition: background 0.2s;"
+        onmouseover="this.style.background='var(--bg-secondary)'"
+        onmouseout="this.style.background='transparent'"
+        onclick="editFieldInline(${t.id}, 'title', '${escapeHtml(t.title).replace(/'/g, "\\'")}')">
+        ${t.title}
+      </h3>
+    </div>
+  `;
 
   // Status, Prioridade (2 colunas)
   html += `
@@ -5962,6 +5964,67 @@ function removeAttachment(taskId, idx) {
   save(STORAGE_KEYS.tasks, tasks);
   openTaskDetail(taskId);
   showTaskAttachmentEditor();
+}
+
+// Editar campo inline ao clicar
+function editFieldInline(taskId, fieldName, currentValue) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  const fieldElement = document.getElementById(`taskTitle_${taskId}`);
+  if (!fieldElement) return;
+
+  // Criar input para edição
+  const isLongText = fieldName === 'desc';
+  const inputElement = document.createElement(isLongText ? 'textarea' : 'input');
+
+  inputElement.value = currentValue;
+  inputElement.style.cssText = `
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: ${fieldName === 'title' ? '1.1rem' : '0.95rem'};
+    font-weight: ${fieldName === 'title' ? '600' : '400'};
+    font-family: inherit;
+  `;
+
+  if (isLongText) {
+    inputElement.style.minHeight = '100px';
+    inputElement.style.resize = 'vertical';
+  }
+
+  // Substituir elemento
+  fieldElement.replaceWith(inputElement);
+  inputElement.focus();
+  inputElement.select();
+
+  // Salvar ao clicar fora ou pressionar Enter
+  const saveChange = () => {
+    const newValue = inputElement.value.trim();
+
+    if (newValue && newValue !== currentValue) {
+      t[fieldName] = newValue;
+      save(STORAGE_KEYS.tasks, tasks);
+      addActivity(`${fieldName === 'title' ? 'Título' : 'Descrição'} alterado`);
+    }
+
+    openTaskDetail(taskId);
+  };
+
+  inputElement.addEventListener('blur', saveChange);
+  inputElement.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && fieldName === 'title') {
+      e.preventDefault();
+      saveChange();
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      openTaskDetail(taskId);
+    }
+  });
 }
 
 function calShowDayEvents(dateStr) {
