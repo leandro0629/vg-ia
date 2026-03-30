@@ -3002,15 +3002,7 @@ if (!members.length || localStorage.getItem('lex_data_ver') !== DATA_VERSION) {
     { id: 14, name: 'Roger Cunha', role: 'estagiario', inst: '',                email: 'roger@vgai.com',       workload: 3, team: 3, teams: [3], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Roger' },
   ];
   save(STORAGE_KEYS.members, members);
-  // Reset tasks, prazos, activity with new members
-  tasks = []; prazos = []; activity = []; sharedAC = [];
-  save(STORAGE_KEYS.tasks, tasks); save(STORAGE_KEYS.prazos, prazos);
-  save(STORAGE_KEYS.activity, activity); save(STORAGE_KEYS.sharedAC, sharedAC);
   localStorage.setItem('lex_data_ver', DATA_VERSION);
-}
-if (!tasks.length) {
-  tasks = [];
-  save(STORAGE_KEYS.tasks, tasks);
 }
 if (!prazos.length) {
   const today = new Date();
