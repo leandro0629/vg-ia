@@ -151,8 +151,10 @@
                   console.log('[Firestore] 🔄 Atividades compartilhadas atualizadas em tempo real');
                 }
 
-                // Re-renderizar página se está visível
-                if (currentPage && currentUser) {
+                // Re-renderizar página se está visível (mas não se há modal aberto)
+                const hasOpenModal = document.querySelector('.modal-overlay[style*="display: flex"]') ||
+                                     document.getElementById('modalTask')?.style.display === 'flex';
+                if (currentPage && currentUser && !hasOpenModal) {
                   renderPage(currentPage);
                 }
               }
