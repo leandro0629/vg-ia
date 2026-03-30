@@ -5324,12 +5324,13 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
   `;
 
   // Etiquetas (clicável)
+  const labelColors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff' };
   html += `
     <div onclick="showTaskLabelsEditor(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
       onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
       <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">🏷️ Etiquetas</div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-        ${t.labels && t.labels.length > 0 ? t.labels.map(l => `<span style="padding: 4px 8px; background: var(--primary); color: #000; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${l}</span>`).join('') : '<span style="color: var(--text-secondary); font-size: 0.85rem;">Adicionar etiquetas</span>'}
+        ${t.labels && t.labels.length > 0 ? t.labels.map(l => `<span style="padding: 4px 8px; background: ${labelColors[l] || '#5b8dee'}; color: white; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">${l}</span>`).join('') : '<span style="color: var(--text-secondary); font-size: 0.85rem;">Adicionar etiquetas</span>'}
       </div>
     </div>
   `;
