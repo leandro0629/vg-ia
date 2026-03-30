@@ -5831,11 +5831,14 @@ function showTaskLabelsEditor() {
     { name: 'Backend', color: '#74b9ff' }
   ];
 
+  // Estado temporário das etiquetas sendo editadas
+  window.tempLabels = [...t.labels];
+
   const modal = document.createElement('div');
   modal.style.cssText = `
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 20px; z-index: 10001; width: 400px; max-height: 600px; overflow-y: auto;
+    padding: 20px; z-index: 10001; width: 420px; max-height: 650px; overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0,0,0,0.4);
   `;
 
@@ -5848,16 +5851,16 @@ function showTaskLabelsEditor() {
     <!-- Etiquetas Selecionadas -->
     <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
       <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Selecionadas:</div>
-      <div style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 32px;">
-        ${t.labels.map(label => {
+      <div id="selectedLabels_${currentTaskDetailId}" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 32px;">
+        ${t.labels.length > 0 ? t.labels.map(label => {
           const labelObj = availableLabels.find(l => l.name === label);
           return `
             <span style="padding: 6px 12px; background: ${labelObj?.color || '#5b8dee'}; color: white; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-weight: 500;">
               ${label}
-              <button onclick="removeLabel(${currentTaskDetailId}, '${label}')" style="border: none; background: none; color: white; cursor: pointer; padding: 0; font-size: 1rem; line-height: 1;">✕</button>
+              <button onclick="removeTempLabel('${label}', ${currentTaskDetailId})" style="border: none; background: none; color: white; cursor: pointer; padding: 0; font-size: 1rem; line-height: 1;">✕</button>
             </span>
           `;
-        }).join('') || '<span style="color: var(--text-secondary); font-size: 0.85rem;">Nenhuma etiqueta</span>'}
+        }).join('') : '<span style="color: var(--text-secondary); font-size: 0.85rem;">Nenhuma etiqueta selecionada</span>'}
       </div>
     </div>
 
@@ -5865,17 +5868,18 @@ function showTaskLabelsEditor() {
     <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Disponíveis:</div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
       ${availableLabels.map(label => `
-        <button onclick="addLabel(${currentTaskDetailId}, '${label.name}')"
-          style="padding: 10px; background: ${label.color}; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; ${t.labels.includes(label.name) ? 'opacity: 0.5; text-decoration: line-through;' : 'opacity: 1;'}"
-          onmouseover="this.style.opacity='${t.labels.includes(label.name) ? '0.6' : '0.85'}'"
-          onmouseout="this.style.opacity='${t.labels.includes(label.name) ? '0.5' : '1'}'">
+        <button onclick="addTempLabel('${label.name}', ${currentTaskDetailId})"
+          style="padding: 10px; background: ${label.color}; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; ${window.tempLabels.includes(label.name) ? 'opacity: 0.5; border: 2px solid white;' : 'opacity: 1;'}"
+          id="btn_${label.name}_${currentTaskDetailId}"
+          onmouseover="this.style.opacity='0.85'"
+          onmouseout="this.style.opacity='${window.tempLabels.includes(label.name) ? '0.5' : '1'}'">
           ${label.name}
         </button>
       `).join('')}
     </div>
 
     <!-- Criar Etiqueta Personalizada -->
-    <div style="padding-top: 16px; border-top: 1px solid var(--border);">
+    <div style="padding-top: 16px; border-top: 1px solid var(--border); margin-bottom: 16px;">
       <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Nova Etiqueta:</div>
       <div style="display: flex; gap: 8px; margin-bottom: 8px;">
         <input type="text" id="customLabelName_${currentTaskDetailId}" placeholder="Nome da etiqueta..."
@@ -5884,13 +5888,58 @@ function showTaskLabelsEditor() {
           style="width: 44px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;">
       </div>
       <button onclick="addCustomLabelWithColor(${currentTaskDetailId})"
-        style="width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+        style="width: 100%; padding: 10px; background: var(--accent); color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
         ➕ Criar Etiqueta
+      </button>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div style="display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 16px;">
+      <button onclick="confirmLabels(${currentTaskDetailId})"
+        style="flex: 1; padding: 12px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem;">
+        ✓ Confirmar
+      </button>
+      <button onclick="this.closest('div').parentElement.remove()"
+        style="flex: 1; padding: 12px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95rem;">
+        ✕ Cancelar
       </button>
     </div>
   `;
 
   document.body.appendChild(modal);
+}
+
+// Adicionar label temporariamente
+function addTempLabel(label, taskId) {
+  if (!window.tempLabels) window.tempLabels = [];
+  if (!window.tempLabels.includes(label)) {
+    window.tempLabels.push(label);
+    showTaskLabelsEditor(); // Rerender
+  }
+}
+
+// Remover label temporariamente
+function removeTempLabel(label, taskId) {
+  if (!window.tempLabels) window.tempLabels = [];
+  window.tempLabels = window.tempLabels.filter(l => l !== label);
+  showTaskLabelsEditor(); // Rerender
+}
+
+// Confirmar seleção de etiquetas
+function confirmLabels(taskId) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  t.labels = window.tempLabels || [];
+  save(STORAGE_KEYS.tasks, tasks);
+  addActivity(`Etiquetas atualizadas`);
+
+  // Remover modal
+  document.querySelectorAll('div[style*="position: fixed"]').forEach(el => {
+    if (el.innerHTML.includes('Etiquetas')) el.remove();
+  });
+
+  openTaskDetail(taskId);
 }
 
 // Adicionar etiqueta
@@ -5952,18 +6001,6 @@ function addCustomLabelWithColor(taskId) {
   }
 }
 
-// Adicionar etiqueta (confirmação inline)
-function addLabel(taskId, label) {
-  const t = tasks.find(x => x.id === taskId);
-  if (!t) return;
-
-  if (!t.labels) t.labels = [];
-  if (!t.labels.includes(label)) {
-    t.labels.push(label);
-    save(STORAGE_KEYS.tasks, tasks);
-    // Não fecha o modal, deixa o usuário adicionar mais
-  }
-}
 
 // Editor de Anexos
 function showTaskAttachmentEditor() {
