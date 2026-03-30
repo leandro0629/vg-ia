@@ -2737,11 +2737,36 @@ function doLogout() {
   closeUserMenu();
 }
 
-function enterApp(user) {
+async function enterApp(user) {
   currentUser = user;
   document.getElementById('loginScreen').classList.add('hidden');
   updateUIForUser(user);
+
+  // Recarregar dados do Firestore ao fazer login
+  await reloadDataFromFirestore();
+
   navigate('dashboard');
+}
+
+async function reloadDataFromFirestore() {
+  try {
+    const keys = ['lex_members', 'lex_tasks', 'lex_prazos', 'lex_activity', 'lex_shared_ac', 'lex_municipios'];
+    for (const key of keys) {
+      const cloudData = await loadFromFirestore(key);
+      if (cloudData) {
+        localStorage.setItem(key, JSON.stringify(cloudData));
+        // Atualizar variáveis globais
+        if (key === 'lex_tasks') tasks = cloudData;
+        else if (key === 'lex_members') members = cloudData;
+        else if (key === 'lex_prazos') prazos = cloudData;
+        else if (key === 'lex_activity') activity = cloudData;
+        else if (key === 'lex_shared_ac') sharedAC = cloudData;
+        else if (key === 'lex_municipios') municipios = cloudData;
+      }
+    }
+  } catch(e) {
+    console.warn('Erro ao recarregar dados do Firestore:', e);
+  }
 }
 
 function updateUIForUser(user) {
