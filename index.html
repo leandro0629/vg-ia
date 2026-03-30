@@ -6258,6 +6258,31 @@ function exportData() {
   showNotification('✅ Dados exportados!', 'success');
 }
 
+function deleteAllTasks() {
+  if (confirm('⚠️ Tem certeza que deseja excluir TODAS as MISSÕES? Esta ação não pode ser desfeita.')) {
+    const deletedCount = tasks.length;
+
+    // Limpar array de tarefas
+    tasks = [];
+
+    // Salvar no localStorage
+    save(STORAGE_KEYS.tasks, tasks);
+
+    // Sincronizar com Firestore
+    if (db) {
+      syncToFirestore('lex_tasks', []);
+    }
+
+    showNotification(`✅ ${deletedCount} missão(ões) excluída(s)!`, 'success');
+    addActivity(`Todas as ${deletedCount} missão(ões) foram removidas`, '#e05c5c');
+
+    // Re-renderizar a página
+    if (currentPage) {
+      setTimeout(() => renderPage(currentPage), 500);
+    }
+  }
+}
+
 function clearActivities() {
   if (confirm('⚠️ Tem certeza que deseja excluir TODAS as atividades? Esta ação não pode ser desfeita.')) {
     // Limpar localStorage
