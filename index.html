@@ -103,8 +103,8 @@
       window.firebaseReady = true;
       console.log('[Firestore] ✅ Sincronização inicializada com sucesso');
 
-      // Adicionar listeners em tempo real para atualizações
-      setupRealtimeListeners();
+      // Listeners em tempo real desativados temporariamente
+      // setupRealtimeListeners();
     } catch (err) {
       console.warn('[Firestore] Erro na inicialização:', err);
       window.firebaseReady = true; // Continuar mesmo com erro
