@@ -1974,12 +1974,41 @@
 
                 <hr style="border:none; border-top:1px solid var(--border); margin:24px 0">
 
-                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">Informações do Sistema</h3>
-                <div style="display:flex; flex-direction:column; gap:12px; font-size:0.9rem; color:var(--text-secondary)">
+                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">📊 Status do Sistema</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px">
+                  <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:rgba(76, 175, 125, 0.1); border:1px solid rgba(76, 175, 125, 0.3); border-radius:8px">
+                    <div>
+                      <div style="font-weight:600; color:var(--text-primary)">Conexão com Firestore</div>
+                      <div style="font-size:0.85rem; color:var(--text-secondary)">Status da sincronização</div>
+                    </div>
+                    <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#4caf7d; box-shadow:0 0 8px rgba(76, 175, 125, 0.6)"></span>
+                  </div>
+                  <div style="padding:12px; background:var(--card); border:1px solid var(--border); border-radius:8px">
+                    <div style="font-size:0.85rem; color:var(--text-secondary)"><strong>Espaço em Uso:</strong> <span id="sysSpaceUsed">0 MB</span> / ~5 MB</div>
+                  </div>
+                  <div style="padding:12px; background:var(--card); border:1px solid var(--border); border-radius:8px">
+                    <div style="font-size:0.85rem; color:var(--text-secondary)"><strong>Registros:</strong> <span id="sysRecordsCount">Carregando...</span></div>
+                  </div>
+                </div>
+
+                <hr style="border:none; border-top:1px solid var(--border); margin:24px 0">
+
+                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">ℹ️ Informações do Sistema</h3>
+                <div style="display:flex; flex-direction:column; gap:12px; font-size:0.9rem; color:var(--text-secondary); margin-bottom:24px">
                   <div><strong>Versão:</strong> VG IA 2.0.0</div>
                   <div><strong>Ambiente:</strong> <span id="sysEnv">Web App</span></div>
                   <div><strong>Data de Sincronização:</strong> <span id="sysLastSync">Nunca</span></div>
                   <div><strong>Tamanho de Cache:</strong> <span id="sysCacheSize">Carregando...</span></div>
+                </div>
+
+                <hr style="border:none; border-top:1px solid var(--border); margin:24px 0">
+
+                <h3 style="margin-bottom:16px; font-size:1rem; font-weight:600">🔗 Recursos & Links</h3>
+                <div style="display:flex; flex-direction:column; gap:10px">
+                  <a href="#" style="padding:12px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--primary); text-decoration:none; font-size:0.9rem; transition:all 0.3s ease" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(245, 158, 11, 0.05)'" onmouseout="this.style.borderColor='var(--border)'; this.style.background='var(--card)'">📖 Documentação & Ajuda</a>
+                  <a href="#" style="padding:12px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--primary); text-decoration:none; font-size:0.9rem; transition:all 0.3s ease" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(245, 158, 11, 0.05)'" onmouseout="this.style.borderColor='var(--border)'; this.style.background='var(--card)'">💬 Suporte & Feedback</a>
+                  <a href="#" style="padding:12px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--primary); text-decoration:none; font-size:0.9rem; transition:all 0.3s ease" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(245, 158, 11, 0.05)'" onmouseout="this.style.borderColor='var(--border)'; this.style.background='var(--card)'">🔒 Política de Privacidade</a>
+                  <a href="#" style="padding:12px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--primary); text-decoration:none; font-size:0.9rem; transition:all 0.3s ease" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(245, 158, 11, 0.05)'" onmouseout="this.style.borderColor='var(--border)'; this.style.background='var(--card)'">📋 Termos de Serviço</a>
                 </div>
               </div>
             </div>
@@ -6078,6 +6107,14 @@ function updateSystemInfo() {
   }
   const cacheSizeMB = (totalSize / 1024 / 1024).toFixed(2);
   document.getElementById('sysCacheSize').textContent = cacheSizeMB + ' MB';
+  document.getElementById('sysSpaceUsed').textContent = (totalSize / 1024 / 1024).toFixed(1) + ' MB';
+
+  // Count records
+  const taskCount = (tasks || []).length;
+  const memberCount = (members || []).length;
+  const prazoCount = (prazos || []).length;
+  const totalRecords = taskCount + memberCount + prazoCount;
+  document.getElementById('sysRecordsCount').textContent = `${taskCount} tarefas, ${memberCount} membros, ${prazoCount} prazos (Total: ${totalRecords})`;
 }
 
 function syncWithFirestore() {
