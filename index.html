@@ -4758,6 +4758,7 @@ function kanCardHTML(t) {
       <div style="display:flex;align-items:center;gap:6px">
         ${due ? `<span class="kanban-card-due ${dueClass}">📅 ${dueText}</span>` : ''}
         <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:.7rem" onclick="event.stopPropagation();openEditTask(${t.id})" title="Editar">✏️</button>
+        <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:.7rem;color:#e05c5c" onclick="event.stopPropagation();deleteTask(${t.id})" title="Deletar">✕</button>
       </div>
     </div>
   </div>`;
@@ -6258,50 +6259,6 @@ function exportData() {
   showNotification('✅ Dados exportados!', 'success');
 }
 
-function deleteAllTasks() {
-  if (confirm('⚠️ Tem certeza que deseja excluir TODAS as MISSÕES? Esta ação não pode ser desfeita.')) {
-    const deletedCount = tasks.length;
-
-    // Limpar array de tarefas
-    tasks = [];
-
-    // Salvar no localStorage
-    save(STORAGE_KEYS.tasks, tasks);
-
-    // Sincronizar com Firestore
-    if (db) {
-      syncToFirestore('lex_tasks', []);
-    }
-
-    showNotification(`✅ ${deletedCount} missão(ões) excluída(s)!`, 'success');
-    addActivity(`Todas as ${deletedCount} missão(ões) foram removidas`, '#e05c5c');
-
-    // Re-renderizar a página
-    if (currentPage) {
-      setTimeout(() => renderPage(currentPage), 500);
-    }
-  }
-}
-
-function clearActivities() {
-  if (confirm('⚠️ Tem certeza que deseja excluir TODAS as atividades? Esta ação não pode ser desfeita.')) {
-    // Limpar localStorage
-    localStorage.setItem('lex_activity', JSON.stringify([]));
-    activity = [];
-
-    // Sincronizar com Firestore
-    if (db) {
-      syncToFirestore('lex_activity', []);
-    }
-
-    showNotification('✅ Todas as atividades foram excluídas!', 'success');
-
-    // Re-renderizar a página se estiver na aba de atividades
-    if (currentPage) {
-      setTimeout(() => renderPage(currentPage), 500);
-    }
-  }
-}
 
 function showClearDataConfirm() {
   if (confirm('⚠️ Tem certeza que deseja limpar o cache local? Esta ação não pode ser desfeita.')) {
