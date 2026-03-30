@@ -5231,63 +5231,59 @@ function openTaskDetail(id) {
     const assignee = members.find(m => m.id === t.assignee);
     const municipio = municipios.find(m => m.id === parseInt(t.municipio));
 
-    let html = '<div style="display: flex; flex-direction: column; gap: 16px;">';
+    // LAYOUT: Esquerda (Detalhes) + Direita (Comentários)
+    let html = `
+      <div style="display: flex; gap: 20px; height: 100%; overflow: hidden;">
 
-    // Título
-    html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Tarefa</div><div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">${t.title}</div></div>`;
+        <!-- ESQUERDA: Detalhes (com abas) -->
+        <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
 
-    // Status e Prioridade
-    html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Status</div><div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); color: ${t.done ? '#4caf7d' : '#e09a3a'}; font-weight: 600;">${t.done ? '✓ Concluída' : '○ A Fazer'}</div></div><div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Prioridade</div><div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); color: ${t.priority === 'urgente' ? '#e05c5c' : t.priority === 'normal' ? '#5b8dee' : '#a0a8c0'}; font-weight: 600;">${t.priority === 'urgente' ? '⚠️ Urgente' : t.priority === 'normal' ? '◆ Normal' : '○ Baixa'}</div></div></div>`;
+          <!-- Abas -->
+          <div style="display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;">
+            <button class="task-detail-tab active" data-tab="detalhes"
+              style="padding: 12px 16px; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500;"
+              onclick="switchTaskDetailTab('detalhes', this)">
+              📋 Detalhes
+            </button>
+            <button class="task-detail-tab" data-tab="checklist"
+              style="padding: 12px 16px; border: none; background: none; color: var(--text-secondary); cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500;"
+              onclick="switchTaskDetailTab('checklist', this)">
+              ✓ Checklist
+            </button>
+          </div>
 
-    // Data de Vencimento
-    if (due) {
-      const daysLeft = Math.ceil((due - new Date()) / 86400000);
-      let dateColor = '#5b8dee';
-      let dateLabel = due.toLocaleDateString('pt-BR');
-      if (daysLeft < 0) { dateColor = '#e05c5c'; dateLabel += ' (Vencida)'; }
-      else if (daysLeft === 0) { dateColor = '#e09a3a'; dateLabel += ' (Hoje)'; }
-      else if (daysLeft === 1) { dateColor = '#e09a3a'; dateLabel += ' (Amanhã)'; }
-      html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Data de Vencimento</div><div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); color: ${dateColor}; font-weight: 600;">📅 ${dateLabel}</div></div>`;
-    }
+          <!-- Conteúdo das Abas (Scrollável) -->
+          <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
 
-    // Responsável
-    if (assignee) {
-      html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Responsável</div><div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); display: flex; align-items: center; gap: 8px;"><div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #d97706); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.8rem;">${assignee.name.charAt(0).toUpperCase()}</div><div>${assignee.name}</div></div></div>`;
-    }
+            <!-- ABA: DETALHES -->
+            <div class="task-detail-pane active" data-pane="detalhes">
+              ${renderTaskDetailPane(t, assignee, municipio, due)}
+            </div>
 
-    // Processo
-    if (t.process) {
-      html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Processo</div><div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); font-family: monospace; color: var(--text-secondary);">${t.process}</div></div>`;
-    }
+            <!-- ABA: CHECKLIST -->
+            <div class="task-detail-pane" data-pane="checklist" style="display: none;">
+              ${renderTaskChecklistPane(t)}
+            </div>
+          </div>
+        </div>
 
-    // Municipio
-    if (municipio) {
-      html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Contrato/Município</div><div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm);">${municipio.name}</div></div>`;
-    }
-
-    // Tipo
-    if (t.tipo) {
-      html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Tipo</div><div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm);">${tipoLabel(t.tipo)}</div></div>`;
-    }
-
-    // Descrição
-    if (t.desc) {
-      html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px;">Descrição</div><div style="padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-sm); line-height: 1.6; white-space: pre-wrap; word-break: break-word;">${escapeHtml(t.desc)}</div></div>`;
-    }
-
-    // Checklist
-    if (t.checklist && t.checklist.length > 0) {
-      const completed = t.checklist.filter(c => c.done).length;
-      html += `<div><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">Checklist (${completed}/${t.checklist.length})</div><div style="display: flex; flex-direction: column; gap: 6px;">${t.checklist.map((c, i) => `<div style="display: flex; align-items: center; gap: 8px; padding: 6px; background: var(--bg-secondary); border-radius: 4px; ${c.done ? 'opacity: 0.6;' : ''}"><input type="checkbox" disabled ${c.done ? 'checked' : ''} style="cursor: not-allowed;"><span style="${c.done ? 'text-decoration: line-through;' : ''}">${escapeHtml(c.item)}</span></div>`).join('')}</div></div>`;
-    }
-
-    // Modo compartilhada
-    if (t.mode === 'compartilhada') {
-      const owner = members.find(m => m.id === t.owner);
-      html += `<div style="border-top: 1px solid var(--border); padding-top: 12px;"><div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">🤝 Atividade Compartilhada</div><div style="font-size: 0.85rem; color: var(--text-secondary);">Proprietário: <strong>${owner?.name || 'N/A'}</strong></div>${t.participants && t.participants.length > 0 ? `<div style="margin-top: 8px;"><div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px;">Participantes:</div><div style="display: flex; flex-wrap: wrap; gap: 8px;">${t.participants.map(p => { const pm = members.find(m => m.id === p.memberId); return `<div style="padding: 4px 8px; background: var(--accent-glow); border-radius: 4px; font-size: 0.8rem;">${pm?.name || 'N/A'}</div>`; }).join('')}</div></div>` : ''}</div>`;
-    }
-
-    html += '</div>';
+        <!-- DIREITA: Comentários & Atividade -->
+        <div style="width: 320px; border-left: 1px solid var(--border); padding-left: 16px; display: flex; flex-direction: column; overflow: hidden;">
+          <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">💬 Comentários & Atividade</div>
+          <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+            ${renderTaskActivityFeed(t)}
+          </div>
+          <div style="padding-top: 12px; border-top: 1px solid var(--border); margin-top: 12px;">
+            <textarea id="taskCommentInput" placeholder="Adicionar comentário..."
+              style="width: 100%; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 0.85rem; min-height: 60px; resize: none; font-family: inherit;"></textarea>
+            <button onclick="addTaskCommentQuick(${id})"
+              style="margin-top: 8px; width: 100%; padding: 8px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+              Comentar
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
 
     const modalEl = document.getElementById('modalTaskDetail');
     const contentEl = document.getElementById('taskDetailContent');
@@ -5304,6 +5300,227 @@ function openTaskDetail(id) {
   } catch(e) {
     console.error('Error in openTaskDetail:', e);
   }
+}
+
+// Renderizar Pane de Detalhes
+function renderTaskDetailPane(t, assignee, municipio, due) {
+  let html = '';
+
+  // Header com título
+  html += `<div style="padding-bottom: 12px; border-bottom: 1px solid var(--border);"><h3 style="margin: 0; color: var(--text-primary); font-size: 1.1rem;">${t.title}</h3></div>`;
+
+  // Status, Prioridade (2 colunas)
+  html += `
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Status</div>
+        <div style="color: ${t.done ? '#4caf7d' : '#e09a3a'}; font-weight: 600; font-size: 0.95rem;">${t.done ? '✓ Concluída' : '○ Pendente'}</div>
+      </div>
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Prioridade</div>
+        <div style="color: ${t.priority === 'urgente' ? '#e05c5c' : t.priority === 'normal' ? '#5b8dee' : '#a0a8c0'}; font-weight: 600; font-size: 0.95rem;">
+          ${t.priority === 'urgente' ? '🔴 Urgente' : t.priority === 'normal' ? '🟡 Normal' : '🟢 Baixa'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Data de Vencimento
+  if (due) {
+    const daysLeft = Math.ceil((due - new Date()) / 86400000);
+    let dateColor = '#5b8dee';
+    let dateLabel = due.toLocaleDateString('pt-BR');
+    let timeStatus = '';
+    if (daysLeft < 0) { dateColor = '#e05c5c'; timeStatus = ' (Vencida)'; }
+    else if (daysLeft === 0) { dateColor = '#e09a3a'; timeStatus = ' (Hoje)'; }
+    else if (daysLeft === 1) { dateColor = '#e09a3a'; timeStatus = ' (Amanhã)'; }
+
+    html += `
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">Data de Vencimento</div>
+        <div style="color: ${dateColor}; font-weight: 600;">📅 ${dateLabel}${timeStatus}</div>
+      </div>
+    `;
+  }
+
+  // Responsável (Membros)
+  if (assignee) {
+    html += `
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">👤 Responsável</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #d97706); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.9rem;">
+            ${assignee.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight: 600; color: var(--text-primary);">${assignee.name}</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">${roleLabel(assignee.role)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Processo
+  if (t.process) {
+    html += `
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">📄 Processo</div>
+        <div style="font-family: monospace; color: var(--text-secondary); font-size: 0.9rem;">${escapeHtml(t.process)}</div>
+      </div>
+    `;
+  }
+
+  // Municipio
+  if (municipio) {
+    html += `
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">📍 Contrato/Município</div>
+        <div style="color: var(--text-primary); font-weight: 500;">${escapeHtml(municipio.name)}</div>
+      </div>
+    `;
+  }
+
+  // Tipo
+  if (t.tipo) {
+    html += `
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px;">🏷️ Tipo</div>
+        <div style="color: var(--text-primary); font-weight: 500;">${tipoLabel(t.tipo)}</div>
+      </div>
+    `;
+  }
+
+  // Descrição
+  if (t.desc) {
+    html += `
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">📝 Descrição</div>
+        <div style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; word-break: break-word; font-size: 0.9rem;">
+          ${escapeHtml(t.desc)}
+        </div>
+      </div>
+    `;
+  }
+
+  // Compartilhada
+  if (t.mode === 'compartilhada') {
+    const owner = members.find(m => m.id === t.owner);
+    html += `
+      <div style="padding: 12px; background: var(--accent-glow); border-radius: 8px; border-left: 3px solid var(--primary);">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px;">🤝 Atividade Compartilhada</div>
+        <div style="font-weight: 500; color: var(--text-primary); margin-bottom: 8px;">Proprietário: ${owner?.name || 'N/A'}</div>
+        ${t.participants && t.participants.length > 0 ? `
+          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">Participantes:</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            ${t.participants.map(p => { const pm = members.find(m => m.id === p.memberId); return `<div style="padding: 4px 8px; background: var(--bg); border-radius: 4px; font-size: 0.75rem;">${pm?.name || 'N/A'}</div>`; }).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  return html;
+}
+
+// Renderizar Pane de Checklist
+function renderTaskChecklistPane(t) {
+  if (!t.checklist || t.checklist.length === 0) {
+    return '<div style="color: var(--text-secondary); text-align: center; padding: 24px;">Nenhum checklist adicionado</div>';
+  }
+
+  const completed = t.checklist.filter(c => c.done).length;
+  const progress = Math.round((completed / t.checklist.length) * 100);
+
+  let html = `
+    <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-weight: 600;">Progresso</span>
+        <span style="font-weight: 600; color: var(--primary);">${completed}/${t.checklist.length} (${progress}%)</span>
+      </div>
+      <div style="width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden;">
+        <div style="height: 100%; width: ${progress}%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s;"></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      ${t.checklist.map((c, i) => `
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 6px; ${c.done ? 'opacity: 0.6;' : ''}">
+          <input type="checkbox" ${c.done ? 'checked' : ''} disabled style="cursor: not-allowed;">
+          <span style="${c.done ? 'text-decoration: line-through; color: var(--text-secondary);' : 'color: var(--text-primary);'}">${escapeHtml(c.item)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  return html;
+}
+
+// Renderizar Feed de Atividade/Comentários
+function renderTaskActivityFeed(t) {
+  // Exemplo de atividade (pode ser expandido com dados reais)
+  const activityItems = [
+    { type: 'created', user: 'Sistema', time: '2 dias atrás', text: 'Tarefa criada' },
+    { type: 'updated', user: 'Sistema', time: '1 dia atrás', text: 'Status alterado para pendente' },
+    { type: 'comment', user: currentUser?.name || 'Você', time: 'agora', text: 'Iniciado o trabalho!' }
+  ];
+
+  let html = '';
+  activityItems.forEach(item => {
+    const initials = item.user.split(' ').map(n => n[0]).join('');
+    html += `
+      <div style="display: flex; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 6px;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.75rem; flex-shrink: 0;">
+          ${initials}
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <span style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">${item.user}</span>
+            <span style="font-size: 0.7rem; color: var(--text-secondary);">${item.time}</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); word-break: break-word;">${item.text}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  return html || '<div style="color: var(--text-secondary); text-align: center; font-size: 0.85rem;">Nenhuma atividade</div>';
+}
+
+// Trocar Aba
+function switchTaskDetailTab(tabName, btn) {
+  document.querySelectorAll('.task-detail-tab').forEach(b => {
+    b.classList.remove('active');
+    b.style.borderBottomColor = 'transparent';
+    b.style.color = 'var(--text-secondary)';
+  });
+  document.querySelectorAll('.task-detail-pane').forEach(p => p.style.display = 'none');
+
+  btn.classList.add('active');
+  btn.style.borderBottomColor = 'var(--primary)';
+  btn.style.color = 'var(--text-primary)';
+
+  const pane = document.querySelector(`[data-pane="${tabName}"]`);
+  if (pane) pane.style.display = 'flex';
+}
+
+// Adicionar Comentário Rápido
+function addTaskCommentQuick(taskId) {
+  const input = document.getElementById('taskCommentInput');
+  if (!input || !input.value.trim()) return;
+
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  if (!t.comments) t.comments = [];
+  t.comments.push({
+    user: currentUser?.name || 'Anônimo',
+    text: input.value.trim(),
+    time: new Date().toISOString()
+  });
+
+  save(STORAGE_KEYS.tasks, tasks);
+  input.value = '';
+  openTaskDetail(taskId); // Refresh
 }
 
 function calShowDayEvents(dateStr) {
