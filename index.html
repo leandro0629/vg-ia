@@ -2740,11 +2740,9 @@ function doLogout() {
 function enterApp(user) {
   currentUser = user;
   setSession(user);
-
-  // Pequeno delay e depois recarrega a página para sincronizar dados do Firestore
-  setTimeout(() => {
-    location.reload();
-  }, 500);
+  document.getElementById('loginScreen').classList.add('hidden');
+  updateUIForUser(user);
+  navigate('dashboard');
 }
 
 function updateUIForUser(user) {
