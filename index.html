@@ -5813,21 +5813,29 @@ function toggleChecklistItem(taskId, idx, done) {
   save(STORAGE_KEYS.tasks, tasks);
 }
 
-// Editor de Etiquetas/Labels
+// Editor de Etiquetas/Labels com cores e confirmação
 function showTaskLabelsEditor() {
   const t = tasks.find(x => x.id === currentTaskDetailId);
   if (!t) return;
 
   if (!t.labels) t.labels = [];
 
-  const availableLabels = ['Urgente', 'Bug', 'Feature', 'Documentation', 'Review', 'Testing', 'Design', 'Backend'];
-  const colors = ['#e05c5c', '#e09a3a', '#5b8dee', '#4caf7d', '#9c27b0', '#ff6b6b', '#ffa94d', '#74b9ff'];
+  const availableLabels = [
+    { name: 'Urgente', color: '#e05c5c' },
+    { name: 'Bug', color: '#ff6b6b' },
+    { name: 'Feature', color: '#4caf7d' },
+    { name: 'Documentation', color: '#5b8dee' },
+    { name: 'Review', color: '#9c27b0' },
+    { name: 'Testing', color: '#ffa94d' },
+    { name: 'Design', color: '#e09a3a' },
+    { name: 'Backend', color: '#74b9ff' }
+  ];
 
   const modal = document.createElement('div');
   modal.style.cssText = `
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 20px; z-index: 10001; width: 400px; max-height: 500px; overflow-y: auto;
+    padding: 20px; z-index: 10001; width: 400px; max-height: 600px; overflow-y: auto;
     box-shadow: 0 10px 40px rgba(0,0,0,0.4);
   `;
 
@@ -5837,35 +5845,48 @@ function showTaskLabelsEditor() {
       <button onclick="this.closest('div').parentElement.remove()" style="border: none; background: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem;">✕</button>
     </div>
 
-    <div style="margin-bottom: 16px;">
-      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Etiquetas Selecionadas:</div>
+    <!-- Etiquetas Selecionadas -->
+    <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+      <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Selecionadas:</div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 32px;">
-        ${t.labels.map((label, idx) => `
-          <span style="padding: 6px 12px; background: ${colors[availableLabels.indexOf(label)] || '#5b8dee'}; color: white; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-            ${label}
-            <button onclick="removeLabel(${currentTaskDetailId}, '${label}')" style="border: none; background: none; color: white; cursor: pointer; padding: 0; font-size: 1rem; line-height: 1;">✕</button>
-          </span>
-        `).join('')}
+        ${t.labels.map(label => {
+          const labelObj = availableLabels.find(l => l.name === label);
+          return `
+            <span style="padding: 6px 12px; background: ${labelObj?.color || '#5b8dee'}; color: white; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+              ${label}
+              <button onclick="removeLabel(${currentTaskDetailId}, '${label}')" style="border: none; background: none; color: white; cursor: pointer; padding: 0; font-size: 1rem; line-height: 1;">✕</button>
+            </span>
+          `;
+        }).join('') || '<span style="color: var(--text-secondary); font-size: 0.85rem;">Nenhuma etiqueta</span>'}
       </div>
     </div>
 
-    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Adicionar Etiqueta:</div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      ${availableLabels.map((label, idx) => `
-        <button onclick="addLabel(${currentTaskDetailId}, '${label}')"
-          style="padding: 10px; background: ${colors[idx]}; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; ${t.labels.includes(label) ? 'opacity: 0.6;' : ''}">
-          ${label}
+    <!-- Etiquetas Disponíveis -->
+    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Disponíveis:</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+      ${availableLabels.map(label => `
+        <button onclick="addLabel(${currentTaskDetailId}, '${label.name}')"
+          style="padding: 10px; background: ${label.color}; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; ${t.labels.includes(label.name) ? 'opacity: 0.5; text-decoration: line-through;' : 'opacity: 1;'}"
+          onmouseover="this.style.opacity='${t.labels.includes(label.name) ? '0.6' : '0.85'}'"
+          onmouseout="this.style.opacity='${t.labels.includes(label.name) ? '0.5' : '1'}'">
+          ${label.name}
         </button>
       `).join('')}
     </div>
 
-    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="customLabel" placeholder="Etiqueta personalizada..."
+    <!-- Criar Etiqueta Personalizada -->
+    <div style="padding-top: 16px; border-top: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 8px; font-weight: 600;">Nova Etiqueta:</div>
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <input type="text" id="customLabelName_${currentTaskDetailId}" placeholder="Nome da etiqueta..."
           style="flex: 1; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
-        <button onclick="addCustomLabel(${currentTaskDetailId})"
-          style="padding: 10px 16px; background: var(--primary); border: none; border-radius: 6px; color: #000; font-weight: 600; cursor: pointer;">➕</button>
+        <input type="color" id="customLabelColor_${currentTaskDetailId}" value="#5b8dee"
+          style="width: 44px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;">
       </div>
+      <button onclick="addCustomLabelWithColor(${currentTaskDetailId})"
+        style="width: 100%; padding: 10px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+        ➕ Criar Etiqueta
+      </button>
     </div>
   `;
 
@@ -5899,21 +5920,48 @@ function removeLabel(taskId, label) {
   }
 }
 
-// Adicionar etiqueta personalizada
-function addCustomLabel(taskId) {
-  const input = document.getElementById('customLabel');
-  if (!input || !input.value.trim()) return;
+// Adicionar etiqueta personalizada com cor
+function addCustomLabelWithColor(taskId) {
+  const nameInput = document.getElementById(`customLabelName_${taskId}`);
+  const colorInput = document.getElementById(`customLabelColor_${taskId}`);
+
+  if (!nameInput || !nameInput.value.trim()) {
+    alert('Digite um nome para a etiqueta');
+    return;
+  }
 
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
 
+  const labelName = nameInput.value.trim();
+
   if (!t.labels) t.labels = [];
-  if (!t.labels.includes(input.value.trim())) {
-    t.labels.push(input.value.trim());
+  if (!t.labels.includes(labelName)) {
+    t.labels.push(labelName);
+
+    // Salvar cor da etiqueta personalizada
+    if (!t.labelColors) t.labelColors = {};
+    t.labelColors[labelName] = colorInput.value;
+
     save(STORAGE_KEYS.tasks, tasks);
-    input.value = '';
+    nameInput.value = '';
     openTaskDetail(taskId);
     showTaskLabelsEditor();
+  } else {
+    alert('Essa etiqueta já existe');
+  }
+}
+
+// Adicionar etiqueta (confirmação inline)
+function addLabel(taskId, label) {
+  const t = tasks.find(x => x.id === taskId);
+  if (!t) return;
+
+  if (!t.labels) t.labels = [];
+  if (!t.labels.includes(label)) {
+    t.labels.push(label);
+    save(STORAGE_KEYS.tasks, tasks);
+    // Não fecha o modal, deixa o usuário adicionar mais
   }
 }
 
@@ -6073,13 +6121,17 @@ function assignTaskMember(taskId, memberId) {
   openTaskDetail(taskId);
 }
 
-// Editar campo inline ao clicar
+// Editar campo inline ao clicar (sem sair do lugar)
 function editFieldInline(taskId, fieldName, currentValue) {
   const t = tasks.find(x => x.id === taskId);
   if (!t) return;
 
-  const fieldElement = document.getElementById(`taskTitle_${taskId}`);
+  const fieldElement = document.getElementById(`taskTitle_${taskId}`) || event.target;
   if (!fieldElement) return;
+
+  // Criar container para o input no mesmo lugar
+  const container = document.createElement('div');
+  container.style.cssText = 'position: relative; width: 100%;';
 
   // Criar input para edição
   const isLongText = fieldName === 'desc';
@@ -6096,6 +6148,7 @@ function editFieldInline(taskId, fieldName, currentValue) {
     font-size: ${fieldName === 'title' ? '1.1rem' : '0.95rem'};
     font-weight: ${fieldName === 'title' ? '600' : '400'};
     font-family: inherit;
+    box-sizing: border-box;
   `;
 
   if (isLongText) {
@@ -6103,25 +6156,48 @@ function editFieldInline(taskId, fieldName, currentValue) {
     inputElement.style.resize = 'vertical';
   }
 
+  // Criar botões de ação
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.cssText = 'display: flex; gap: 8px; margin-top: 8px;';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = '✓ Confirmar';
+  saveBtn.style.cssText = 'flex: 1; padding: 8px; background: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '✕ Cancelar';
+  cancelBtn.style.cssText = 'flex: 1; padding: 8px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font-weight: 600; cursor: pointer;';
+
+  buttonContainer.appendChild(saveBtn);
+  buttonContainer.appendChild(cancelBtn);
+
+  container.appendChild(inputElement);
+  container.appendChild(buttonContainer);
+
   // Substituir elemento
-  fieldElement.replaceWith(inputElement);
+  if (fieldElement.id) {
+    fieldElement.replaceWith(container);
+  }
+
   inputElement.focus();
   inputElement.select();
 
-  // Salvar ao clicar fora ou pressionar Enter
+  // Salvar ao clicar confirmar
   const saveChange = () => {
     const newValue = inputElement.value.trim();
 
     if (newValue && newValue !== currentValue) {
       t[fieldName] = newValue;
       save(STORAGE_KEYS.tasks, tasks);
-      addActivity(`${fieldName === 'title' ? 'Título' : 'Descrição'} alterado`);
+      addActivity(`${fieldName === 'title' ? 'Título' : fieldName === 'due' ? 'Data' : 'Campo'} alterado`);
     }
 
     openTaskDetail(taskId);
   };
 
-  inputElement.addEventListener('blur', saveChange);
+  saveBtn.addEventListener('click', saveChange);
+  cancelBtn.addEventListener('click', () => openTaskDetail(taskId));
+
   inputElement.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && fieldName === 'title') {
       e.preventDefault();
