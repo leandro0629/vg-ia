@@ -1619,7 +1619,6 @@
       <div class="page" id="page-missoes">
         <div class="missoes-tabs">
           <button class="missao-tab active" id="tab-quadro" onclick="switchMissionView('quadro')">▦ Quadro</button>
-          <button class="missao-tab" id="tab-atividades" onclick="switchMissionView('atividades')">🤝 At. Compartilhadas</button>
         </div>
         <!-- Quadro (Kanban) -->
         <div id="missoes-quadro">
@@ -1645,19 +1644,6 @@
             </select>
           </div>
           <div class="kanban-board" id="kanbanBoard"></div>
-        </div>
-        <!-- Atividades Compartilhadas -->
-        <div id="missoes-atividades" style="display:none">
-          <div class="ac-filter-bar">
-            <div class="filter-row" style="margin-bottom:0">
-              <button class="filter-btn active" onclick="filterAC('todas',this)">Todas</button>
-              <button class="filter-btn" onclick="filterAC('ativas',this)">Ativas</button>
-              <button class="filter-btn" onclick="filterAC('concluidas',this)">Concluídas</button>
-              <button class="filter-btn" onclick="filterAC('minhas',this)">Minhas</button>
-            </div>
-            <button class="btn btn-primary btn-sm" id="btnNovaAC" onclick="openModalNovaAC()">🤝 Nova Atividade Compartilhada</button>
-          </div>
-          <div class="ac-list" id="acList"></div>
         </div>
       </div>
 
