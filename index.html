@@ -3070,6 +3070,15 @@ if (!members.length || localStorage.getItem('lex_data_ver') !== DATA_VERSION) {
   save(STORAGE_KEYS.members, members);
   localStorage.setItem('lex_data_ver', DATA_VERSION);
 }
+if (!tasks.length) {
+  tasks = [
+    { id: 1, title: 'Revisar processo judicial #001', description: 'Análise completa do processo', status: 'em-andamento', priority: 'alta', responsible: 1, labels: [], dueDate: '2026-04-05', team: 1, created: new Date().toISOString() },
+    { id: 2, title: 'Preparar peça inicial', description: 'Redação da petição inicial', status: 'pendente', priority: 'critica', responsible: 2, labels: [], dueDate: '2026-04-03', team: 1, created: new Date().toISOString() },
+    { id: 3, title: 'Análise de jurisprudência', description: 'Pesquisar casos similares', status: 'concluido', priority: 'media', responsible: 3, labels: [], dueDate: '2026-04-02', team: 1, created: new Date().toISOString() },
+    { id: 4, title: 'Contato com cliente', description: 'Atualizar status do caso', status: 'em-andamento', priority: 'media', responsible: 5, labels: [], dueDate: '2026-04-04', team: 2, created: new Date().toISOString() },
+  ];
+  save(STORAGE_KEYS.tasks, tasks);
+}
 if (!prazos.length) {
   const today = new Date();
   const add = (n) => { const d = new Date(today); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; };
