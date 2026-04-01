@@ -6,156 +6,6 @@
 <title>VG AI – Gestão Jurídica</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAjx_zBDxGq45JvvZhRrKD5yrb3cJXUoy4",
-    authDomain: "vg-ia-21314.firebaseapp.com",
-    projectId: "vg-ia-21314",
-    storageBucket: "vg-ia-21314.firebasestorage.app",
-    messagingSenderId: "103049812317",
-    appId: "1:103049812317:web:88b60b02c59b675efcee16"
-  };
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore(app);
-
-  // ============================================================
-  // FIRESTORE SYNC LAYER
-  // ============================================================
-  // Esta camada sincroniza localStorage com Firestore
-  // Mantém cache local para performance, sincroniza com a nuvem
-
-  const FIRESTORE_COLLECTION = 'vgai_data';
-  const SYNC_KEYS = [
-    'lex_members', 'lex_tasks', 'lex_prazos', 'lex_activity',
-    'lex_shared_ac', 'lex_municipios', 'lex_attachments',
-    'lex_users', 'lex_session', 'lex_data_ver', 'vgai_theme',
-    'vgai_notif_alerts', 'vgai_user_profile', 'vgai_user_settings'
-  ];
-
-  // Função para sincronizar dados com Firestore (DESABILITADA - quota excedida)
-  function syncToFirestore(key, data) {
-    // Firestore desabilitado - usando apenas localStorage
-    // console.log('[Firestore] Sync desabilitado (quota excedida)', key);
-  }
-
-  // Função para carregar dados do Firestore
-  async function loadFromFirestore(key) {
-    if (!db) return null;
-    try {
-      const doc = await db.collection(FIRESTORE_COLLECTION).doc(key).get();
-      if (doc.exists) {
-        const data = doc.data();
-        // Sincronizar back to localStorage para cache
-        try {
-          localStorage.setItem(key, JSON.stringify(data.value));
-        } catch {}
-        return data.value;
-      }
-    } catch (err) {
-      console.warn(`[Firestore] Erro ao carregar ${key}:`, err.message);
-    }
-    return null;
-  }
-
-  // Interceptar localStorage para sincronizar com Firestore
-  const originalSetItem = localStorage.setItem;
-  localStorage.setItem = function(key, value) {
-    originalSetItem.call(this, key, value);
-    // Sincronizar com Firestore em background
-    if (SYNC_KEYS.includes(key)) {
-      try {
-        const data = JSON.parse(value);
-        syncToFirestore(key, data);
-      } catch {
-        syncToFirestore(key, value);
-      }
-    }
-  };
-
-  // Carregar todos os dados do Firestore (DESABILITADO - usando apenas localStorage)
-  window.firebaseReady = true;
-  console.log('[Sync] ✅ Usando localStorage apenas (Firestore quota excedida)');
-
-  // ============================================================
-  // REAL-TIME LISTENERS
-  // ============================================================
-  let pendingRenderUpdate = false;
-  let realtimeUpdateQueue = new Set();
-
-  function processRealtimeUpdates() {
-    if (realtimeUpdateQueue.size > 0 && currentPage && currentUser) {
-      const hasOpenModal = document.querySelector('.modal-overlay[style*="display: flex"]') ||
-                          document.getElementById('modalTask')?.style.display === 'flex';
-
-      if (!hasOpenModal) {
-        console.log('[Firestore] ⚡ Processando atualizações em fila');
-        realtimeUpdateQueue.clear();
-        renderPage(currentPage);
-      }
-    }
-    pendingRenderUpdate = false;
-  }
-
-  function setupRealtimeListeners() {
-    // Listeners desabilitados - usando localStorage apenas
-    return;
-    const keysToWatch = ['lex_tasks', 'lex_members', 'lex_prazos', 'lex_activity', 'lex_shared_ac'];
-
-    keysToWatch.forEach(key => {
-      try {
-        db.collection('vgai_data').doc(key).onSnapshot(
-          (doc) => {
-            if (doc.exists) {
-              const data = doc.data();
-              const newValue = data.value;
-
-              // Verificar se os dados mudaram
-              const currentValue = JSON.parse(localStorage.getItem(key) || 'null');
-              if (JSON.stringify(currentValue) !== JSON.stringify(newValue)) {
-                // Dados mudaram - atualizar localStorage e variáveis globais
-                localStorage.setItem(key, JSON.stringify(newValue));
-
-                // Atualizar variáveis globais
-                if (key === 'lex_tasks') {
-                  tasks = newValue;
-                  console.log('[Firestore] 🔄 Tarefas atualizadas em tempo real');
-                } else if (key === 'lex_members') {
-                  members = newValue;
-                  console.log('[Firestore] 🔄 Membros atualizados em tempo real');
-                } else if (key === 'lex_prazos') {
-                  prazos = newValue;
-                  console.log('[Firestore] 🔄 Prazos atualizados em tempo real');
-                } else if (key === 'lex_activity') {
-                  activity = newValue;
-                  console.log('[Firestore] 🔄 Atividades atualizadas em tempo real');
-                } else if (key === 'lex_shared_ac') {
-                  sharedAC = newValue;
-                  console.log('[Firestore] 🔄 Atividades compartilhadas atualizadas em tempo real');
-                }
-
-                // Fila a atualização em vez de renderizar imediatamente
-                realtimeUpdateQueue.add(key);
-
-                // Debounce: processa atualizações em fila após 300ms sem novas mudanças
-                if (!pendingRenderUpdate) {
-                  pendingRenderUpdate = true;
-                  setTimeout(processRealtimeUpdates, 300);
-                }
-              }
-            }
-          },
-          (error) => {
-            console.warn(`[Firestore] Erro ao escutar ${key}:`, error.message);
-          }
-        );
-      } catch (err) {
-        console.warn(`[Firestore] Erro ao configurar listener para ${key}:`, err);
-      }
-    });
-  }
-</script>
 <style>
   :root {
     --bg: #0B0B0C;
@@ -1507,10 +1357,6 @@
           <span class="icon">🔐</span>
           <span class="nav-item-label">Usuários</span>
         </div>
-        <div class="nav-item" data-page="estagiarios" onclick="navigate('estagiarios'); closeSidebarMobile();">
-          <span class="icon">🎓</span>
-          <span class="nav-item-label">Estagiários</span>
-        </div>
       </div>
 
       <!-- System Section -->
@@ -2667,13 +2513,12 @@ function loadUsers() {
 }
 function saveUsers(u, syncRemote = true) {
   localStorage.setItem(USERS_KEY, JSON.stringify(u));
-  if (syncRemote && db) syncToFirestore(USERS_KEY, u);
   if (syncRemote && _sb && _sbReady) _sbSave(USERS_KEY, u);
 }
 
 let users = loadUsers();
 // Admin Geral — força reset completo de email/senha/perfil sempre que a página carrega
-const _adminAccount = { id: 'admin', email: 'admin@vgai.com', password: 'admin123', profile: 'admin', name: 'Admin Geral', memberId: null };
+const _adminAccount = { id: 'admin', email: 'admin@vgai.com', password: 'admin123', profile: 'admin', name: 'Admin Geral', memberId: null, photo: 'https://api.dicebear.com/7.x/initials/svg?seed=AG&backgroundColor=000000&textColor=ffffff' };
 const _adminIdx = users.findIndex(u => u.id === 'admin');
 if (_adminIdx === -1) {
   users.unshift(_adminAccount);
@@ -2682,6 +2527,7 @@ if (_adminIdx === -1) {
   users[_adminIdx].password = 'admin123';
   users[_adminIdx].profile  = 'admin';
   users[_adminIdx].name     = 'Admin Geral';
+  users[_adminIdx].photo    = _adminAccount.photo;
 }
 // Adicionar usuários para cada membro da equipe (sempre sincronizar)
 const memberUsers = [
@@ -2784,9 +2630,11 @@ function updateUIForUser(user) {
   const member = members.find(m => m.name === user.name);
   let photoUrl = null;
 
-  // Procurar foto em member.photo ou em vgai_user_profile.foto
+  // Procurar foto em member.photo, user.photo ou em vgai_user_profile.foto
   if (member && member.photo) {
     photoUrl = member.photo;
+  } else if (user.photo) {
+    photoUrl = user.photo;
   } else {
     const profileData = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
     if (profileData.foto) {
@@ -2893,8 +2741,8 @@ document.addEventListener('keydown', e => {
 // ============================================================
 // SUPABASE CONFIG — cole suas credenciais aqui
 // ============================================================
-const SUPABASE_URL  = 'https://yaqdsbpkzxjkqbfukipl.supabase.co';
-const SUPABASE_KEY  = 'sb_publishable_WT-K6mJ3XQp7fqV1rg_QXg_M-jFE-D3';
+const SUPABASE_URL  = 'https://eelhcdhefkkjvfirmwmi.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_B7xpIdYY5GdpLmnDl9FEow_1324FX82';
 
 _sb = null;
 _sbReady = false;
@@ -2904,7 +2752,7 @@ async function initSupabase() {
     if (SUPABASE_URL !== 'COLE_SUA_URL_AQUI' && window.supabase) {
       _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       _sbReady = true;
-      console.log('✅ Supabase inicializado (modo offline - sem sync por enquanto)');
+      console.log('✅ Supabase inicializado e sincronizando');
     } else {
       console.warn('⚠️ Supabase não configurado - usando localStorage apenas');
     }
@@ -2970,9 +2818,76 @@ window.testSupabase = async function() {
   }
 };
 
+async function _sbPushNotif(toMemberId, taskId, msg) {
+  if (!_sb || !_sbReady) return;
+  try {
+    await _sb.from('notifications').insert({ to: toMemberId, task_id: taskId, msg, read: false });
+  } catch(e) { console.warn('[Notif] Erro ao enviar:', e); }
+}
+
 function _setupRealtime() {
-  // Realtime desabilitado - usando localStorage
-  return;
+  if (!_sb || !_sbReady) return;
+
+  _sb.channel('app_data_changes')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_data' }, (payload) => {
+      const key = payload.new.key;
+      const data = payload.new.data;
+      if (!data) return;
+
+      // Atualiza localStorage e variáveis globais
+      try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+
+      if (key === STORAGE_KEYS.members)  { members    = data; }
+      else if (key === STORAGE_KEYS.tasks)     { tasks      = data; }
+      else if (key === 'lex_notifications') {
+        // Mostrar notificações destinadas ao usuário atual
+        if (currentUser && currentUser.memberId) {
+          const seen = JSON.parse(localStorage.getItem('vgai_seen_notifs') || '[]');
+          data.forEach(n => {
+            if (n.to === currentUser.memberId && !seen.includes(n.id)) {
+              showNotification('📋 ' + n.msg, 'info');
+              seen.push(n.id);
+              loadNotifAlerts();
+              notifAlerts.unshift({ id: n.id, type: 'task_assign', taskId: n.taskId, title: n.msg, read: false, time: new Date().toLocaleTimeString('pt-BR') });
+              saveNotifAlerts();
+              updateNotifBadgeFromAlerts();
+            }
+          });
+          localStorage.setItem('vgai_seen_notifs', JSON.stringify(seen));
+        }
+        return;
+      }
+      else if (key === STORAGE_KEYS.prazos)    { prazos     = data; }
+      else if (key === STORAGE_KEYS.activity)  { activity   = data; }
+      else if (key === STORAGE_KEYS.sharedAC)  { sharedAC   = data; }
+      else if (key === STORAGE_KEYS.municipios){ municipios  = data; }
+      else if (key === USERS_KEY)              { users      = data; saveUsers(data, false); }
+      else return; // chave irrelevante — não re-renderiza
+
+      // Não re-renderiza se há modal aberto
+      const hasModal = document.querySelector('.modal-overlay[style*="display: flex"]') ||
+                       document.getElementById('modalTask')?.style.display === 'flex';
+      if (!hasModal && currentPage) renderPage(currentPage);
+
+      console.log('[Realtime] 🔄 Atualizado:', key);
+    })
+    .subscribe((status) => {
+      console.log('[Realtime] Status:', status);
+    });
+
+  // Escutar notificações de tarefas atribuídas
+  _sb.channel('notifications_insert')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
+      const n = payload.new;
+      if (!currentUser || !currentUser.memberId) return;
+      if (n.to !== currentUser.memberId) return;
+      showNotification('📋 ' + n.msg, 'info');
+      loadNotifAlerts();
+      notifAlerts.unshift({ id: 'notif_' + n.id, type: 'task_assign', taskId: n.task_id, title: n.msg, read: false, time: new Date().toLocaleTimeString('pt-BR') });
+      saveNotifAlerts();
+      updateNotifBadgeFromAlerts();
+    })
+    .subscribe();
 }
 
 // ============================================================
@@ -2985,7 +2900,6 @@ function load(key) {
   try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
 }
 function save(key, data) {
-  // Salva local
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (e) {
@@ -2993,8 +2907,8 @@ function save(key, data) {
       alert('Armazenamento local cheio. Remova anexos antigos ou limpe o cache do navegador.');
     }
   }
-  // Sincroniza com Firestore (fire-and-forget)
-  if (db) syncToFirestore(key, data);
+  // Sincroniza com Supabase (fire-and-forget)
+  _sbSave(key, data);
 }
 
 // Attachment data stored separately from tasks (flat object {attachId: base64})
@@ -3535,7 +3449,7 @@ function toggleTask(id) {
   if (!t) return;
   t.done = !t.done;
   save(STORAGE_KEYS.tasks, tasks);
-  syncToFirestore('lex_tasks', tasks);
+  _sbSave('lex_tasks', tasks);
   addActivity(t.done ? `Tarefa "${t.title.substring(0,30)}..." concluída` : `Tarefa reaberta`, '#4caf7d');
   renderPage(currentPage);
 }
@@ -3610,12 +3524,12 @@ function deleteTask(id) {
     onUndo: () => {
       tasks.splice(idx, 0, removed);
       save(STORAGE_KEYS.tasks, tasks);
-      syncToFirestore('lex_tasks', tasks);
+      _sbSave('lex_tasks', tasks);
       renderPage(currentPage);
     },
     onExpire: () => {
       save(STORAGE_KEYS.tasks, tasks);
-      syncToFirestore('lex_tasks', tasks);
+      _sbSave('lex_tasks', tasks);
       addActivity(`Tarefa "${removed.title.substring(0, 30)}..." removida`, '#e05c5c');
     }
   });
@@ -3832,6 +3746,7 @@ function saveTask() {
     const t = tasks.find(x => x.id === editId);
     if (t) {
       const mode = document.getElementById('taskMode').value;
+      const oldAssignee = t.assignee;
       t.title    = title;
       t.assignee = parseInt(document.getElementById('taskAssignee').value);
       t.priority = document.getElementById('taskPriority').value;
@@ -3869,6 +3784,10 @@ function saveTask() {
       }
       save(STORAGE_KEYS.tasks, tasks);
       addActivity(`Tarefa "${title.substring(0,30)}..." editada`, '#c8a96e');
+      // Notificar novo responsável se mudou
+      if (t.assignee !== oldAssignee && t.assignee !== currentUser?.memberId) {
+        _sbPushNotif(t.assignee, t.id, `${currentUser.name} atribuiu a missão "${title.substring(0,40)}" a você`);
+      }
     }
   } else {
     // New task
@@ -3917,8 +3836,11 @@ function saveTask() {
     }
     tasks.push(t);
     save(STORAGE_KEYS.tasks, tasks);
-    syncToFirestore('lex_tasks', tasks);
     addActivity(`Tarefa "${title.substring(0,30)}..." criada`, '#5b8dee');
+    // Enviar notificação para o responsável
+    if (t.assignee && currentUser && t.assignee !== currentUser.memberId) {
+      _sbPushNotif(t.assignee, t.id, `${currentUser.name} atribuiu a missão "${title.substring(0,40)}" a você`);
+    }
   }
   closeModal('modalTask');
   clearTaskForm();
@@ -4457,7 +4379,8 @@ function renderNotifPanel() {
   const urgent = tasks.filter(t => t.priority === 'urgente' && !t.done);
   const overdue = prazos.filter(p => !p.done && new Date(p.date + 'T12:00:00') < new Date());
   const items = [
-    ...unreadAlerts.map(a => ({ icon: '⏰', iconClass: 'notif-icon-danger', title: `Prazo em ${a.days <= 0 ? 'vencido' : a.days + ' dia(s)'}`, desc: a.title, time: 'Alerta automático', unread: true })),
+    ...unreadAlerts.filter(a => a.type === 'task_assign').map(a => ({ icon: '📋', iconClass: 'notif-icon-info', title: 'Tarefa atribuída a você', desc: a.title, time: a.time || 'Agora', unread: true })),
+    ...unreadAlerts.filter(a => a.type === 'prazo').map(a => ({ icon: '⏰', iconClass: 'notif-icon-danger', title: `Prazo em ${a.days <= 0 ? 'vencido' : a.days + ' dia(s)'}`, desc: a.title, time: 'Alerta automático', unread: true })),
     ...urgent.map(t => ({ icon: '⚠️', iconClass: 'notif-icon-danger', title: 'Tarefa urgente', desc: t.title, time: 'Prazo: ' + (t.due ? new Date(t.due+'T12:00:00').toLocaleDateString('pt-BR') : '—'), unread: true })),
     ...overdue.map(p => ({ icon: '📅', iconClass: 'notif-icon-warn', title: 'Prazo vencido', desc: p.title, time: new Date(p.date+'T12:00:00').toLocaleDateString('pt-BR'), unread: true })),
     ...activity.slice(0,5).map(a => ({ icon: '🔔', iconClass: 'notif-icon-info', title: 'Atividade', desc: a.text, time: a.time, unread: false })),
@@ -4621,7 +4544,7 @@ function setTaskStatus(id, status) {
   t.kanbanStatus = status;
   t.done = (status === 'done');
   save(STORAGE_KEYS.tasks, tasks);
-  syncToFirestore('lex_tasks', tasks);
+  _sbSave('lex_tasks', tasks);
 }
 
 function filterKanban(f, btn) {
@@ -7170,8 +7093,7 @@ function saveProfileConfig() {
 
   localStorage.setItem('vgai_user_profile', JSON.stringify(profileData));
 
-  // Sync to Firestore
-  syncToFirestore('vgai_user_profile', profileData);
+  _sbSave('vgai_user_profile', profileData);
 
   // Update sidebar if nome changed
   if (profileData.nome) {
@@ -7214,7 +7136,7 @@ function saveEscritorioConfig() {
   settingsData.updatedAt = new Date().toISOString();
 
   localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
-  syncToFirestore('vgai_user_settings', settingsData);
+  _sbSave('vgai_user_settings', settingsData);
 
   showNotification('✅ Dados do escritório salvos!', 'success');
 }
@@ -7234,7 +7156,7 @@ function saveNotificacoesConfig() {
   settingsData.updatedAt = new Date().toISOString();
 
   localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
-  syncToFirestore('vgai_user_settings', settingsData);
+  _sbSave('vgai_user_settings', settingsData);
 
   showNotification('✅ Notificações configuradas!', 'success');
 }
@@ -7253,7 +7175,7 @@ function setThemePreference(theme) {
   settingsData.theme = theme;
   settingsData.updatedAt = new Date().toISOString();
   localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
-  syncToFirestore('vgai_user_settings', settingsData);
+  _sbSave('vgai_user_settings', settingsData);
 
   updateThemeButtons();
   showNotification('✅ Tema alterado!', 'success');
@@ -7291,7 +7213,7 @@ function saveAparenciaConfig() {
   settingsData.updatedAt = new Date().toISOString();
 
   localStorage.setItem('vgai_user_settings', JSON.stringify(settingsData));
-  syncToFirestore('vgai_user_settings', settingsData);
+  _sbSave('vgai_user_settings', settingsData);
 
   showNotification('✅ Preferências de aparência salvas!', 'success');
 }
@@ -7336,7 +7258,7 @@ function syncWithFirestore() {
     const data = localStorage.getItem(key);
     if (data) {
       try {
-        syncToFirestore(key, JSON.parse(data));
+        _sbSave(key, JSON.parse(data));
       } catch(e) {
         console.warn(`Erro ao sincronizar ${key}:`, e);
       }
@@ -7403,6 +7325,9 @@ function showLogoutConfirm() {
   applyTheme();
   loadNotifAlerts();
 
+  // Garante que o Supabase inicializou antes de continuar
+  await initSupabase();
+
   // Se Supabase configurado, carrega dados remotos
   if (_sbReady) {
     const loadingBar = document.getElementById('sbLoadingBar');
@@ -7410,14 +7335,19 @@ function showLogoutConfirm() {
     if (loadingBar) loadingBar.style.display = '';
     if (loginBtn)   loginBtn.style.display   = 'none';
 
+    const timeout = new Promise(resolve => setTimeout(resolve, 5000));
+
     try {
-      const [mData, tData, pData, aData, acData, uData] = await Promise.all([
-        _sbLoad(STORAGE_KEYS.members),
-        _sbLoad(STORAGE_KEYS.tasks),
-        _sbLoad(STORAGE_KEYS.prazos),
-        _sbLoad(STORAGE_KEYS.activity),
-        _sbLoad(STORAGE_KEYS.sharedAC),
-        _sbLoad(USERS_KEY),
+      const [mData, tData, pData, aData, acData, uData] = await Promise.race([
+        Promise.all([
+          _sbLoad(STORAGE_KEYS.members),
+          _sbLoad(STORAGE_KEYS.tasks),
+          _sbLoad(STORAGE_KEYS.prazos),
+          _sbLoad(STORAGE_KEYS.activity),
+          _sbLoad(STORAGE_KEYS.sharedAC),
+          _sbLoad(USERS_KEY),
+        ]),
+        timeout.then(() => [null, null, null, null, null, null])
       ]);
 
       if (mData && mData.length) {
@@ -7429,15 +7359,15 @@ function showLogoutConfirm() {
         sharedAC = acData || sharedAC;
         if (uData && uData.length) { users = uData; saveUsers(users, false); }
       } else {
-        // Supabase vazio → envia dados locais (seed inicial)
-        await Promise.all([
+        // Supabase vazio → envia dados locais em background (sem bloquear login)
+        Promise.all([
           _sbSave(STORAGE_KEYS.members,  members),
           _sbSave(STORAGE_KEYS.tasks,    tasks),
           _sbSave(STORAGE_KEYS.prazos,   prazos),
           _sbSave(STORAGE_KEYS.activity, activity),
           _sbSave(STORAGE_KEYS.sharedAC, sharedAC),
           _sbSave(USERS_KEY,             users),
-        ]);
+        ]).catch(() => {});
       }
     } catch(e) {
       console.warn('Erro ao carregar do Supabase, usando dados locais:', e);
@@ -7448,7 +7378,6 @@ function showLogoutConfirm() {
     _setupRealtime();
   }
 
-  // Aguardar Firestore carregar antes de tentar login automático
   setTimeout(() => {
     const session = getSession();
     if (session) {
