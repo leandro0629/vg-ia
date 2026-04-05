@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VG AI – Gestão Jurídica</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<title>Kauzas – Gestão Jurídica</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Sora:wght@700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
   :root {
@@ -16,6 +16,9 @@
     --text-secondary: #A1A1AA;
     --primary: #F59E0B;
     --primary-hover: #D97706;
+    --logo-gold: #FBBF24;
+    --logo-gold-light: #FCD34D;
+    --logo-gold-dark: #D97706;
     --radius: 12px;
     --radius-sm: 8px;
     --font-mono: JetBrains Mono, monospace;
@@ -614,89 +617,166 @@
     0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
   }
+  /* ===== KAUZAS LOGIN – LUXURY LEGAL ===== */
   .login-screen {
     position: fixed; inset: 0; z-index: 500;
-    background: linear-gradient(-45deg, #0f3460, #16213e, #1a1a2e, #16213e, #0f3460);
-    background-size: 400% 400%;
-    animation: gradientShift 8s ease infinite;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
+    display: flex;
+    background: #07070a;
     overflow: hidden;
   }
-  .login-screen::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse 800px 600px at 20% 30%, rgba(224,154,58,0.12), transparent),
-                radial-gradient(ellipse 600px 800px at 80% 70%, rgba(91,141,238,0.1), transparent);
-    pointer-events: none;
+  .login-screen::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 700px 700px at 10% 50%, rgba(200,169,110,0.055), transparent),
+      radial-gradient(ellipse 500px 400px at 90% 10%, rgba(200,169,110,0.03), transparent);
+    pointer-events: none; z-index: 0;
   }
   .login-screen.hidden { display: none; }
-  .login-bg {
-    display: none;
+  .login-bg { display: none; }
+
+  /* LEFT — BRAND PANEL */
+  .login-brand {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-right: 1px solid rgba(200,169,110,0.12);
+    background: linear-gradient(155deg, #0e0d0b 0%, #07070a 55%, #090b0e 100%);
+    padding: 64px;
+    overflow: hidden;
+    z-index: 1;
   }
-  .login-bg::before {
-    display: none;
+  .login-brand::before {
+    content: 'K';
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 55vw;
+    font-weight: 300;
+    color: rgba(200,169,110,0.028);
+    line-height: 0.85;
+    top: 50%; left: 42%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    letter-spacing: -0.04em;
   }
-  .login-bg::after {
-    display: none;
-  }
-  .login-box {
+  .login-brand-inner {
     position: relative; z-index: 2;
-    background: rgba(20, 25, 40, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    width: 100%;
-    max-width: 400px;
-    padding: 40px;
-    pointer-events: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-    animation: loginIn 0.4s ease;
+    display: flex; flex-direction: column; align-items: flex-start;
+    animation: brandReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
   }
-  @keyframes loginIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes brandReveal {
+    from { opacity: 0; transform: translateY(32px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .login-logo {
-    text-align: center;
+  .login-brand-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 500;
+    color: #c8a96e;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: brandReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+  }
+  .login-brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.2rem, 5vw, 5.5rem);
+    font-weight: 300;
+    color: #f2ede4;
+    letter-spacing: 0.28em;
+    line-height: 1;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: brandReveal 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  }
+  .login-brand-line {
+    width: 56px; height: 1px;
+    background: linear-gradient(90deg, #fbbf24, rgba(251,191,36,0));
     margin-bottom: 24px;
+    opacity: 0;
+    animation: lineReveal 1s ease 0.5s forwards;
   }
-  .login-logo-icon {
-    font-size: 2.2rem;
-    margin-bottom: 8px;
+  @keyframes lineReveal {
+    from { opacity: 0; width: 0; }
+    to   { opacity: 1; width: 56px; }
   }
-  .login-logo-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #ffffff;
+  .login-brand-tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 300;
+    color: rgba(242,237,228,0.35);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: brandReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.35s forwards;
   }
-  .login-logo-subtitle {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.6);
-    margin-top: 2px;
+  .login-brand-footer {
+    position: absolute; bottom: 0; left: 64px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    color: rgba(242,237,228,0.15);
+    letter-spacing: 0.06em;
+    padding-bottom: 36px;
   }
-  .login-logo-sub { font-size: 0.72rem; color: var(--text-secondary); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 4px; }
-  .login-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; }
-  .login-sub { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 28px; }
+
+  /* RIGHT — FORM PANEL */
+  .login-box {
+    width: 420px; min-width: 380px;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 72px 56px;
+    background: #0a0908;
+    position: relative; z-index: 1;
+    animation: formReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+    opacity: 0;
+  }
+  @keyframes formReveal {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .login-form-header { margin-bottom: 44px; }
+  .login-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.1rem; font-weight: 400;
+    color: #f2ede4; margin-bottom: 10px;
+    line-height: 1.15; text-align: left;
+    letter-spacing: 0.01em;
+  }
+  .login-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem; font-weight: 300;
+    color: rgba(242,237,228,0.38);
+    text-align: left; margin-bottom: 0;
+    letter-spacing: 0.04em;
+  }
   .login-error {
-    background: rgba(224,92,92,0.1); border: 1px solid rgba(224,92,92,0.3);
-    border-radius: 8px; padding: 10px 14px; font-size: 0.83rem; color: var(--danger);
-    margin-bottom: 16px; display: none;
+    display: none;
+    background: rgba(200,70,70,0.08);
+    border: 1px solid rgba(200,70,70,0.2);
+    color: #e09090;
+    padding: 10px 14px; border-radius: 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem; margin-bottom: 20px;
   }
   .login-error.show { display: block; }
-  .login-demo {
-    margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);
+  .login-demo-hint {
+    margin-top: 32px; padding-top: 24px;
+    border-top: 1px solid rgba(200,169,110,0.1);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    color: rgba(242,237,228,0.2);
+    letter-spacing: 0.04em;
   }
-  .login-demo-title { font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
-  .demo-accounts { display: flex; flex-direction: column; gap: 6px; }
-  .demo-acc {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 12px; background: var(--bg-secondary); border-radius: 8px;
-    cursor: pointer; border: 1px solid transparent; transition: all 0.15s;
-    font-size: 0.8rem;
+  .login-demo-hint strong { color: rgba(200,169,110,0.45); font-weight: 400; }
+
+  /* Responsive */
+  @media (max-width: 800px) {
+    .login-brand { display: none; }
+    .login-box { width: 100%; min-width: unset; padding: 48px 32px; }
   }
-  .demo-acc:hover { border-color: var(--primary); background: rgba(245, 158, 11, 0.08); }
-  .demo-acc-name { font-weight: 500; }
-  .demo-acc-role { font-size: 0.7rem; color: var(--text-secondary); }
-  .demo-acc-arrow { color: var(--text-secondary); font-size: 0.7rem; }
 
   /* ACCESS DENIED */
   .access-denied {
@@ -936,31 +1016,87 @@
     outline: 2px dashed rgba(200,169,110,0.3);
   }
   .kanban-card {
-    background: var(--bg-secondary); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 14px 12px;
     cursor: grab; transition: transform .15s, box-shadow .15s, border-color .15s;
     user-select: none; position: relative;
   }
   .kanban-card:active { cursor: grabbing; }
-  .kanban-card.dragging { opacity: .4; transform: scale(.97); }
-  .kanban-card:hover { border-color: rgba(200,169,110,.4); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
-  .kanban-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-  .kanban-card-title { font-size: .84rem; font-weight: 500; line-height: 1.4; flex: 1; }
-  .kanban-card-priority {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+  .kanban-card.dragging { opacity: .35; transform: scale(.96) rotate(1deg); }
+  .kanban-card:hover {
+    border-color: rgba(200,169,110,.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,0,0,.35), 0 0 0 1px rgba(200,169,110,.08);
   }
-  .kanban-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-  .kanban-card-assignee { display: flex; align-items: center; gap: 6px; }
+  .kanban-card:hover .kc-actions { opacity: 1; transform: translateX(0); }
+
+  /* Barra de prioridade lateral */
+  .kanban-card-prio-bar {
+    position: absolute; left: 0; top: 10%; bottom: 10%;
+    width: 3px; border-radius: 0 3px 3px 0;
+    transition: height 0.2s;
+  }
+
+  .kanban-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .kanban-card-title {
+    font-family: 'Bodoni Moda', 'Playfair Display', Georgia, serif;
+    font-size: .97rem; font-weight: 400; line-height: 1.5; flex: 1;
+    color: var(--text-primary); letter-spacing: 0.015em;
+  }
+  .kanban-card-priority { display: none; } /* substituído pela barra lateral */
+
+  /* Meta row */
+  .kc-meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    margin-bottom: 10px;
+  }
+  .kc-meta-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: .62rem; font-weight: 500;
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 3px; padding: 2px 7px;
+    letter-spacing: 0.04em;
+  }
+  .kc-meta-chip.overdue { color: #e05c5c; border-color: rgba(224,92,92,0.3); background: rgba(224,92,92,0.06); }
+  .kc-meta-chip.soon    { color: #f59e0b; border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
+
+  /* Footer */
+  .kanban-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+  .kanban-card-assignee { display: flex; align-items: center; gap: 7px; }
   .kanban-card-avatar {
-    width: 24px; height: 24px; border-radius: 50%;
+    width: 22px; height: 22px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: .58rem; font-weight: 700; flex-shrink: 0;
+    font-size: .55rem; font-weight: 700; flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.1);
   }
-  .kanban-card-name { font-size: .72rem; color: var(--text-secondary); }
+  .kanban-card-name { font-size: .7rem; color: var(--text-secondary); font-weight: 400; }
   .kanban-card-due { font-size: .7rem; color: var(--text-secondary); }
   .kanban-card-due.overdue { color: var(--danger); }
   .kanban-card-due.soon { color: var(--warn); }
-  .kanban-card-process { font-size: .68rem; color: var(--text-secondary); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kanban-card-process {
+    font-size: .65rem; color: var(--text-secondary);
+    margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    opacity: 0.7;
+  }
+
+  /* Ações — aparecem no hover */
+  .kc-actions {
+    display: flex; align-items: center; gap: 2px;
+    opacity: 0; transform: translateX(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .kc-action-btn {
+    width: 24px; height: 24px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; background: transparent;
+    cursor: pointer; font-size: .72rem;
+    color: var(--text-secondary);
+    transition: background 0.15s, color 0.15s;
+  }
+  .kc-action-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+  .kc-action-btn.del:hover { background: rgba(224,92,92,0.12); color: #e05c5c; }
   .kanban-add-card {
     width: 100%; background: none; border: 1px dashed var(--border);
     border-radius: 8px; padding: 8px; color: var(--text-secondary);
@@ -1180,100 +1316,123 @@
   .cal-leg-tarefa   { background: rgba(91,141,238,.12); color:#5b8dee; } .cal-leg-tarefa::before   { background:#5b8dee; }
   .cal-leg-concluido{ background: rgba(76,175,125,.1);  color:#4caf7d; } .cal-leg-concluido::before{ background:#4caf7d; }
 
-  /* LOGIN PREMIUM STYLES */
-  .login-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 6px;
-    text-align: center;
+  /* ===== KAUZAS LOGIN – INPUT & BUTTON OVERRIDES ===== */
+  .login-box .form-group { margin-bottom: 28px; }
+  .login-box .form-label {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.65rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.2em !important;
+    text-transform: uppercase !important;
+    color: rgba(200,169,110,0.6) !important;
+    margin-bottom: 10px !important;
+    display: block !important;
   }
-  .login-sub {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  .login-error {
-    display: none;
-    background: rgba(224, 92, 92, 0.15);
-    border: 1px solid rgba(224, 92, 92, 0.3);
-    color: #ff9999;
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 0.8rem;
-    margin-bottom: 16px;
-    text-align: center;
-  }
-  .login-error.show { display: block; }
-
-  #loginBtn {
-    width: 100% !important;
-    padding: 11px 20px !important;
-    margin-top: 16px !important;
-    background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%) !important;
-    color: #0f3460 !important;
-    font-weight: 700 !important;
-    border: none !important;
-    border-radius: 10px !important;
-    cursor: pointer !important;
-    transition: all 0.25s ease !important;
-    font-size: 0.92rem !important;
-    letter-spacing: 0.3px !important;
-    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2) !important;
-  }
-  #loginBtn:hover:not(:disabled) {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4) !important;
-    background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%) !important;
-  }
-  #loginBtn:active:not(:disabled) {
-    transform: translateY(0) !important;
-  }
-  #loginBtn:disabled {
-    opacity: 0.6 !important;
-    cursor: not-allowed !important;
-  }
-
-  /* Aprimoramento dos inputs de login */
   .login-box .form-input {
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+    font-family: 'DM Sans', sans-serif !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(200,169,110,0.2) !important;
+    border-radius: 0 !important;
+    color: #f2ede4 !important;
+    padding: 10px 0 12px !important;
+    font-size: 0.92rem !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.04em !important;
+    transition: border-color 0.3s ease !important;
+    outline: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+  }
+  .login-box .form-input::placeholder {
+    color: rgba(242,237,228,0.18) !important;
+    font-weight: 300 !important;
   }
   .login-box .form-input:focus {
-    background: rgba(255, 255, 255, 0.12) !important;
-    border-color: rgba(255, 255, 255, 0.35) !important;
-    box-shadow: 0 0 0 4px rgba(91, 141, 238, 0.15) !important;
+    border-bottom-color: #c8a96e !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
   .login-box .form-input:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
+    border-bottom-color: rgba(200,169,110,0.4) !important;
+    background: transparent !important;
   }
+  #loginBtn {
+    width: 100% !important;
+    padding: 15px 20px !important;
+    margin-top: 8px !important;
+    background: transparent !important;
+    color: #c8a96e !important;
+    border: 1px solid rgba(200,169,110,0.45) !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 0.72rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.28em !important;
+    text-transform: uppercase !important;
+    transition: all 0.35s ease !important;
+    position: relative !important; overflow: hidden !important;
+  }
+  #loginBtn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(200,169,110,0.08);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.35s ease;
+  }
+  #loginBtn:hover:not(:disabled)::before { transform: scaleX(1); }
+  #loginBtn:hover:not(:disabled) {
+    border-color: #c8a96e !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  #loginBtn:active:not(:disabled) { opacity: 0.8 !important; }
+  #loginBtn:disabled { opacity: 0.3 !important; cursor: not-allowed !important; }
 
   #sbLoadingBar {
     display: none;
-    text-align: center;
-    padding: 10px 0;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 16px;
+    text-align: left;
+    padding: 8px 0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.76rem;
+    color: rgba(200,169,110,0.6);
+    margin-bottom: 0;
     width: 100%;
   }
-  #sbLoadingBar.show {
-    display: block;
-  }
+  #sbLoadingBar.show { display: block; }
 </style>
 </head>
 <body>
 <!-- LOGIN SCREEN -->
 <div class="login-screen" id="loginScreen">
-  <div class="login-bg">
-    <div class="glow-spot"></div>
-    <div class="glow-spot"></div>
+
+  <!-- PAINEL ESQUERDO — MARCA -->
+  <div class="login-brand">
+    <div class="login-brand-inner">
+      <div class="login-brand-eyebrow">Gestão Jurídica</div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+        <!-- Icon Bars Medium (Bars Solid Medium) -->
+        <div style="display: flex; gap: 12px; align-items: center; height: auto;">
+          <span style="width: 12px; height: 80px; background: #fbbf24; border-radius: 3px;"></span>
+          <span style="width: 12px; height: 80px; background: #fbbf24; border-radius: 3px;"></span>
+          <span style="width: 12px; height: 80px; background: #fbbf24; border-radius: 3px;"></span>
+        </div>
+        <!-- Text -->
+        <div class="login-brand-name" style="font-family: 'Sora', sans-serif; font-weight: 700; color: #fbbf24; letter-spacing: -0.5px; font-size: clamp(2.5rem, 4vw, 4rem); margin: 0;">Kausas</div>
+      </div>
+      <div class="login-brand-line"></div>
+      <div class="login-brand-tagline">Organização. Controle. Resultados.</div>
+    </div>
+    <div class="login-brand-footer">© 2026 Kauzas · Todos os direitos reservados</div>
   </div>
+
+  <!-- PAINEL DIREITO — FORMULÁRIO -->
   <div class="login-box">
-    <div class="login-title">Bem-vindo de volta</div>
-    <div class="login-sub">Entre com seu e-mail e senha para continuar</div>
+    <div class="login-form-header">
+      <div class="login-title">Bem-vindo de volta</div>
+      <div class="login-sub">Acesse sua conta para continuar</div>
+    </div>
     <div class="login-error" id="loginError">E-mail ou senha incorretos.</div>
     <div class="form-group">
       <label class="form-label">E-mail</label>
@@ -1281,20 +1440,21 @@
     </div>
     <div class="form-group">
       <label class="form-label">Senha</label>
-      <input class="form-input" id="loginPass" type="password" placeholder="Sua senha" autocomplete="off">
+      <input class="form-input" id="loginPass" type="password" placeholder="••••••••" autocomplete="off">
     </div>
     <div id="sbLoadingBar">
-      <div style="display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:rgba(255,255,255,0.8);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></div>
+      <div style="display:inline-block;width:14px;height:14px;border:1.5px solid rgba(200,169,110,0.25);border-top-color:#c8a96e;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px"></div>
       <span>Conectando...</span>
     </div>
     <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-    <button type="button" class="btn btn-primary" id="loginBtn" onclick="doLogin()" style="pointer-events: auto;">
+    <button type="button" id="loginBtn" onclick="doLogin()">
       <span id="loginBtnText">Entrar</span>
     </button>
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);text-align:center">
-      <div style="font-size:0.75rem;color:rgba(255,255,255,0.5)">Demo: <strong style="color:rgba(255,255,255,0.8)">admin@vgai.com</strong> / <strong style="color:rgba(255,255,255,0.8)">admin123</strong></div>
+    <div class="login-demo-hint">
+      Demo: <strong>admin@vgai.com</strong> / <strong>admin123</strong>
     </div>
   </div>
+
 </div>
 
 <div class="app">
@@ -1308,7 +1468,16 @@
     <div class="logo">
       <div class="logo-content">
         <div class="logo-text">
-          <div class="logo-title" style="font-size: 1.1rem; font-weight: 700;">VanGuarda Gestão</div>
+          <div style="display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0;">
+            <!-- Icon Bars Medium (Bars Solid Medium) -->
+            <div style="display: flex; gap: 4px; flex-shrink: 0; align-items: center;">
+              <span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"></span>
+              <span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"></span>
+              <span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"></span>
+            </div>
+            <!-- Text -->
+            <div class="logo-title" style="font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 700; color: #fbbf24; letter-spacing: -0.5px; white-space: nowrap;">Kausas</div>
+          </div>
         </div>
       </div>
       <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Collapse sidebar">‹</button>
@@ -2825,6 +2994,75 @@ async function _sbPushNotif(toMemberId, taskId, msg) {
   } catch(e) { console.warn('[Notif] Erro ao enviar:', e); }
 }
 
+// ============================================================
+// 📧 NOTIFICAÇÕES DE EMAIL - JUS IA
+// ============================================================
+const _EMAIL_WEBHOOK = 'https://leandro0629.app.n8n.cloud/webhook/email-notificacao-nova-tarefa';
+const _EMAIL_DESTINO = 'leandrosmg0629@gmail.com';
+
+async function _enviarEmailMissao(task, tipo) {
+  if (!task) return;
+  const assigneeId = parseInt(task.assignee);
+  const membro = members.find(m => parseInt(m.id) === assigneeId);
+  const statusLabel = {
+    'todo': 'A Fazer', 'in_progress': 'Em Andamento', 'review': 'Em Revisão',
+    'done': 'Concluída', 'ativa': 'Ativa', 'pausada': 'Pausada'
+  };
+  const prioLabel = { 'low': 'Baixa', 'normal': 'Normal', 'high': 'Alta', 'critical': 'Crítica' };
+  const tipoLabel = {
+    'criada': '📌 Nova Missão Criada',
+    'status_mudou': '🔄 Status Atualizado',
+    'prazo_3_dias': '⏰ Vence em 3 Dias',
+    'prazo_2_dias': '⏰ Vence em 2 Dias',
+    'prazo_1_dia': '🚨 Vence Amanhã!'
+  };
+  const payload = {
+    tipo_notificacao: tipo,
+    tipo_label: tipoLabel[tipo] || tipo,
+    destinatario_email: (membro && membro.email) ? membro.email : _EMAIL_DESTINO,
+    titulo: task.title || '(sem título)',
+    descricao: task.desc || task.process || '—',
+    responsavel: membro ? membro.name : 'Não atribuído',
+    data_vencimento: task.due ? new Date(task.due).toLocaleDateString('pt-BR') : 'Sem prazo',
+    prioridade: prioLabel[task.priority] || task.priority || 'Normal',
+    status: statusLabel[task.kanbanStatus] || task.kanbanStatus || (task.done ? 'Concluída' : 'Pendente'),
+    link_tarefa: 'https://vg-ia.vercel.app/'
+  };
+  console.log('[Email] Enviando:', payload);
+  try {
+    await fetch(_EMAIL_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    console.log('[Email] ✅ Notificação enviada:', tipo);
+  } catch(e) {
+    console.warn('[Email] ❌ Erro ao enviar notificação:', e.message);
+  }
+}
+
+// Verificar prazos diariamente (roda ao abrir o app)
+async function _verificarPrazosEmail() {
+  if (!tasks || !tasks.length) return;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  for (const t of tasks) {
+    if (!t.due || t.done || t.kanbanStatus === 'done') continue;
+    const prazo = new Date(t.due); prazo.setHours(0,0,0,0);
+    const dias = Math.round((prazo - hoje) / 86400000);
+    if (dias === 3) await _enviarEmailMissao(t, 'prazo_3_dias');
+    else if (dias === 2) await _enviarEmailMissao(t, 'prazo_2_dias');
+    else if (dias === 1) await _enviarEmailMissao(t, 'prazo_1_dia');
+  }
+}
+// Roda ao carregar o app (uma vez por dia via localStorage)
+(function() {
+  const hoje = new Date().toDateString();
+  const ultima = localStorage.getItem('_ultima_verificacao_prazo');
+  if (ultima !== hoje) {
+    setTimeout(() => { _verificarPrazosEmail(); localStorage.setItem('_ultima_verificacao_prazo', hoje); }, 3000);
+  }
+})();
+
 function _setupRealtime() {
   if (!_sb || !_sbReady) return;
 
@@ -3393,7 +3631,7 @@ function taskItemHTML(t, compact) {
   const sharedBadge = isShared ? `<span class="badge" style="background:rgba(74,175,125,.2);color:#4caf7d">🤝 ${participantCount} participante${participantCount !== 1 ? 's' : ''}</span>` : '';
 
   // Labels/Etiquetas
-  const labelColors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff', ...(t.customLabels || {}) };
+  const labelColors = { 'Prazo': '#e05c5c', 'Audiência': '#ff6b6b', 'Petição': '#4caf7d', 'Contrato': '#5b8dee', 'Recurso': '#9c27b0', 'Consultoria': '#ffa94d', 'Diligência': '#e09a3a', 'Intimação': '#74b9ff', ...(t.customLabels || {}) };
   const labelsBadge = t.labels && t.labels.length > 0 ? t.labels.map(l => `<span class="badge" style="background: ${labelColors[l] || '#5b8dee'}; color: white; font-size: 0.7rem; padding: 2px 6px;">${l}</span>`).join('') : '';
 
   return `<div class="task-item">
@@ -3841,6 +4079,8 @@ function saveTask() {
     if (t.assignee && currentUser && t.assignee !== currentUser.memberId) {
       _sbPushNotif(t.assignee, t.id, `${currentUser.name} atribuiu a missão "${title.substring(0,40)}" a você`);
     }
+    // 📧 Email notificação - missão criada
+    _enviarEmailMissao(t, 'criada');
   }
   closeModal('modalTask');
   clearTaskForm();
@@ -4541,10 +4781,13 @@ function getTaskStatus(t) {
 function setTaskStatus(id, status) {
   const t = tasks.find(t => t.id === id);
   if (!t) return;
+  const statusAnterior = t.kanbanStatus;
   t.kanbanStatus = status;
   t.done = (status === 'done');
   save(STORAGE_KEYS.tasks, tasks);
   _sbSave('lex_tasks', tasks);
+  // 📧 Email notificação - status mudou
+  if (statusAnterior !== status) _enviarEmailMissao(t, 'status_mudou');
 }
 
 function filterKanban(f, btn) {
@@ -4659,34 +4902,50 @@ function kanCardHTML(t) {
   const dueText = days === null ? '' : days < 0 ? 'Vencida' : days === 0 ? 'Hoje' : days === 1 ? 'Amanhã' : due.toLocaleDateString('pt-BR');
   const attachCount = (t.attachments || []).length;
   const cl = t.checklist || [];
-  const clText = cl.length ? `<span class="kan-history-badge">✓ ${cl.filter(c=>c.done).length}/${cl.length}</span>` : '';
-  const hist = t.kanbanHistory || [];
-  const histText = hist.length ? `<span class="kan-history-badge">📋 ${hist.length} mov.</span>` : '';
-  const tipoBadge = t.tipo ? `<div style="margin-bottom:4px"><span class="tipo-badge">${tipoLabel(t.tipo)}</span></div>` : '';
+  const clDone = cl.filter(c => c.done).length;
+  const prioColor = PRIO_COLOR[t.priority] || '#6b7190';
 
   // Labels/Etiquetas
-  const labelColors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff', ...(t.customLabels || {}) };
-  const labelsHTML = t.labels && t.labels.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${t.labels.map(l => `<span style="padding:2px 6px;background:${labelColors[l] || '#5b8dee'};color:white;border-radius:3px;font-size:0.65rem;font-weight:600">${l}</span>`).join('')}</div>` : '';
+  const labelColors = { 'Prazo': '#e05c5c', 'Audiência': '#ff6b6b', 'Petição': '#4caf7d', 'Contrato': '#5b8dee', 'Recurso': '#9c27b0', 'Consultoria': '#ffa94d', 'Diligência': '#e09a3a', 'Intimação': '#74b9ff', ...(t.customLabels || {}) };
+  const labelsHTML = t.labels && t.labels.length > 0
+    ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">${t.labels.map(l =>
+        `<span style="padding:1px 7px;background:${labelColors[l]||'#5b8dee'}22;color:${labelColors[l]||'#5b8dee'};border:1px solid ${labelColors[l]||'#5b8dee'}44;border-radius:3px;font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase">${l}</span>`
+      ).join('')}</div>`
+    : '';
+
+  // Meta chips
+  const metaChips = [];
+  if (t.tipo) metaChips.push(`<span class="kc-meta-chip">${tipoLabel(t.tipo)}</span>`);
+  if (t.process) metaChips.push(`<span class="kc-meta-chip" title="${t.process}">📁 ${t.process.length > 20 ? t.process.slice(0,18)+'…' : t.process}</span>`);
+  if (cl.length) metaChips.push(`<span class="kc-meta-chip">✓ ${clDone}/${cl.length}</span>`);
+  if (attachCount) metaChips.push(`<span class="kc-meta-chip" onclick="event.stopPropagation();openAttachments(${t.id})" style="cursor:pointer">📎 ${attachCount}</span>`);
+  const metaHTML = metaChips.length ? `<div class="kc-meta">${metaChips.join('')}</div>` : '';
+
+  // Avatar
+  const avatarHTML = m
+    ? (m.photo
+        ? `<img src="${m.photo}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(255,255,255,0.1)">`
+        : `<div class="kanban-card-avatar ${avatarClass(m.role)}">${initials(m.name)}</div>`)
+    : '';
 
   return `<div class="kanban-card" draggable="true" data-id="${t.id}" onclick="openTaskDetail(${t.id})" style="cursor:pointer">
+    <div class="kanban-card-prio-bar" style="background:${prioColor}"></div>
+    ${labelsHTML}
     <div class="kanban-card-top">
       <div class="kanban-card-title">${t.title}</div>
-      <div class="kanban-card-priority" style="background:${PRIO_COLOR[t.priority]||'#6b7190'}" title="${t.priority}"></div>
     </div>
-    ${tipoBadge}
-    ${t.process ? `<div class="kanban-card-process">📁 ${t.process}</div>` : ''}
-    ${attachCount ? `<div class="kanban-card-process kanban-card-attach" onclick="event.stopPropagation();openAttachments(${t.id})" style="cursor:pointer;margin-top:4px">📎 ${attachCount} anexo${attachCount > 1 ? 's' : ''}</div>` : ''}
-    ${labelsHTML}
-    ${(cl.length || hist.length) ? `<div style="display:flex;gap:6px;margin-top:4px">${clText}${histText}</div>` : ''}
+    ${metaHTML}
     <div class="kanban-card-footer">
       <div class="kanban-card-assignee">
-        ${m ? `<div class="kanban-card-avatar ${avatarClass(m.role)}">${initials(m.name)}</div>
-        <span class="kanban-card-name">${m.name.split(' ')[0]}</span>` : ''}
+        ${avatarHTML}
+        ${m ? `<span class="kanban-card-name">${m.name.split(' ')[0]}</span>` : '<span class="kanban-card-name" style="opacity:.35">Sem responsável</span>'}
       </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        ${due ? `<span class="kanban-card-due ${dueClass}">📅 ${dueText}</span>` : ''}
-        <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:.7rem" onclick="event.stopPropagation();openEditTask(${t.id})" title="Editar">✏️</button>
-        <button class="btn btn-ghost btn-sm" style="padding:2px 5px;font-size:.7rem;color:#e05c5c" onclick="event.stopPropagation();deleteTask(${t.id})" title="Deletar">✕</button>
+      <div style="display:flex;align-items:center;gap:4px">
+        ${due ? `<span class="kc-meta-chip ${dueClass}">⏱ ${dueText}</span>` : ''}
+        <div class="kc-actions">
+          <button class="kc-action-btn" onclick="event.stopPropagation();openEditTask(${t.id})" title="Editar">✏</button>
+          <button class="kc-action-btn del" onclick="event.stopPropagation();deleteTask(${t.id})" title="Deletar">✕</button>
+        </div>
       </div>
     </div>
   </div>`;
@@ -5278,7 +5537,7 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
   `;
 
   // Etiquetas (clicável)
-  const labelColors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff', ...t.customLabels };
+  const labelColors = { 'Prazo': '#e05c5c', 'Audiência': '#ff6b6b', 'Petição': '#4caf7d', 'Contrato': '#5b8dee', 'Recurso': '#9c27b0', 'Consultoria': '#ffa94d', 'Diligência': '#e09a3a', 'Intimação': '#74b9ff', ...t.customLabels };
   html += `
     <div onclick="showTaskLabelsEditor(${t.id})" style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; transition: background 0.2s;"
       onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'">
@@ -5806,8 +6065,8 @@ function showTaskLabelsEditor() {
   if (!t.labels) t.labels = [];
   if (!t.customLabels) t.customLabels = {};
 
-  const labels = ['Urgente', 'Bug', 'Feature', 'Documentation', 'Review', 'Testing', 'Design', 'Backend'];
-  const colors = { 'Urgente': '#e05c5c', 'Bug': '#ff6b6b', 'Feature': '#4caf7d', 'Documentation': '#5b8dee', 'Review': '#9c27b0', 'Testing': '#ffa94d', 'Design': '#e09a3a', 'Backend': '#74b9ff' };
+  const labels = ['Prazo', 'Audiência', 'Petição', 'Contrato', 'Recurso', 'Consultoria', 'Diligência', 'Intimação'];
+  const colors = { 'Prazo': '#e05c5c', 'Audiência': '#ff6b6b', 'Petição': '#4caf7d', 'Contrato': '#5b8dee', 'Recurso': '#9c27b0', 'Consultoria': '#ffa94d', 'Diligência': '#e09a3a', 'Intimação': '#74b9ff' };
 
   // Combinar labels padrão com customizadas
   const allLabels = [...labels, ...Object.keys(t.customLabels)];

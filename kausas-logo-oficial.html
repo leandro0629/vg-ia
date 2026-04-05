@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Oficial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            color: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #fbbf24;
+            margin-bottom: 50px;
+            font-weight: 700;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #fbbf24;
+            margin-top: 60px;
+            margin-bottom: 30px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+            font-weight: 700;
+        }
+
+        /* Logo Display */
+        .logo-display {
+            background: linear-gradient(135deg, rgba(26, 31, 58, 0.8) 0%, rgba(26, 31, 58, 0.95) 100%);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .bars {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .bars span {
+            width: 6px;
+            height: 20px;
+            background: #fbbf24;
+            border-radius: 1.5px;
+        }
+
+        .text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: -0.5px;
+        }
+
+        /* Sizes Grid */
+        .sizes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .size-box {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            min-height: 200px;
+        }
+
+        .size-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .size-label {
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* Code Section */
+        .code-section {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .code-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            background: #fbbf24;
+            color: #0a0e27;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #fcd34d;
+            transform: scale(1.05);
+        }
+
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .info-card {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 3px solid #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-left: 3px solid #fbbf24;
+        }
+
+        .info-card h3 {
+            font-size: 1rem;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .info-card p {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1f3a;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            padding: 40px 20px;
+            text-align: center;
+            color: #cbd5e1;
+            border-radius: 12px;
+            margin-top: 60px;
+        }
+
+        footer .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        footer .bars span {
+            width: 5px;
+            height: 16px;
+            background: #fbbf24;
+            border-radius: 1px;
+        }
+
+        footer p {
+            margin: 8px 0;
+        }
+
+        footer .gold {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-display {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .text {
+                font-size: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Logo Oficial</h1>
+
+        <!-- Main Logo -->
+        <div class="section-title">Logo Padrão</div>
+        <div class="logo-display">
+            <div class="bars">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="text">Kausas</div>
+        </div>
+
+        <!-- Sizes -->
+        <div class="section-title">Tamanhos</div>
+        <div class="sizes-grid">
+            <div class="size-box">
+                <div class="size-preview" style="font-size: 0.8rem;">
+                    <span style="width: 3px; height: 12px; background: #fbbf24; border-radius: 1px; margin: 0 2px;"></span>
+                    <span style="width: 3px; height: 12px; background: #fbbf24; border-radius: 1px; margin: 0 2px;"></span>
+                    <span style="width: 3px; height: 12px; background: #fbbf24; border-radius: 1px; margin: 0 2px;"></span>
+                    <span style="color: #fbbf24; font-weight: 700; margin-left: 4px;">Kausas</span>
+                </div>
+                <span class="size-label">16px</span>
+            </div>
+
+            <div class="size-box">
+                <div class="size-preview" style="font-size: 1rem;">
+                    <span style="width: 4px; height: 16px; background: #fbbf24; border-radius: 1px; margin: 0 3px;"></span>
+                    <span style="width: 4px; height: 16px; background: #fbbf24; border-radius: 1px; margin: 0 3px;"></span>
+                    <span style="width: 4px; height: 16px; background: #fbbf24; border-radius: 1px; margin: 0 3px;"></span>
+                    <span style="color: #fbbf24; font-weight: 700; margin-left: 6px;">Kausas</span>
+                </div>
+                <span class="size-label">32px</span>
+            </div>
+
+            <div class="size-box">
+                <div class="size-preview" style="font-size: 1.5rem;">
+                    <span style="width: 5px; height: 20px; background: #fbbf24; border-radius: 1px; margin: 0 4px;"></span>
+                    <span style="width: 5px; height: 20px; background: #fbbf24; border-radius: 1px; margin: 0 4px;"></span>
+                    <span style="width: 5px; height: 20px; background: #fbbf24; border-radius: 1px; margin: 0 4px;"></span>
+                    <span style="color: #fbbf24; font-weight: 700; margin-left: 8px;">Kausas</span>
+                </div>
+                <span class="size-label">64px</span>
+            </div>
+
+            <div class="size-box">
+                <div class="size-preview" style="font-size: 2rem;">
+                    <span style="width: 6px; height: 24px; background: #fbbf24; border-radius: 1.5px; margin: 0 5px;"></span>
+                    <span style="width: 6px; height: 24px; background: #fbbf24; border-radius: 1.5px; margin: 0 5px;"></span>
+                    <span style="width: 6px; height: 24px; background: #fbbf24; border-radius: 1.5px; margin: 0 5px;"></span>
+                    <span style="color: #fbbf24; font-weight: 700; margin-left: 10px;">Kausas</span>
+                </div>
+                <span class="size-label">128px+</span>
+            </div>
+        </div>
+
+        <!-- HTML Code -->
+        <div class="section-title">Implementação - HTML</div>
+        <div class="code-section">
+            <div class="code-box">&lt;div style="display: flex; gap: 10px; align-items: center;"&gt;
+  &lt;div style="display: flex; gap: 4px; align-items: center;"&gt;
+    &lt;span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"&gt;&lt;/span&gt;
+    &lt;span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"&gt;&lt;/span&gt;
+    &lt;span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"&gt;&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;span style="font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 700; color: #fbbf24; letter-spacing: -0.5px;"&gt;Kausas&lt;/span&gt;
+&lt;/div&gt;</div>
+            <button class="copy-btn" onclick="copiarHTML()">Copiar HTML</button>
+        </div>
+
+        <!-- CSS Code -->
+        <div class="section-title">Implementação - CSS</div>
+        <div class="code-section">
+            <div class="code-box">.logo-kausas {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.logo-kausas-bars {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.logo-kausas-bar {
+  width: 6px;
+  height: 20px;
+  background: #fbbf24;
+  border-radius: 1.5px;
+}
+
+.logo-kausas-text {
+  font-family: 'Sora', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: -0.5px;
+}</div>
+            <button class="copy-btn" onclick="copiarCSS()">Copiar CSS</button>
+        </div>
+
+        <!-- Specifications -->
+        <div class="section-title">Especificações</div>
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>📏 Dimensões</h3>
+                <p><strong>Barras:</strong> 6px x 20px<br><strong>Gap:</strong> 4px<br><strong>Total:</strong> Proporcional ao texto</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🎨 Cores</h3>
+                <p><strong>Primária:</strong> #FBBF24<br><strong>Light:</strong> #FCD34D<br><strong>Dark:</strong> #D97706</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🔤 Tipografia</h3>
+                <p><strong>Fonte:</strong> Sora<br><strong>Peso:</strong> Bold 700<br><strong>Estilo:</strong> Normal</p>
+            </div>
+
+            <div class="info-card">
+                <h3>📐 Alinhamento</h3>
+                <p><strong>Ícone e texto:</strong> Lado a lado<br><strong>Vertical:</strong> Centralizado<br><strong>Gap:</strong> 10px</p>
+            </div>
+
+            <div class="info-card">
+                <h3>✨ Estilo</h3>
+                <p><strong>Padrão:</strong> Bars Solid Medium<br><strong>Descrição:</strong> Equilibrado e moderno<br><strong>Uso:</strong> Todos contextos</p>
+            </div>
+
+            <div class="info-card">
+                <h3>📱 Responsivo</h3>
+                <p><strong>Escalável:</strong> Sim<br><strong>Mobile:</strong> Otimizado<br><strong>Proporções:</strong> Mantidas</p>
+            </div>
+        </div>
+
+        <!-- Guidelines -->
+        <div class="section-title">Guia de Uso</div>
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>✅ Fazer</h3>
+                <p>• Usar a cor #FBBF24 principal<br>• Manter proporções<br>• Escalar proporcionalmente<br>• Usar em backgrounds claros e escuros</p>
+            </div>
+
+            <div class="info-card">
+                <h3>❌ Não Fazer</h3>
+                <p>• Alterar cores sem aprovação<br>• Distorcer proporções<br>• Adicionar efeitos<br>• Rotacionar ou girar</p>
+            </div>
+
+            <div class="info-card">
+                <h3>🌐 Aplicações</h3>
+                <p>• Website e apps<br>• Email e assinatura<br>• Social media<br>• Impressão e marketing<br>• Favicon e favicon app</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="logo">
+                <div class="bars">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span style="color: #fbbf24; font-weight: 700; font-size: 1.5rem;">Kausas</span>
+            </div>
+            <p><span class="gold">Logo Oficial</span> - Bars Solid Medium</p>
+            <p>Equilibrado | Moderno | Profissional</p>
+            <p style="margin-top: 20px; font-size: 0.85rem; color: #64748b;">© 2026 Kausas - Gestão Jurídica | Organização. Controle. Resultados.</p>
+        </footer>
+    </div>
+
+    <script>
+        function copiarHTML() {
+            const html = `<div style="display: flex; gap: 10px; align-items: center;">
+  <div style="display: flex; gap: 4px; align-items: center;">
+    <span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"></span>
+    <span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"></span>
+    <span style="width: 6px; height: 20px; background: #fbbf24; border-radius: 1.5px;"></span>
+  </div>
+  <span style="font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 700; color: #fbbf24; letter-spacing: -0.5px;">Kausas</span>
+</div>`;
+            navigator.clipboard.writeText(html);
+            alert('✅ HTML copiado!');
+        }
+
+        function copiarCSS() {
+            const css = `.logo-kausas {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.logo-kausas-bars {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.logo-kausas-bar {
+  width: 6px;
+  height: 20px;
+  background: #fbbf24;
+  border-radius: 1.5px;
+}
+
+.logo-kausas-text {
+  font-family: 'Sora', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: -0.5px;
+}`;
+            navigator.clipboard.writeText(css);
+            alert('✅ CSS copiado!');
+        }
+    </script>
+</body>
+</html>
