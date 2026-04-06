@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Organização</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            color: #f5f5f5;
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: #fbbf24;
+            margin-bottom: 30px;
+            margin-top: 60px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .logo-display {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #cbd5e1;
+            margin-top: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .card p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        .text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fbbf24;
+            font-style: italic;
+            letter-spacing: -1px;
+        }
+
+        /* Icon Container */
+        .icon-box {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* SVG Icons */
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== ORGANIZAÇÃO - ESTRUTURA ===== */
+
+        /* Folder */
+        .icon-folder {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Stack/Layers */
+        .icon-stack {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Checklist */
+        .icon-checklist {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Grid */
+        .icon-grid {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Timeline */
+        .icon-timeline {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Flow */
+        .icon-flow {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* File */
+        .icon-file {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Document */
+        .icon-document {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Hierarchy */
+        .icon-hierarchy {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Network */
+        .icon-network {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Dashboard */
+        .icon-dashboard {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Process */
+        .icon-process {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Link */
+        .icon-link {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Archive */
+        .icon-archive {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Check */
+        .icon-check {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Kanban */
+        .icon-kanban {
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Showcase */
+        .showcase {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+            padding: 60px 40px;
+            border-radius: 16px;
+            margin-bottom: 60px;
+            margin-top: 60px;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .showcase-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .showcase-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+            transform: translateY(-4px);
+        }
+
+        .showcase-item-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .showcase-item-icon {
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+        }
+
+        .showcase-item h3 {
+            font-size: 0.85rem;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .showcase-item p {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1f3a;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            padding: 40px 20px;
+            text-align: center;
+            color: #cbd5e1;
+            border-radius: 16px;
+            margin-top: 60px;
+        }
+
+        footer p {
+            margin: 10px 0;
+        }
+
+        footer .gold {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Logo Organização & Gestão</h1>
+        <p style="text-align: center; color: #cbd5e1; margin-bottom: 50px;">Variações focadas em organização, gestão jurídica e controle de processos</p>
+
+        <!-- ===== SEÇÃO 1: ORGANIZAÇÃO ===== -->
+        <h2 class="section-title">📁 Organização & Estrutura</h2>
+        <div class="gallery">
+            <!-- Folder -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-folder" d="M6 12H16L18 8H34C35.1 8 36 8.9 36 10V34C36 35.1 35.1 36 34 36H6C4.9 36 4 35.1 4 34V14C4 12.9 4.9 12 6 12Z"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Pasta/Arquivo</h3>
+                <p>Organização de documentos</p>
+            </div>
+
+            <!-- Stack/Layers -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-stack" d="M6 14L20 8L34 14"/>
+                            <path class="icon-stack" d="M6 20L20 14L34 20"/>
+                            <path class="icon-stack" d="M6 26L20 20L34 26"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Camadas</h3>
+                <p>Hierarquia de informações</p>
+            </div>
+
+            <!-- Checklist -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-checklist" d="M8 10H32M8 18H32M8 26H32"/>
+                            <path class="icon-checklist" d="M6 16L8 18L12 14" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path class="icon-checklist" d="M6 24L8 26L12 22" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Checklist</h3>
+                <p>Tarefas e controle</p>
+            </div>
+
+            <!-- Grid -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="icon-grid" x="6" y="6" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="16" y="6" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="26" y="6" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="6" y="16" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="16" y="16" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="26" y="16" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="6" y="26" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="16" y="26" width="7" height="7" rx="1"/>
+                            <rect class="icon-grid" x="26" y="26" width="7" height="7" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Grade</h3>
+                <p>Visão em matriz</p>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-timeline" d="M8 20H32"/>
+                            <circle class="icon-timeline" cx="12" cy="20" r="3" fill="#fbbf24"/>
+                            <circle class="icon-timeline" cx="20" cy="20" r="3" fill="#fbbf24"/>
+                            <circle class="icon-timeline" cx="28" cy="20" r="3" fill="#fbbf24"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Timeline</h3>
+                <p>Sequência temporal</p>
+            </div>
+
+            <!-- Flow -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-flow" d="M10 10L30 20L10 30"/>
+                            <line class="icon-flow" x1="30" y1="20" x2="35" y2="20"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Fluxo</h3>
+                <p>Processo e movimento</p>
+            </div>
+        </div>
+
+        <!-- ===== SEÇÃO 2: GESTÃO & DOCUMENTOS ===== -->
+        <h2 class="section-title">📄 Gestão & Documentos</h2>
+        <div class="gallery">
+            <!-- File -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-file" d="M8 6H24L32 14V34C32 35.1 31.1 36 30 36H10C8.9 36 8 35.1 8 34V6Z"/>
+                            <path class="icon-file" d="M24 6V14H32"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Arquivo</h3>
+                <p>Documentos e processos</p>
+            </div>
+
+            <!-- Document Lines -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="icon-document" x="8" y="6" width="24" height="28" rx="1"/>
+                            <line class="icon-document" x1="12" y1="12" x2="28" y2="12"/>
+                            <line class="icon-document" x1="12" y1="18" x2="28" y2="18"/>
+                            <line class="icon-document" x1="12" y1="24" x2="24" y2="24"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Documento</h3>
+                <p>Texto e conteúdo</p>
+            </div>
+
+            <!-- Hierarchy -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="icon-hierarchy" x="16" y="6" width="8" height="6" rx="1"/>
+                            <line class="icon-hierarchy" x1="20" y1="12" x2="20" y2="16"/>
+                            <rect class="icon-hierarchy" x="8" y="16" width="8" height="6" rx="1"/>
+                            <rect class="icon-hierarchy" x="24" y="16" width="8" height="6" rx="1"/>
+                            <line class="icon-hierarchy" x1="12" y1="22" x2="12" y2="26"/>
+                            <line class="icon-hierarchy" x1="28" y1="22" x2="28" y2="26"/>
+                            <rect class="icon-hierarchy" x="8" y="26" width="8" height="6" rx="1"/>
+                            <rect class="icon-hierarchy" x="24" y="26" width="8" height="6" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Hierarquia</h3>
+                <p>Estrutura organizacional</p>
+            </div>
+
+            <!-- Network -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle class="icon-network" cx="12" cy="12" r="3" fill="#fbbf24"/>
+                            <circle class="icon-network" cx="28" cy="12" r="3" fill="#fbbf24"/>
+                            <circle class="icon-network" cx="20" cy="28" r="3" fill="#fbbf24"/>
+                            <line class="icon-network" x1="14" y1="14" x2="26" y2="14"/>
+                            <line class="icon-network" x1="14" y1="14" x2="20" y2="26"/>
+                            <line class="icon-network" x1="26" y1="14" x2="20" y2="26"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Rede</h3>
+                <p>Conexões e relacionamentos</p>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="icon-dashboard" x="6" y="6" width="28" height="28" rx="2"/>
+                            <rect class="icon-dashboard" x="9" y="12" width="5" height="14" rx="1"/>
+                            <rect class="icon-dashboard" x="18" y="14" width="5" height="12" rx="1"/>
+                            <rect class="icon-dashboard" x="27" y="10" width="5" height="16" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Dashboard</h3>
+                <p>Visualização de dados</p>
+            </div>
+
+            <!-- Process Flow -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="icon-process" x="6" y="16" width="7" height="7" rx="1"/>
+                            <rect class="icon-process" x="17" y="16" width="7" height="7" rx="1"/>
+                            <rect class="icon-process" x="28" y="16" width="7" height="7" rx="1"/>
+                            <path class="icon-process" d="M13 19.5H17"/>
+                            <path class="icon-process" d="M24 19.5H28"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Processo</h3>
+                <p>Etapas e fluxograma</p>
+            </div>
+        </div>
+
+        <!-- ===== SEÇÃO 3: GESTÃO JURÍDICA ===== -->
+        <h2 class="section-title">⚖️ Gestão Jurídica & Controle</h2>
+        <div class="gallery">
+            <!-- Link -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-link" d="M14 18L26 6M26 18L14 6M14 26L26 14M26 26L14 14"/>
+                            <path class="icon-link" d="M10 20C10 14.48 14.48 10 20 10C25.52 10 30 14.48 30 20C30 25.52 25.52 30 20 30C14.48 30 10 25.52 10 20Z"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Vinculação</h3>
+                <p>Casos relacionados</p>
+            </div>
+
+            <!-- Archive -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="icon-archive" x="8" y="8" width="24" height="4" rx="1"/>
+                            <rect class="icon-archive" x="8" y="14" width="24" height="18" rx="1"/>
+                            <line class="icon-archive" x1="8" y1="20" x2="32" y2="20"/>
+                            <line class="icon-archive" x1="8" y1="26" x2="32" y2="26"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Arquivo</h3>
+                <p>Acervo legal</p>
+            </div>
+
+            <!-- Checkmark -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle class="icon-check" cx="20" cy="20" r="14"/>
+                            <path class="icon-check" d="M14 20L18 24L26 16" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Verificação</h3>
+                <p>Cumprimento e status</p>
+            </div>
+
+            <!-- Kanban -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect class="icon-kanban" x="6" y="8" width="6" height="24" rx="1"/>
+                            <rect class="icon-kanban" x="17" y="8" width="6" height="24" rx="1"/>
+                            <rect class="icon-kanban" x="28" y="8" width="6" height="24" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Kanban</h3>
+                <p>Quadro de status</p>
+            </div>
+
+            <!-- Briefcase -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-process" d="M6 14H34V32C34 33.1 33.1 34 32 34H8C6.9 34 6 33.1 6 32V14Z"/>
+                            <line class="icon-process" x1="14" y1="8" x2="14" y2="14"/>
+                            <line class="icon-process" x1="26" y1="8" x2="26" y2="14"/>
+                            <rect class="icon-process" x="12" y="6" width="16" height="4" rx="1"/>
+                            <line class="icon-process" x1="20" y1="20" x2="20" y2="28"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Pasta Jurídica</h3>
+                <p>Gestão de casos</p>
+            </div>
+
+            <!-- Scales -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path class="icon-process" d="M20 8V20"/>
+                            <circle class="icon-process" cx="12" cy="24" r="4"/>
+                            <circle class="icon-process" cx="28" cy="24" r="4"/>
+                            <line class="icon-process" x1="16" y1="20" x2="12" y2="24"/>
+                            <line class="icon-process" x1="24" y1="20" x2="28" y2="24"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>Equilíbrio</h3>
+                <p>Justiça e equidade</p>
+            </div>
+        </div>
+
+        <!-- ===== SHOWCASE ===== -->
+        <div class="showcase">
+            <h2>⭐ Melhores Variações para Kausas</h2>
+            <div class="showcase-grid">
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="showcase-item-icon">
+                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="8" y="6" width="24" height="28" rx="1" stroke="#fbbf24" stroke-width="2.5" fill="none"/>
+                                <line x1="12" y1="12" x2="28" y2="12" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="12" y1="18" x2="28" y2="18" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="12" y1="24" x2="24" y2="24" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Documento</h3>
+                            <p>Gestão de processos legais</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="showcase-item-icon">
+                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 6H24L32 14V34C32 35.1 31.1 36 30 36H10C8.9 36 8 35.1 8 34V6Z" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M24 6V14H32" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Arquivo</h3>
+                            <p>Organização de casos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="showcase-item-icon">
+                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="6" y="6" width="28" height="28" rx="2" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="9" y="12" width="5" height="14" rx="1" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                                <rect x="18" y="14" width="5" height="12" rx="1" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                                <rect x="27" y="10" width="5" height="16" rx="1" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Dashboard</h3>
+                            <p>Análise e relatórios</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="showcase-item-icon">
+                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="20" cy="20" r="14" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M14 20L18 24L26 16" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Verificação</h3>
+                            <p>Cumprimento de tarefas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="showcase-item-icon">
+                            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 10H32M8 18H32M8 26H32" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                                <path d="M6 16L8 18L12 14" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M6 24L8 26L12 22" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Checklist</h3>
+                            <p>Controle de demandas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Logo System <span class="gold">Kausas</span> - Organização & Gestão Jurídica</p>
+            <p>18 Variações Temáticas | Escalável | Moderno</p>
+            <p style="margin-top: 20px; font-size: 0.75rem; color: #64748b;">© 2026 Kausas - Gestão Jurídica | Organização. Controle. Resultados.</p>
+        </footer>
+    </div>
+</body>
+</html>

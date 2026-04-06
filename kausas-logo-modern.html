@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            color: #f5f5f5;
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(26, 31, 58, 0.8) 0%, rgba(26, 31, 58, 0.95) 100%);
+            border-radius: 20px;
+            padding: 60px 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 340px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 30px 80px rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .logo-display {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #cbd5e1;
+            margin-top: 25px;
+            font-weight: 700;
+        }
+
+        .card p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        .text {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: -0.5px;
+        }
+
+        /* Icon Container */
+        .icon-box {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* ===== ICON STYLES ===== */
+
+        /* Dots Vertical */
+        .v1 {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .v1 span {
+            width: 6px;
+            height: 6px;
+            background: #fbbf24;
+            border-radius: 50%;
+        }
+
+        /* Bars Vertical */
+        .v2 {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .v2 span {
+            width: 8px;
+            height: 8px;
+            background: #fbbf24;
+            border-radius: 1px;
+        }
+
+        /* Bars Horizontal */
+        .v3 {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .v3 span {
+            width: 20px;
+            height: 3px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* Plus Sign */
+        .v4 {
+            position: relative;
+            width: 24px;
+            height: 24px;
+        }
+
+        .v4::before,
+        .v4::after {
+            content: '';
+            position: absolute;
+            background: #fbbf24;
+        }
+
+        .v4::before {
+            width: 20px;
+            height: 3px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 2px;
+        }
+
+        .v4::after {
+            width: 3px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 2px;
+        }
+
+        /* Star */
+        .v5 {
+            width: 28px;
+            height: 28px;
+            position: relative;
+        }
+
+        .v5::before {
+            content: '★';
+            color: #fbbf24;
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        /* Hash/Grid */
+        .v6 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+        }
+
+        .v6 span {
+            width: 6px;
+            height: 6px;
+            background: #fbbf24;
+            border-radius: 1px;
+        }
+
+        /* Gradient Square */
+        .v7 {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+            border-radius: 6px;
+        }
+
+        /* Outline Square */
+        .v8 {
+            width: 32px;
+            height: 32px;
+            border: 2.5px solid #fbbf24;
+            border-radius: 6px;
+        }
+
+        /* Double Square */
+        .v9 {
+            position: relative;
+            width: 32px;
+            height: 32px;
+        }
+
+        .v9::before {
+            content: '';
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 2px solid #fbbf24;
+            border-radius: 6px;
+            top: 0;
+            left: 0;
+        }
+
+        .v9::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #fbbf24;
+            border-radius: 4px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Circle Gradient */
+        .v10 {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+        }
+
+        /* Pentagon */
+        .v11 {
+            width: 28px;
+            height: 28px;
+            position: relative;
+        }
+
+        .v11::before {
+            content: '◆';
+            color: #fbbf24;
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        /* Hexagon */
+        .v12 {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Bracket */
+        .v13 {
+            width: 32px;
+            height: 32px;
+            border: 2.5px solid #fbbf24;
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+        }
+
+        /* Arrow */
+        .v14 {
+            width: 28px;
+            height: 28px;
+            position: relative;
+        }
+
+        .v14::before {
+            content: '→';
+            color: #fbbf24;
+            font-size: 28px;
+            line-height: 1;
+            font-weight: bold;
+        }
+
+        /* Wave */
+        .v15 {
+            width: 32px;
+            height: 24px;
+            position: relative;
+        }
+
+        .v15::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 12C6 8 8 6 12 12C16 18 18 20 22 12C26 4 28 2 32 12' stroke='%23fbbf24' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+        }
+
+        /* Showcase */
+        .showcase {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(10, 14, 39, 0.8) 100%);
+            padding: 80px 40px;
+            border-radius: 20px;
+            margin-bottom: 60px;
+            margin-top: 60px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .showcase h2 {
+            font-size: 2rem;
+            color: #fbbf24;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .showcase-item {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .showcase-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.1);
+        }
+
+        .showcase-logo-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .showcase-item h3 {
+            font-size: 1rem;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .showcase-item p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* Sizes */
+        .sizes-section {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(10, 14, 39, 0.8) 100%);
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 60px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .sizes-section h2 {
+            font-size: 1.8rem;
+            color: #fbbf24;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .sizes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 25px;
+        }
+
+        .size-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .size-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .size-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 90px;
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #cbd5e1;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1f3a;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            padding: 40px 20px;
+            text-align: center;
+            color: #cbd5e1;
+            border-radius: 16px;
+            margin-top: 60px;
+        }
+
+        footer p {
+            margin: 10px 0;
+        }
+
+        footer .gold {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Badge */
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #fbbf24;
+            color: #0a0e27;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Logo Modern</h1>
+        <p style="text-align: center; color: #cbd5e1; margin-bottom: 50px;">15 Variações Modernas | Sem Itálico | K Maiúsculo</p>
+
+        <!-- Gallery -->
+        <div class="gallery">
+            <!-- V1: Dots Vertical -->
+            <div class="card">
+                <div class="badge">⭐ RECOMENDADO</div>
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v1">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Dots Vertical</h3>
+                <p>Minimalista e moderno</p>
+            </div>
+
+            <!-- V2: Bars Vertical -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v2">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Vertical</h3>
+                <p>Forte e estruturado</p>
+            </div>
+
+            <!-- V3: Bars Horizontal -->
+            <div class="card">
+                <div class="badge">⭐ POPULAR</div>
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v3">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Horizontal</h3>
+                <p>Menu hamburger style</p>
+            </div>
+
+            <!-- V4: Plus Sign -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v4"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Plus Sign</h3>
+                <p>Adicionar e crescer</p>
+            </div>
+
+            <!-- V5: Star -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v5"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Estrela</h3>
+                <p>Destaque e qualidade</p>
+            </div>
+
+            <!-- V6: Hash Grid -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v6">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Hash Grid</h3>
+                <p>Organização em matriz</p>
+            </div>
+
+            <!-- V7: Gradient Square -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v7"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Gradient Square</h3>
+                <p>Moderno com gradiente</p>
+            </div>
+
+            <!-- V8: Outline Square -->
+            <div class="card">
+                <div class="badge">⭐ FAVORITO</div>
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v8"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Outline Square</h3>
+                <p>Clean e profissional</p>
+            </div>
+
+            <!-- V9: Double Square -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v9"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Double Square</h3>
+                <p>Camadas e profundidade</p>
+            </div>
+
+            <!-- V10: Circle Gradient -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v10"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Circle Gradient</h3>
+                <p>Suave e dinâmico</p>
+            </div>
+
+            <!-- V11: Diamond -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v11"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Diamante</h3>
+                <p>Elegante e refinado</p>
+            </div>
+
+            <!-- V12: Hexagon -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg class="v12" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 4L32 11L32 27L20 34L8 27L8 11L20 4Z" stroke="#fbbf24" stroke-width="2.5"/>
+                        </svg>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Hexágono</h3>
+                <p>Estrutura moderna</p>
+            </div>
+
+            <!-- V13: Bracket -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v13"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Colchete</h3>
+                <p>Organizado e técnico</p>
+            </div>
+
+            <!-- V14: Arrow -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v14"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Seta</h3>
+                <p>Movimento e ação</p>
+            </div>
+
+            <!-- V15: Wave -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v15"></div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Onda</h3>
+                <p>Fluidez e dinâmica</p>
+            </div>
+        </div>
+
+        <!-- Top Recommendations -->
+        <div class="showcase">
+            <h2>⭐ Top 3 Recomendadas</h2>
+            <div class="showcase-grid">
+                <div class="showcase-item">
+                    <div class="showcase-logo-display">
+                        <div class="icon-box">
+                            <div class="v1">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="text" style="font-size: 2rem;">Kausas</div>
+                    </div>
+                    <h3>Dots Vertical</h3>
+                    <p>Minimalista, moderno e fácil de reconhecer</p>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-logo-display">
+                        <div class="icon-box">
+                            <div class="v8"></div>
+                        </div>
+                        <div class="text" style="font-size: 2rem;">Kausas</div>
+                    </div>
+                    <h3>Outline Square</h3>
+                    <p>Profissional, clean e versátil</p>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-logo-display">
+                        <div class="icon-box">
+                            <div class="v3">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="text" style="font-size: 2rem;">Kausas</div>
+                    </div>
+                    <h3>Bars Horizontal</h3>
+                    <p>Dinâmico, reconhecível e moderno</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sizes -->
+        <div class="sizes-section">
+            <h2>Escalabilidade - Dots Vertical</h2>
+            <div class="sizes-grid">
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 0.9rem; gap: 6px;">
+                        <div style="display: flex; flex-direction: column; gap: 3px;">
+                            <span style="width: 4px; height: 4px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 4px; height: 4px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 4px; height: 4px; background: #fbbf24; border-radius: 50%;"></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700;">Kausas</span>
+                    </div>
+                    <span class="size-label">16px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 1.2rem; gap: 8px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="width: 5px; height: 5px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 5px; height: 5px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 5px; height: 5px; background: #fbbf24; border-radius: 50%;"></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700;">Kausas</span>
+                    </div>
+                    <span class="size-label">32px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 1.6rem; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <span style="width: 6px; height: 6px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 6px; height: 6px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 6px; height: 6px; background: #fbbf24; border-radius: 50%;"></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700;">Kausas</span>
+                    </div>
+                    <span class="size-label">64px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 2.2rem; gap: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <span style="width: 8px; height: 8px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 8px; height: 8px; background: #fbbf24; border-radius: 50%;"></span>
+                            <span style="width: 8px; height: 8px; background: #fbbf24; border-radius: 50%;"></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700;">Kausas</span>
+                    </div>
+                    <span class="size-label">128px+</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p><span class="gold">Kausas</span> - Sistema de Logo Moderno</p>
+            <p>15 Variações | Sem Itálico | K Maiúsculo | Profissional</p>
+            <p style="margin-top: 20px; font-size: 0.75rem; color: #64748b;">© 2026 Kausas - Gestão Jurídica</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);
+            min-height: 100vh;
+            padding: 60px 20px;
+            color: #1a1a1a;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .logo-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .logo-card h3 {
+            margin-top: 24px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* SVG Logo Styles */
+        svg {
+            transition: all 0.3s ease;
+        }
+
+        .logo-card:hover svg {
+            filter: drop-shadow(0 8px 16px rgba(20, 184, 166, 0.15));
+        }
+
+        /* Color Variables */
+        :root {
+            --teal-primary: #14b8a6;
+            --teal-dark: #0f766e;
+            --teal-light: #99f6e4;
+            --slate-light: #f1f5f9;
+            --slate-dark: #1e293b;
+        }
+
+        /* Size variations */
+        .size-showcase {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+
+        .size-showcase h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #0f172a;
+        }
+
+        .sizes {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .size-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .size-container {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2f5 100%);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Usage Guidelines */
+        .guidelines {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .guidelines h2 {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            color: #0f172a;
+        }
+
+        .guideline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .guideline-item {
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2f5 100%);
+            border-radius: 8px;
+            border-left: 3px solid var(--teal-primary);
+        }
+
+        .guideline-item h3 {
+            font-size: 0.875rem;
+            color: var(--teal-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .guideline-item p {
+            font-size: 0.875rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 16px;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .color-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-name {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas Logo System</h1>
+
+        <!-- Main Logo Variations -->
+        <div class="gallery">
+            <!-- Logo 1: Icon Only -->
+            <div class="logo-card">
+                <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Geometric symbol: interconnected circles forming a movement/action icon -->
+                    <circle cx="80" cy="80" r="75" fill="none" stroke="#14b8a6" stroke-width="2" opacity="0.1"/>
+
+                    <!-- Main shape: three connected circles -->
+                    <circle cx="55" cy="70" r="18" fill="#14b8a6"/>
+                    <circle cx="80" cy="50" r="18" fill="#14b8a6" opacity="0.7"/>
+                    <circle cx="105" cy="70" r="18" fill="#14b8a6"/>
+
+                    <!-- Connecting lines (dynamic) -->
+                    <line x1="72" y1="77" x2="88" y2="57" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="88" y1="63" x2="96" y2="77" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+
+                    <!-- Bottom accent: represents foundation -->
+                    <path d="M 40 110 Q 80 130 120 110" stroke="#14b8a6" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+                </svg>
+                <h3>Icon - Symbol Only</h3>
+            </div>
+
+            <!-- Logo 2: Icon + Wordmark Horizontal -->
+            <div class="logo-card">
+                <svg width="220" height="100" viewBox="0 0 220 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Icon -->
+                    <circle cx="35" cy="50" r="30" fill="none" stroke="#14b8a6" stroke-width="1.5" opacity="0.1"/>
+                    <circle cx="20" cy="42" r="10" fill="#14b8a6"/>
+                    <circle cx="35" cy="28" r="10" fill="#14b8a6" opacity="0.7"/>
+                    <circle cx="50" cy="42" r="10" fill="#14b8a6"/>
+                    <line x1="30" y1="49" x2="40" y2="36" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="40" y1="34" x2="46" y2="48" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"/>
+
+                    <!-- Wordmark -->
+                    <text x="75" y="62" font-family="'Segoe UI', sans-serif" font-size="32" font-weight="600" fill="#0f766e" letter-spacing="-0.5">kausas</text>
+                </svg>
+                <h3>Horizontal - Full Branding</h3>
+            </div>
+
+            <!-- Logo 3: Icon + Wordmark Vertical -->
+            <div class="logo-card">
+                <svg width="120" height="180" viewBox="0 0 120 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Icon -->
+                    <circle cx="60" cy="45" r="30" fill="none" stroke="#14b8a6" stroke-width="1.5" opacity="0.1"/>
+                    <circle cx="45" cy="37" r="10" fill="#14b8a6"/>
+                    <circle cx="60" cy="23" r="10" fill="#14b8a6" opacity="0.7"/>
+                    <circle cx="75" cy="37" r="10" fill="#14b8a6"/>
+                    <line x1="55" y1="44" x2="65" y2="31" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="65" y1="29" x2="71" y2="43" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"/>
+
+                    <!-- Wordmark -->
+                    <text x="60" y="130" font-family="'Segoe UI', sans-serif" font-size="24" font-weight="600" fill="#0f766e" text-anchor="middle">kausas</text>
+                </svg>
+                <h3>Vertical - Stacked Layout</h3>
+            </div>
+        </div>
+
+        <!-- Size Variations -->
+        <div class="size-showcase">
+            <h2>Scalability - Works at Any Size</h2>
+            <div class="sizes">
+                <div class="size-item">
+                    <div class="size-container" style="width: 80px; height: 80px;">
+                        <svg width="32" height="32" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="55" cy="70" r="18" fill="#14b8a6"/>
+                            <circle cx="80" cy="50" r="18" fill="#14b8a6" opacity="0.7"/>
+                            <circle cx="105" cy="70" r="18" fill="#14b8a6"/>
+                            <line x1="72" y1="77" x2="88" y2="57" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="88" y1="63" x2="96" y2="77" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="size-label">16px - Favicon</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="width: 120px; height: 120px;">
+                        <svg width="64" height="64" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="55" cy="70" r="18" fill="#14b8a6"/>
+                            <circle cx="80" cy="50" r="18" fill="#14b8a6" opacity="0.7"/>
+                            <circle cx="105" cy="70" r="18" fill="#14b8a6"/>
+                            <line x1="72" y1="77" x2="88" y2="57" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="88" y1="63" x2="96" y2="77" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="size-label">64px - App Icon</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="width: 160px; height: 160px;">
+                        <svg width="120" height="120" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="55" cy="70" r="18" fill="#14b8a6"/>
+                            <circle cx="80" cy="50" r="18" fill="#14b8a6" opacity="0.7"/>
+                            <circle cx="105" cy="70" r="18" fill="#14b8a6"/>
+                            <line x1="72" y1="77" x2="88" y2="57" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="88" y1="63" x2="96" y2="77" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="size-label">128px - Logo</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="width: 200px; height: 200px;">
+                        <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="55" cy="70" r="18" fill="#14b8a6"/>
+                            <circle cx="80" cy="50" r="18" fill="#14b8a6" opacity="0.7"/>
+                            <circle cx="105" cy="70" r="18" fill="#14b8a6"/>
+                            <line x1="72" y1="77" x2="88" y2="57" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                            <line x1="88" y1="63" x2="96" y2="77" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="size-label">512px - Print</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Brand Guidelines -->
+        <div class="guidelines">
+            <h2>Brand Guidelines</h2>
+
+            <div class="guideline-grid">
+                <div class="guideline-item">
+                    <h3>Clear Space</h3>
+                    <p>Maintain minimum 16px clear space around logo on all sides to ensure visibility and impact.</p>
+                </div>
+                <div class="guideline-item">
+                    <h3>Minimum Size</h3>
+                    <p>Never use logo smaller than 32px width to preserve legibility and mark details.</p>
+                </div>
+                <div class="guideline-item">
+                    <h3>Color Variants</h3>
+                    <p>Primary teal for digital. Single color (black/white) for monochrome applications and print.</p>
+                </div>
+                <div class="guideline-item">
+                    <h3>Background</h3>
+                    <p>Works on light and dark backgrounds. Ensure minimum 4:5:1 contrast ratio for accessibility.</p>
+                </div>
+            </div>
+
+            <!-- Color Palette -->
+            <div class="color-palette">
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #14b8a6;"></div>
+                    <div class="color-name">Primary Teal</div>
+                    <div class="color-code">#14B8A6</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #0f766e;"></div>
+                    <div class="color-name">Dark Teal</div>
+                    <div class="color-code">#0F766E</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #99f6e4;"></div>
+                    <div class="color-name">Light Teal</div>
+                    <div class="color-code">#99F6E4</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #ffffff; border: 1px solid #e2e8f0;"></div>
+                    <div class="color-name">Neutral White</div>
+                    <div class="color-code">#FFFFFF</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

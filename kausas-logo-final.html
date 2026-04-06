@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            color: #f5f5f5;
+        }
+
+        .section {
+            padding: 60px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #fbbf24;
+            letter-spacing: -1px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 50px;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #cbd5e1;
+            line-height: 1.8;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(10, 14, 39, 0.9) 100%);
+            text-align: center;
+            padding: 120px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-content {
+            animation: slideDown 1s ease-out;
+        }
+
+        .logo-hero {
+            font-size: 6rem;
+            font-weight: 700;
+            color: #fbbf24;
+            font-style: italic;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            text-shadow: 0 10px 40px rgba(251, 191, 36, 0.2);
+            line-height: 1;
+        }
+
+        .hero h1 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: #cbd5e1;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== SHOWCASE SECTION ===== */
+        .showcase {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .showcase-card {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 50px 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+        }
+
+        .showcase-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .logo-display {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fbbf24;
+            font-style: italic;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+        }
+
+        .showcase-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .showcase-card p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* ===== SIZES SECTION ===== */
+        .sizes {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+        }
+
+        .sizes-flex {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 60px;
+        }
+
+        .size-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .size-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.1);
+        }
+
+        .size-preview {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            color: #fbbf24;
+            font-style: italic;
+            letter-spacing: -1px;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        /* ===== USAGE SECTION ===== */
+        .usage {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .usage-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .usage-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.1);
+        }
+
+        .usage-item h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .usage-preview {
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            color: #fbbf24;
+            font-style: italic;
+            letter-spacing: -1px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .usage-item p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* ===== CODE SECTION ===== */
+        .code-section {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+        }
+
+        .code-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .code-card {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .code-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fbbf24;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .code-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            overflow-x: auto;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background: #fcd34d;
+            transform: scale(1.02);
+        }
+
+        /* ===== COLORS SECTION ===== */
+        .colors {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+        }
+
+        .colors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .color-card {
+            background: #1a1f3a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .color-card:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 100px;
+        }
+
+        .color-info {
+            padding: 20px;
+        }
+
+        .color-name {
+            font-size: 0.875rem;
+            color: #fbbf24;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* ===== GUIDELINES SECTION ===== */
+        .guidelines {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+        }
+
+        .guidelines-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .guideline-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 3px solid #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-left: 3px solid #fbbf24;
+        }
+
+        .guideline-item h3 {
+            font-size: 0.875rem;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .guideline-item p {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #1a1f3a;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            padding: 60px 20px;
+            text-align: center;
+            color: #cbd5e1;
+        }
+
+        footer h3 {
+            color: #fbbf24;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-style: italic;
+        }
+
+        footer p {
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-hero { font-size: 3.5rem; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .logo-display { font-size: 2.5rem; }
+            .section { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-content">
+            <div class="logo-hero">kausas</div>
+            <h1>Logo Official</h1>
+            <p class="hero-subtitle">Sistema de Marca - Logo Dinâmica em Estilo Itálico<br/>Dourado e Elegante para Todos os Contextos</p>
+        </div>
+    </div>
+
+    <!-- SHOWCASE -->
+    <div class="section showcase">
+        <div class="container">
+            <h2>Showcase de Uso</h2>
+            <div class="showcase-grid">
+                <div class="showcase-card">
+                    <div class="logo-display">kausas</div>
+                    <h3>Principal</h3>
+                    <p>Uso padrão em topo de página</p>
+                </div>
+
+                <div class="showcase-card">
+                    <div class="logo-display" style="font-size: 2rem;">kausas</div>
+                    <h3>Compacto</h3>
+                    <p>Para navegação e headers</p>
+                </div>
+
+                <div class="showcase-card">
+                    <div class="logo-display" style="font-size: 4.5rem;">kausas</div>
+                    <h3>Grande</h3>
+                    <p>Para banners e destaques</p>
+                </div>
+
+                <div class="showcase-card">
+                    <div class="logo-display" style="font-size: 1rem;">kausas</div>
+                    <h3>Favicon</h3>
+                    <p>Pequeno para navegador</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIZES -->
+    <div class="section sizes">
+        <div class="container">
+            <h2>Escalabilidade</h2>
+            <div class="sizes-flex">
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 0.9rem;">kausas</div>
+                    <span class="size-label">16px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 1.4rem;">kausas</div>
+                    <span class="size-label">32px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 2rem;">kausas</div>
+                    <span class="size-label">64px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 2.8rem;">kausas</div>
+                    <span class="size-label">96px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 3.5rem;">kausas</div>
+                    <span class="size-label">128px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 4.5rem;">kausas</div>
+                    <span class="size-label">256px+</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USAGE -->
+    <div class="section usage">
+        <div class="container">
+            <h2>Aplicações</h2>
+            <div class="usage-grid">
+                <div class="usage-item">
+                    <h3>🖥️ Website</h3>
+                    <div class="usage-preview" style="font-size: 2rem;">kausas</div>
+                    <p>Logo padrão em topo de página</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>📱 Mobile</h3>
+                    <div class="usage-preview" style="font-size: 1.2rem;">kausas</div>
+                    <p>Versão compacta para apps</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>📧 Email</h3>
+                    <div class="usage-preview" style="font-size: 1rem;">kausas</div>
+                    <p>Assinatura de email</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>📊 Dashboard</h3>
+                    <div class="usage-preview" style="font-size: 1.8rem;">kausas</div>
+                    <p>Painel administrativo</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>🎯 Botões</h3>
+                    <div class="usage-preview" style="font-size: 0.9rem; border: 2px solid #fbbf24;">kausas</div>
+                    <p>Botões de ação</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>🌐 Social</h3>
+                    <div class="usage-preview" style="font-size: 1.8rem;">kausas</div>
+                    <p>Posts e stories</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>🎬 Video</h3>
+                    <div class="usage-preview" style="font-size: 3rem;">kausas</div>
+                    <p>Intros e banners</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>🖨️ Print</h3>
+                    <div class="usage-preview" style="font-size: 3.5rem;">kausas</div>
+                    <p>Impressão de alta qualidade</p>
+                </div>
+
+                <div class="usage-item">
+                    <h3>🎨 Favicon</h3>
+                    <div class="usage-preview" style="font-size: 0.8rem;">K</div>
+                    <p>Ícone do navegador</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CODE -->
+    <div class="section code-section">
+        <div class="container">
+            <h2>Código para Implementar</h2>
+            <div class="code-cards">
+                <div class="code-card">
+                    <h3>HTML</h3>
+                    <div class="code-box">&lt;span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 2rem; color: #fbbf24; font-style: italic; letter-spacing: -1px;"&gt;kausas&lt;/span&gt;</div>
+                    <button class="copy-btn" onclick="copiarHTML()">Copiar</button>
+                </div>
+
+                <div class="code-card">
+                    <h3>CSS</h3>
+                    <div class="code-box">.logo {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #fbbf24;
+  font-style: italic;
+  letter-spacing: -1px;
+}</div>
+                    <button class="copy-btn" onclick="copiarCSS()">Copiar</button>
+                </div>
+
+                <div class="code-card">
+                    <h3>Tailwind CSS</h3>
+                    <div class="code-box">&lt;span class="font-sora font-bold text-2xl text-amber-400 italic tracking-tight"&gt;kausas&lt;/span&gt;</div>
+                    <button class="copy-btn" onclick="copiarTailwind()">Copiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLORS -->
+    <div class="section colors">
+        <div class="container">
+            <h2>Paleta de Cores</h2>
+            <div class="colors-grid">
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #fbbf24;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Gold Principal</div>
+                        <div class="color-code">#FBBF24</div>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #fcd34d;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Gold Light</div>
+                        <div class="color-code">#FCD34D</div>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #d97706;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Gold Dark</div>
+                        <div class="color-code">#D97706</div>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #b45309;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Gold Darker</div>
+                        <div class="color-code">#B45309</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GUIDELINES -->
+    <div class="section guidelines">
+        <div class="container">
+            <h2>Guia de Uso</h2>
+            <div class="guidelines-grid">
+                <div class="guideline-item">
+                    <h3>✅ Espaçamento</h3>
+                    <p>Mantenha 16px de espaço claro ao redor da logo em todos os lados</p>
+                </div>
+
+                <div class="guideline-item">
+                    <h3>✅ Tamanho Mínimo</h3>
+                    <p>Nunca use a logo menor que 32px de largura para manter legibilidade</p>
+                </div>
+
+                <div class="guideline-item">
+                    <h3>✅ Cor</h3>
+                    <p>Use sempre #FBBF24 como cor primária. Variações em casos específicos</p>
+                </div>
+
+                <div class="guideline-item">
+                    <h3>✅ Background</h3>
+                    <p>Funciona em backgrounds escuros. Contraste mínimo 4:5:1</p>
+                </div>
+
+                <div class="guideline-item">
+                    <h3>❌ Não Fazer</h3>
+                    <p>Não rotacione, distorça ou mude a cor sem aprovação</p>
+                </div>
+
+                <div class="guideline-item">
+                    <h3>❌ Não Fazer</h3>
+                    <p>Não sobreponha textos ou imagens sobre a logo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <h3>kausas</h3>
+            <p>Logo Official | Sistema de Marca Completo</p>
+            <p>Estilo Itálico Dinâmico | Cor Dourada #FBBF24</p>
+            <p style="margin-top: 30px; font-size: 0.75rem; color: #64748b;">© 2026 Kausas - Gestão Jurídica | Design System v1.0</p>
+        </div>
+    </footer>
+
+    <script>
+        function copiarHTML() {
+            const html = `<span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 2rem; color: #fbbf24; font-style: italic; letter-spacing: -1px;">kausas</span>`;
+            navigator.clipboard.writeText(html);
+            alert('✅ HTML copiado!');
+        }
+
+        function copiarCSS() {
+            const css = `.logo {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #fbbf24;
+  font-style: italic;
+  letter-spacing: -1px;
+}`;
+            navigator.clipboard.writeText(css);
+            alert('✅ CSS copiado!');
+        }
+
+        function copiarTailwind() {
+            const tailwind = `<span class="font-sora font-bold text-2xl text-amber-400 italic tracking-tight">kausas</span>`;
+            navigator.clipboard.writeText(tailwind);
+            alert('✅ Tailwind CSS copiado!');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Tipográfica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf1 100%);
+            min-height: 100vh;
+            padding: 60px 20px;
+            color: #1a1a1a;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+        }
+
+        /* Color Variables */
+        :root {
+            --teal-primary: #14b8a6;
+            --teal-dark: #0f766e;
+            --teal-light: #99f6e4;
+            --slate-light: #f1f5f9;
+            --slate-dark: #1e293b;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .logo-card {
+            background: white;
+            border-radius: 16px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .logo-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        }
+
+        .logo-card h3 {
+            margin-top: 24px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Logo Variations */
+        .logo-text {
+            text-align: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            letter-spacing: -1px;
+            transition: all 0.3s ease;
+        }
+
+        .logo-card:hover .logo-text {
+            filter: drop-shadow(0 8px 16px rgba(20, 184, 166, 0.2));
+        }
+
+        /* Style 1: Bold Primary Teal */
+        .style-1 {
+            font-size: 3.5rem;
+            color: var(--teal-primary);
+            font-weight: 700;
+            letter-spacing: -1.5px;
+        }
+
+        /* Style 2: Dark Teal with Underline */
+        .style-2 {
+            font-size: 2.8rem;
+            color: var(--teal-dark);
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .style-2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 3px;
+            background: var(--teal-primary);
+            border-radius: 2px;
+        }
+
+        /* Style 3: Minimalist with Accent */
+        .style-3 {
+            font-size: 2.5rem;
+            color: var(--teal-dark);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .style-3::first-letter {
+            color: var(--teal-primary);
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        /* Style 4: Modern Uppercase */
+        .style-4 {
+            font-size: 2.2rem;
+            color: var(--teal-primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Style 5: Two-tone */
+        .style-5 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .style-5 .part1 {
+            color: var(--teal-dark);
+        }
+
+        .style-5 .part2 {
+            color: var(--teal-primary);
+        }
+
+        /* Style 6: Geometric with Bracket */
+        .style-6 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 2.5rem;
+        }
+
+        .style-6 .bracket {
+            font-size: 2.8rem;
+            color: var(--teal-primary);
+            font-weight: 700;
+            opacity: 0.6;
+        }
+
+        .style-6 .text {
+            color: var(--teal-dark);
+            font-weight: 700;
+        }
+
+        /* Size Showcase */
+        .size-showcase {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+
+        .size-showcase h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #0f172a;
+        }
+
+        .sizes {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .size-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .size-container {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2f5 100%);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            color: var(--teal-primary);
+            letter-spacing: -1px;
+        }
+
+        /* Application Examples */
+        .applications {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+
+        .applications h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #0f172a;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .app-item {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2f5 100%);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .app-item h3 {
+            font-size: 0.875rem;
+            color: var(--teal-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .app-preview {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            color: var(--teal-primary);
+            letter-spacing: -1px;
+        }
+
+        .app-item.dark {
+            background: var(--teal-dark);
+            border-color: var(--teal-dark);
+        }
+
+        .app-item.dark h3 {
+            color: var(--teal-light);
+        }
+
+        .app-item.dark .app-preview {
+            background: rgba(20, 184, 166, 0.1);
+            color: var(--teal-light);
+        }
+
+        /* Color Reference */
+        .color-section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .color-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #0f172a;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .color-item {
+            text-align: center;
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 120px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .color-item:hover .color-swatch {
+            transform: scale(1.05);
+        }
+
+        .color-name {
+            font-size: 0.875rem;
+            color: #0f766e;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .color-code {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* Animation */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Logo Tipográfica</h1>
+
+        <!-- Main Logo Variations -->
+        <div class="gallery">
+            <!-- Style 1: Bold Primary -->
+            <div class="logo-card">
+                <div class="logo-text style-1">kausas</div>
+                <h3>Bold Primary</h3>
+            </div>
+
+            <!-- Style 2: Dark with Underline -->
+            <div class="logo-card">
+                <div class="logo-text style-2">kausas</div>
+                <h3>Modern Underline</h3>
+            </div>
+
+            <!-- Style 3: Minimalist -->
+            <div class="logo-card">
+                <div class="logo-text style-3">kausas</div>
+                <h3>Accent Initial</h3>
+            </div>
+
+            <!-- Style 4: Uppercase -->
+            <div class="logo-card">
+                <div class="logo-text style-4">kausas</div>
+                <h3>Geometric Bold</h3>
+            </div>
+
+            <!-- Style 5: Two-tone -->
+            <div class="logo-card">
+                <div class="logo-text style-5">
+                    <span class="part1">kau</span><span class="part2">sas</span>
+                </div>
+                <h3>Two-Tone Split</h3>
+            </div>
+
+            <!-- Style 6: Bracket -->
+            <div class="logo-card">
+                <div class="logo-text style-6">
+                    <span class="bracket">[</span>
+                    <span class="text">kausas</span>
+                    <span class="bracket">]</span>
+                </div>
+                <h3>Geometric Bracket</h3>
+            </div>
+        </div>
+
+        <!-- Size Variations -->
+        <div class="size-showcase">
+            <h2>Escalabilidade - Funciona em Qualquer Tamanho</h2>
+            <div class="sizes">
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 1.2rem; width: 100px; height: 80px;">kausas</div>
+                    <span class="size-label">16px - Web</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 2rem; width: 160px; height: 100px;">kausas</div>
+                    <span class="size-label">32px - App</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 3.5rem; width: 220px; height: 120px;">kausas</div>
+                    <span class="size-label">64px - Header</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 5rem; width: 280px; height: 140px;">kausas</div>
+                    <span class="size-label">128px - Billboard</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applications -->
+        <div class="applications">
+            <h2>Aplicações Recomendadas</h2>
+            <div class="apps-grid">
+                <div class="app-item">
+                    <h3>Website - Header</h3>
+                    <div class="app-preview" style="font-size: 2.5rem;">kausas</div>
+                    <p style="font-size: 0.875rem; color: #64748b;">Logo horizontal em topo de página</p>
+                </div>
+
+                <div class="app-item">
+                    <h3>App Mobile</h3>
+                    <div class="app-preview" style="font-size: 1.8rem;">kausas</div>
+                    <p style="font-size: 0.875rem; color: #64748b;">Compacto para navegação</p>
+                </div>
+
+                <div class="app-item">
+                    <h3>Email Signature</h3>
+                    <div class="app-preview" style="font-size: 1.2rem;">kausas</div>
+                    <p style="font-size: 0.875rem; color: #64748b;">Texto limpo em assinatura</p>
+                </div>
+
+                <div class="app-item dark">
+                    <h3>Dark Background</h3>
+                    <div class="app-preview" style="font-size: 2rem;">kausas</div>
+                    <p style="font-size: 0.875rem; color: #99f6e4;">Alto contraste garantido</p>
+                </div>
+
+                <div class="app-item">
+                    <h3>Impressão - Papel</h3>
+                    <div class="app-preview" style="font-size: 3.5rem;">kausas</div>
+                    <p style="font-size: 0.875rem; color: #64748b;">Qualidade em materiais impressos</p>
+                </div>
+
+                <div class="app-item">
+                    <h3>Social Media</h3>
+                    <div class="app-preview" style="font-size: 2.2rem;">kausas</div>
+                    <p style="font-size: 0.875rem; color: #64748b;">Posts e stories otimizados</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Palette Reference -->
+        <div class="color-section">
+            <h2>Paleta de Cores do Sistema</h2>
+            <div class="color-palette">
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #14b8a6;"></div>
+                    <div class="color-name">Primary Teal</div>
+                    <div class="color-code">#14B8A6 · RGB(20, 184, 166)</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #0f766e;"></div>
+                    <div class="color-name">Dark Teal</div>
+                    <div class="color-code">#0F766E · RGB(15, 118, 110)</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #99f6e4;"></div>
+                    <div class="color-name">Light Teal</div>
+                    <div class="color-code">#99F6E4 · RGB(153, 246, 228)</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #ffffff; border: 1px solid #e2e8f0;"></div>
+                    <div class="color-name">White</div>
+                    <div class="color-code">#FFFFFF · RGB(255, 255, 255)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

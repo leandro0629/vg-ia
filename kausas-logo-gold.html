@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Dourada</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            padding: 60px 20px;
+            color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #fbbf24;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .logo-card {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 60px 40px;
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .logo-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .logo-text {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: -1.5px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .logo-card:hover .logo-text {
+            filter: drop-shadow(0 10px 20px rgba(251, 191, 36, 0.3));
+            transform: scale(1.05);
+        }
+
+        .logo-card h3 {
+            margin-top: 24px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        /* Sizes */
+        .size-showcase {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 60px 40px;
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.1);
+            margin-bottom: 80px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .size-showcase h2 {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        .sizes {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .size-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .size-container {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: -1px;
+        }
+
+        /* SVG Export */
+        .export-section {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 60px 40px;
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.1);
+            text-align: center;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .export-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        .export-box {
+            background: rgba(251, 191, 36, 0.05);
+            border: 2px dashed rgba(251, 191, 36, 0.4);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .export-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #fcd34d;
+            transform: scale(1.05);
+        }
+
+        /* Color Info */
+        .color-info {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            margin-top: 40px;
+        }
+
+        .color-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .color-card {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 80px;
+            background: #fbbf24;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .color-name {
+            font-size: 0.875rem;
+            color: #fbbf24;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Logo Dourada</h1>
+
+        <!-- Main Variations -->
+        <div class="gallery">
+            <div class="logo-card">
+                <div class="logo-text">kausas</div>
+                <h3>Standard</h3>
+            </div>
+
+            <div class="logo-card">
+                <div class="logo-text" style="font-size: 3.5rem; letter-spacing: -2px;">KAUSAS</div>
+                <h3>Uppercase Bold</h3>
+            </div>
+
+            <div class="logo-card">
+                <div class="logo-text" style="font-size: 3rem; letter-spacing: 0.5px;">kausas</div>
+                <h3>Spaced</h3>
+            </div>
+        </div>
+
+        <!-- Sizes -->
+        <div class="size-showcase">
+            <h2>Escalabilidade</h2>
+            <div class="sizes">
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 1.2rem; width: 100px; height: 80px;">kausas</div>
+                    <span class="size-label">16px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 1.8rem; width: 140px; height: 90px;">kausas</div>
+                    <span class="size-label">32px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 3rem; width: 200px; height: 110px;">kausas</div>
+                    <span class="size-label">64px</span>
+                </div>
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 4.5rem; width: 280px; height: 140px;">kausas</div>
+                    <span class="size-label">128px+</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export -->
+        <div class="export-section">
+            <h2>Copiar para Usar</h2>
+
+            <div class="export-box">
+                <p style="color: #cbd5e1; margin-bottom: 20px; font-size: 0.875rem;">HTML para copiar e colar direto:</p>
+                <div class="export-code">
+&lt;span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 2rem; color: #fbbf24; letter-spacing: -1px;"&gt;kausas&lt;/span&gt;
+                </div>
+                <button class="copy-btn" onclick="copiarHTML()">Copiar HTML</button>
+            </div>
+
+            <div class="export-box">
+                <p style="color: #cbd5e1; margin-bottom: 20px; font-size: 0.875rem;">CSS puro:</p>
+                <div class="export-code">
+.logo {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #fbbf24;
+  letter-spacing: -1px;
+}
+                </div>
+                <button class="copy-btn" onclick="copiarCSS()">Copiar CSS</button>
+            </div>
+        </div>
+
+        <!-- Color Reference -->
+        <div class="color-info">
+            <h2>Cor do Logo</h2>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="color-swatch"></div>
+                    <div class="color-name">Gold Principal</div>
+                    <div class="color-code">#FBBF24</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #fcd34d;"></div>
+                    <div class="color-name">Gold Light (hover)</div>
+                    <div class="color-code">#FCD34D</div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #d97706;"></div>
+                    <div class="color-name">Gold Dark (shadow)</div>
+                    <div class="color-code">#D97706</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copiarHTML() {
+            const html = `<span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 2rem; color: #fbbf24; letter-spacing: -1px;">kausas</span>`;
+            navigator.clipboard.writeText(html);
+            alert('✅ HTML copiado!');
+        }
+
+        function copiarCSS() {
+            const css = `.logo {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #fbbf24;
+  letter-spacing: -1px;
+}`;
+            navigator.clipboard.writeText(css);
+            alert('✅ CSS copiado!');
+        }
+    </script>
+</body>
+</html>

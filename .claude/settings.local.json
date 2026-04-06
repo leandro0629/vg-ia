@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start index.html)",
+      "WebSearch",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "Bash(npx vercel:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm install:*)",
+      "Bash(git clone:*)",
+      "Bash(export NANOBANANA_GEMINI_API_KEY=\"AIzaSyAbf_5hpQp88GjUhlPOySHUyygq3bS96ig\")",
+      "Bash(setx NANOBANANA_GEMINI_API_KEY \"AIzaSyAbf_5hpQp88GjUhlPOySHUyygq3bS96ig\")",
+      "Skill(nano-banana)",
+      "Skill(nano-banana:*)",
+      "Bash(npm list:*)",
+      "Bash(chmod +x /c/Users/leand/Desktop/\"JUS IA\"/execute-setup.sh)"
+    ]
+  }
+}

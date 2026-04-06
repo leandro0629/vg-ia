@@ -1,0 +1,542 @@
+{
+  "name": "Automação Diários TCM/TCE",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "days": 1
+            }
+          ],
+          "triggerAtHour": 8,
+          "triggerAtMinute": 0
+        }
+      },
+      "name": "Cron - Diariamente 8h",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://tcm.ioepa.com.br/busca/",
+        "options": {}
+      },
+      "name": "GET TCM HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        450,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.tcepa.tc.br/diario-oficial",
+        "options": {}
+      },
+      "name": "GET TCE HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        450,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Analise este HTML do site TCM e extraia:\n1. Data do diário mais recente (formato YYYY-MM-DD)\n2. Link para download do PDF\n3. Título/número do diário\n\nResponda em JSON: {\"data\": \"YYYY-MM-DD\", \"url_pdf\": \"...\", \"titulo\": \"...\"}\n\nHTML:\n{{ $node[\"GET TCM HTML\"].json.body }}",
+              "role": "user"
+            }
+          ]
+        },
+        "maxTokens": 500
+      },
+      "name": "Claude - Analisar TCM",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        650,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Analise este HTML do site TCE e extraia:\n1. Data do diário mais recente (formato YYYY-MM-DD)\n2. Link para download do PDF\n3. Título/número do diário\n\nResponda em JSON: {\"data\": \"YYYY-MM-DD\", \"url_pdf\": \"...\", \"titulo\": \"...\"}\n\nHTML:\n{{ $node[\"GET TCE HTML\"].json.body }}",
+              "role": "user"
+            }
+          ]
+        },
+        "maxTokens": 500
+      },
+      "name": "Claude - Analisar TCE",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [
+        650,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrair respostas do Claude\nconst tcmData = JSON.parse($node['Claude - Analisar TCM'].json.message.content);\nconst tceData = JSON.parse($node['Claude - Analisar TCE'].json.message.content);\n\nreturn [\n  {\n    orgao: 'TCM',\n    data: tcmData.data,\n    url_pdf: tcmData.url_pdf,\n    titulo: tcmData.titulo\n  },\n  {\n    orgao: 'TCE',\n    data: tceData.data,\n    url_pdf: tceData.url_pdf,\n    titulo: tceData.titulo\n  }\n];"
+      },
+      "name": "Code - Formatar Dados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "search",
+        "table": "diarios",
+        "options": {}
+      },
+      "name": "Get - Última Data TCM",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        1050,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "search",
+        "table": "diarios",
+        "options": {}
+      },
+      "name": "Get - Última Data TCE",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        1050,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Comparar datas\nconst tcmItem = $input.item.json;\nconst ultimaTcm = $node['Get - Última Data TCM'].json?.records?.[0]?.data;\nconst ultimaTce = $node['Get - Última Data TCE'].json?.records?.[0]?.data;\n\nconst tcmNovo = !ultimaTcm || tcmItem[0].data > ultimaTcm;\nconst tceNovo = !ultimaTce || tcmItem[1].data > ultimaTce;\n\nreturn {\n  tcm: { ...tcmItem[0], novo: tcmNovo },\n  tce: { ...tcmItem[1], novo: tceNovo },\n  temNovo: tcmNovo || tceNovo\n};"
+      },
+      "name": "Code - Comparar Datas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1250,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": [
+            {
+              "condition": "custom expression",
+              "value": "={{ $node['Code - Comparar Datas'].json.temNovo }}"
+            }
+          ]
+        }
+      },
+      "name": "IF - Tem Novo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1450,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $node['Code - Comparar Datas'].json.tcm.url_pdf }}"
+      },
+      "name": "Download PDF TCM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1650,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $node['Code - Comparar Datas'].json.tce.url_pdf }}"
+      },
+      "name": "Download PDF TCE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1650,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "method": "upload",
+        "bucket": "diarios",
+        "fileName": "tcm_{{ $now.format('YYYY-MM-DD') }}.pdf"
+      },
+      "name": "Upload PDF TCM - Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        1850,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "method": "upload",
+        "bucket": "diarios",
+        "fileName": "tce_{{ $now.format('YYYY-MM-DD') }}.pdf"
+      },
+      "name": "Upload PDF TCE - Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        1850,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios",
+        "rows": {
+          "values": [
+            {
+              "key": "orgao",
+              "value": "TCM"
+            },
+            {
+              "key": "data",
+              "value": "={{ $node['Code - Comparar Datas'].json.tcm.data }}"
+            },
+            {
+              "key": "titulo",
+              "value": "={{ $node['Code - Comparar Datas'].json.tcm.titulo }}"
+            },
+            {
+              "key": "arquivo",
+              "value": "tcm_{{ $now.format('YYYY-MM-DD') }}.pdf"
+            }
+          ]
+        }
+      },
+      "name": "Insert - Diário TCM no Banco",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        2050,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios",
+        "rows": {
+          "values": [
+            {
+              "key": "orgao",
+              "value": "TCE"
+            },
+            {
+              "key": "data",
+              "value": "={{ $node['Code - Comparar Datas'].json.tce.data }}"
+            },
+            {
+              "key": "titulo",
+              "value": "={{ $node['Code - Comparar Datas'].json.tce.titulo }}"
+            },
+            {
+              "key": "arquivo",
+              "value": "tce_{{ $now.format('YYYY-MM-DD') }}.pdf"
+            }
+          ]
+        }
+      },
+      "name": "Insert - Diário TCE no Banco",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        2050,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "notifications",
+        "rows": {
+          "values": [
+            {
+              "key": "msg",
+              "value": "📋 Diário {{ $node['Code - Comparar Datas'].json.tcm.novo ? 'TCM' : 'TCE' }} atualizado - {{ $now.format('DD/MM/YYYY') }}"
+            },
+            {
+              "key": "read",
+              "value": false
+            }
+          ]
+        }
+      },
+      "name": "Create - Notificação na Kausas",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        2250,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "delete",
+        "table": "diarios",
+        "options": {}
+      },
+      "name": "Delete - PDF Anterior",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [
+        1850,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Cron - Diariamente 8h": {
+      "main": [
+        [
+          {
+            "node": "GET TCM HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET TCE HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET TCM HTML": {
+      "main": [
+        [
+          {
+            "node": "Claude - Analisar TCM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET TCE HTML": {
+      "main": [
+        [
+          {
+            "node": "Claude - Analisar TCE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude - Analisar TCM": {
+      "main": [
+        [
+          {
+            "node": "Code - Formatar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude - Analisar TCE": {
+      "main": [
+        [
+          {
+            "node": "Code - Formatar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Formatar Dados": {
+      "main": [
+        [
+          {
+            "node": "Get - Última Data TCM",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get - Última Data TCE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get - Última Data TCM": {
+      "main": [
+        [
+          {
+            "node": "Code - Comparar Datas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get - Última Data TCE": {
+      "main": [
+        [
+          {
+            "node": "Code - Comparar Datas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Comparar Datas": {
+      "main": [
+        [
+          {
+            "node": "IF - Tem Novo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Tem Novo?": {
+      "main": [
+        [
+          {
+            "node": "Download PDF TCM",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download PDF TCE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code - Log Sem Atualização",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download PDF TCM": {
+      "main": [
+        [
+          {
+            "node": "Upload PDF TCM - Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download PDF TCE": {
+      "main": [
+        [
+          {
+            "node": "Upload PDF TCE - Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload PDF TCM - Supabase": {
+      "main": [
+        [
+          {
+            "node": "Insert - Diário TCM no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload PDF TCE - Supabase": {
+      "main": [
+        [
+          {
+            "node": "Insert - Diário TCE no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert - Diário TCM no Banco": {
+      "main": [
+        [
+          {
+            "node": "Delete - PDF Anterior",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert - Diário TCE no Banco": {
+      "main": [
+        [
+          {
+            "node": "Delete - PDF Anterior",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete - PDF Anterior": {
+      "main": [
+        [
+          {
+            "node": "Create - Notificação na Kausas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

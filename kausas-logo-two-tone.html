@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Two-Tone Split</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            padding: 60px 20px;
+            color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #ffffff;
+        }
+
+        /* Color Variables - Platform Colors */
+        :root {
+            --teal-primary: #14b8a6;
+            --gold-accent: #fbbf24;
+            --purple-accent: #a855f7;
+            --bg-dark: #0a0e27;
+            --card-bg: #1a1f3a;
+            --text-primary: #f5f5f5;
+            --text-secondary: #cbd5e1;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .logo-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 50px 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+            border: 1px solid rgba(20, 184, 166, 0.1);
+        }
+
+        .logo-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(20, 184, 166, 0.15);
+            border-color: rgba(20, 184, 166, 0.3);
+        }
+
+        .logo-card h3 {
+            margin-top: 24px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .logo-text {
+            text-align: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            letter-spacing: -1px;
+            transition: all 0.3s ease;
+        }
+
+        .logo-card:hover .logo-text {
+            filter: drop-shadow(0 8px 20px rgba(20, 184, 166, 0.3));
+        }
+
+        /* Variation 1: Teal + Gold */
+        .style-1 {
+            font-size: 3.5rem;
+            line-height: 1;
+        }
+
+        .style-1 .part1 {
+            color: var(--teal-primary);
+            display: inline;
+        }
+
+        .style-1 .part2 {
+            color: var(--gold-accent);
+            display: inline;
+        }
+
+        /* Variation 2: Teal + Purple */
+        .style-2 {
+            font-size: 3.5rem;
+            line-height: 1;
+        }
+
+        .style-2 .part1 {
+            color: var(--teal-primary);
+            display: inline;
+        }
+
+        .style-2 .part2 {
+            color: var(--purple-accent);
+            display: inline;
+        }
+
+        /* Variation 3: Gold dominant */
+        .style-3 {
+            font-size: 3.5rem;
+            line-height: 1;
+        }
+
+        .style-3 .part1 {
+            color: var(--gold-accent);
+            display: inline;
+        }
+
+        .style-3 .part2 {
+            color: var(--teal-primary);
+            display: inline;
+        }
+
+        /* Size Showcase */
+        .size-showcase {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 40px;
+            border: 1px solid rgba(20, 184, 166, 0.1);
+        }
+
+        .sizes {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .size-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .size-container {
+            background: rgba(20, 184, 166, 0.05);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        /* Platform Usage */
+        .platform-usage {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 40px;
+            border: 1px solid rgba(20, 184, 166, 0.1);
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .usage-item {
+            background: rgba(20, 184, 166, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(20, 184, 166, 0.2);
+        }
+
+        .usage-item h3 {
+            font-size: 0.875rem;
+            color: var(--teal-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .usage-preview {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            letter-spacing: -1px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-gold .usage-preview {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(20, 184, 166, 0.05) 100%);
+        }
+
+        .preview-gold .part1 { color: var(--gold-accent); }
+        .preview-gold .part2 { color: var(--teal-primary); }
+
+        .preview-purple .usage-preview {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(20, 184, 166, 0.05) 100%);
+        }
+
+        .preview-purple .part1 { color: var(--teal-primary); }
+        .preview-purple .part2 { color: var(--purple-accent); }
+
+        .preview-main .usage-preview {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(20, 184, 166, 0.05) 100%);
+        }
+
+        .preview-main .part1 { color: var(--teal-primary); }
+        .preview-main .part2 { color: var(--gold-accent); }
+
+        .usage-item p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Color Palette */
+        .color-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(20, 184, 166, 0.1);
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .color-item {
+            text-align: center;
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 120px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .color-item:hover .color-swatch {
+            transform: scale(1.05);
+        }
+
+        .color-name {
+            font-size: 0.875rem;
+            color: var(--teal-primary);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Recommended Badge */
+        .recommended {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--gold-accent);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-card {
+            position: relative;
+        }
+
+        .recommended-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--gold-accent);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Two-Tone Split Logo</h1>
+
+        <!-- Main Logo Variations -->
+        <div class="gallery">
+            <!-- Recommended: Teal + Gold -->
+            <div class="logo-card">
+                <div class="recommended-badge">⭐ Recomendado</div>
+                <div class="logo-text style-1">
+                    <span class="part1">kau</span><span class="part2">sas</span>
+                </div>
+                <h3>Teal + Gold (Principal)</h3>
+            </div>
+
+            <!-- Teal + Purple -->
+            <div class="logo-card">
+                <div class="logo-text style-2">
+                    <span class="part1">kau</span><span class="part2">sas</span>
+                </div>
+                <h3>Teal + Purple</h3>
+            </div>
+
+            <!-- Gold Dominant -->
+            <div class="logo-card">
+                <div class="logo-text style-3">
+                    <span class="part1">kau</span><span class="part2">sas</span>
+                </div>
+                <h3>Gold + Teal (Invertido)</h3>
+            </div>
+        </div>
+
+        <!-- Size Variations -->
+        <div class="size-showcase">
+            <h2>Escalabilidade - All Sizes</h2>
+            <div class="sizes">
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 1.2rem; width: 100px; height: 80px;">
+                        <span style="color: var(--teal-primary);">kau</span><span style="color: var(--gold-accent);">sas</span>
+                    </div>
+                    <span class="size-label">16px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 2rem; width: 160px; height: 100px;">
+                        <span style="color: var(--teal-primary);">kau</span><span style="color: var(--gold-accent);">sas</span>
+                    </div>
+                    <span class="size-label">32px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 3.5rem; width: 220px; height: 120px;">
+                        <span style="color: var(--teal-primary);">kau</span><span style="color: var(--gold-accent);">sas</span>
+                    </div>
+                    <span class="size-label">64px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-container" style="font-size: 5rem; width: 280px; height: 140px;">
+                        <span style="color: var(--teal-primary);">kau</span><span style="color: var(--gold-accent);">sas</span>
+                    </div>
+                    <span class="size-label">128px</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Usage -->
+        <div class="platform-usage">
+            <h2>Aplicações na Plataforma</h2>
+            <div class="usage-grid">
+                <div class="usage-item preview-main">
+                    <h3>Header Principal</h3>
+                    <div class="usage-preview">
+                        <span class="part1">kau</span><span class="part2">sas</span>
+                    </div>
+                    <p>Logo padrão em topo de página e sidebar</p>
+                </div>
+
+                <div class="usage-item preview-gold">
+                    <h3>Destaque Dourado</h3>
+                    <div class="usage-preview">
+                        <span class="part1">kau</span><span class="part2">sas</span>
+                    </div>
+                    <p>Para seções premium ou destaque especial</p>
+                </div>
+
+                <div class="usage-item preview-purple">
+                    <h3>Variação Roxa</h3>
+                    <div class="usage-preview">
+                        <span class="part1">kau</span><span class="part2">sas</span>
+                    </div>
+                    <p>Para temas alternativos ou secundários</p>
+                </div>
+
+                <div class="usage-item" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(20, 184, 166, 0.05) 100%); border-color: rgba(251, 191, 36, 0.3);">
+                    <h3>Dark Theme</h3>
+                    <div class="usage-preview" style="font-size: 2rem; background: transparent;">
+                        <span style="color: var(--teal-primary);">kau</span><span style="color: var(--gold-accent);">sas</span>
+                    </div>
+                    <p>Funciona perfeitamente em background escuro</p>
+                </div>
+
+                <div class="usage-item" style="background: rgba(245, 245, 245, 0.05); border-color: rgba(245, 245, 245, 0.2);">
+                    <h3>Print & Export</h3>
+                    <div class="usage-preview" style="font-size: 2rem; background: transparent;">
+                        <span style="color: #000;">kau</span><span style="color: var(--gold-accent);">sas</span>
+                    </div>
+                    <p>Versão otimizada para impressão</p>
+                </div>
+
+                <div class="usage-item preview-main">
+                    <h3>Favicon & Apps</h3>
+                    <div class="usage-preview" style="font-size: 1.5rem; background: linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(251, 191, 36, 0.1) 100%);">
+                        <span class="part1">kau</span><span class="part2">sas</span>
+                    </div>
+                    <p>Compacto e escalável para ícones</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="color-section">
+            <h2>Paleta de Cores da Plataforma</h2>
+            <div class="color-palette">
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #14b8a6;"></div>
+                    <div class="color-name">Teal Primary</div>
+                    <div class="color-code">#14B8A6</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #fbbf24;"></div>
+                    <div class="color-name">Gold Accent</div>
+                    <div class="color-code">#FBbf24</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #a855f7;"></div>
+                    <div class="color-name">Purple Alt</div>
+                    <div class="color-code">#A855F7</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #0a0e27;"></div>
+                    <div class="color-name">Dark BG</div>
+                    <div class="color-code">#0A0E27</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #1a1f3a;"></div>
+                    <div class="color-name">Card BG</div>
+                    <div class="color-code">#1A1F3A</div>
+                </div>
+                <div class="color-item">
+                    <div class="color-swatch" style="background: #f5f5f5;"></div>
+                    <div class="color-name">Text Primary</div>
+                    <div class="color-code">#F5F5F5</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "name": "Email Notificação - Nova Tarefa",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-notificacao-nova-tarefa",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "leandrosmg0629@gmail.com",
+        "subject": "=📌 [JUS IA] {{ $json.tipo_notificacao === 'criada' ? 'Nova Missão: ' : $json.tipo_notificacao === 'status_mudou' ? 'Status Atualizado: ' : '⏰ Prazo se Aproximando: ' }}{{ $json.titulo }}",
+        "emailType": "html",
+        "message": "=<html>\n<body style=\"font-family:Inter,sans-serif;background:#0B0B0C;color:#fff;padding:20px;margin:0\">\n<div style=\"max-width:600px;margin:0 auto;background:#1A1A1D;border-radius:12px;overflow:hidden\">\n\n  <div style=\"background:linear-gradient(135deg,#F59E0B,#D97706);padding:28px 24px;text-align:center\">\n    <h1 style=\"margin:0;font-size:22px;color:#000\">\n      {{ $json.tipo_notificacao === 'criada' ? '📌 Nova Missão Criada' : $json.tipo_notificacao === 'status_mudou' ? '🔄 Status da Missão Alterado' : $json.tipo_notificacao === 'prazo_3_dias' ? '⏰ Missão Vence em 3 Dias' : $json.tipo_notificacao === 'prazo_2_dias' ? '⏰ Missão Vence em 2 Dias' : '🚨 Missão Vence Amanhã!' }}\n    </h1>\n  </div>\n\n  <div style=\"padding:24px\">\n    <div style=\"background:#121214;border-left:4px solid #F59E0B;border-radius:8px;padding:20px;margin-bottom:20px\">\n\n      <div style=\"margin-bottom:12px\">\n        <div style=\"font-size:11px;color:#A1A1AA;text-transform:uppercase;font-weight:600;margin-bottom:4px\">Título</div>\n        <div style=\"font-size:16px;font-weight:600\">{{ $json.titulo }}</div>\n      </div>\n\n      {{ $json.descricao ? '<div style=\"margin-bottom:12px\"><div style=\"font-size:11px;color:#A1A1AA;text-transform:uppercase;font-weight:600;margin-bottom:4px\">Descrição</div><div style=\"font-size:14px\">' + $json.descricao + '</div></div>' : '' }}\n\n      <div style=\"margin-bottom:12px\">\n        <div style=\"font-size:11px;color:#A1A1AA;text-transform:uppercase;font-weight:600;margin-bottom:4px\">Responsável</div>\n        <div style=\"font-size:14px\">{{ $json.responsavel || 'Não atribuído' }}</div>\n      </div>\n\n      {{ $json.data_vencimento ? '<div style=\"margin-bottom:12px\"><div style=\"font-size:11px;color:#A1A1AA;text-transform:uppercase;font-weight:600;margin-bottom:4px\">Data de Vencimento</div><div style=\"font-size:14px\">' + $json.data_vencimento + '</div></div>' : '' }}\n\n      <div style=\"margin-bottom:12px\">\n        <div style=\"font-size:11px;color:#A1A1AA;text-transform:uppercase;font-weight:600;margin-bottom:4px\">Status</div>\n        <div style=\"display:inline-block;background:rgba(245,158,11,0.2);color:#F59E0B;padding:4px 12px;border-radius:6px;font-size:13px;font-weight:600\">{{ $json.status }}</div>\n      </div>\n\n      <div>\n        <div style=\"font-size:11px;color:#A1A1AA;text-transform:uppercase;font-weight:600;margin-bottom:4px\">Prioridade</div>\n        <div style=\"font-size:14px\">{{ $json.prioridade }}</div>\n      </div>\n    </div>\n\n    <a href=\"{{ $json.link_tarefa }}\" style=\"display:inline-block;background:#F59E0B;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px\">Ver Missão no JUS IA</a>\n  </div>\n\n  <div style=\"background:#0B0B0C;padding:16px 24px;text-align:center;font-size:12px;color:#A1A1AA;border-top:1px solid #2A2A2E\">\n    Notificação automática do Sistema JUS IA — não responda este email\n  </div>\n</div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "gmail",
+      "name": "Enviar Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [550, 300],
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

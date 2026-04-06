@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Bars Variations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            color: #f5f5f5;
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(26, 31, 58, 0.8) 0%, rgba(26, 31, 58, 0.95) 100%);
+            border-radius: 20px;
+            padding: 60px 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 340px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 30px 80px rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .logo-display {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #cbd5e1;
+            margin-top: 25px;
+            font-weight: 700;
+        }
+
+        .card p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        .text {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: -0.5px;
+        }
+
+        /* Icon Container */
+        .icon-box {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            gap: 4px;
+        }
+
+        /* ===== ICON STYLES ===== */
+
+        /* V1: Bars Solid Thin */
+        .v1 {
+            display: flex;
+            gap: 4px;
+        }
+
+        .v1 span {
+            width: 5px;
+            height: 28px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* V2: Bars Solid Medium */
+        .v2 {
+            display: flex;
+            gap: 5px;
+        }
+
+        .v2 span {
+            width: 7px;
+            height: 32px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* V3: Bars Solid Large (como na imagem) */
+        .v3 {
+            display: flex;
+            gap: 6px;
+        }
+
+        .v3 span {
+            width: 8px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* V4: Bars Outline Thin */
+        .v4 {
+            display: flex;
+            gap: 4px;
+        }
+
+        .v4 span {
+            width: 5px;
+            height: 28px;
+            border: 2px solid #fbbf24;
+            border-radius: 2px;
+            background: transparent;
+        }
+
+        /* V5: Bars Outline Medium */
+        .v5 {
+            display: flex;
+            gap: 5px;
+        }
+
+        .v5 span {
+            width: 7px;
+            height: 32px;
+            border: 2px solid #fbbf24;
+            border-radius: 2px;
+            background: transparent;
+        }
+
+        /* V6: Bars Outline Large */
+        .v6 {
+            display: flex;
+            gap: 6px;
+        }
+
+        .v6 span {
+            width: 8px;
+            height: 36px;
+            border: 2px solid #fbbf24;
+            border-radius: 2px;
+            background: transparent;
+        }
+
+        /* V7: Bars Gradient */
+        .v7 {
+            display: flex;
+            gap: 6px;
+        }
+
+        .v7 span {
+            width: 8px;
+            height: 36px;
+            background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+            border-radius: 2px;
+        }
+
+        /* V8: Bars Rounded (mais arredondado) */
+        .v8 {
+            display: flex;
+            gap: 6px;
+        }
+
+        .v8 span {
+            width: 8px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 4px;
+        }
+
+        /* V9: Bars Pill (muito arredondado) */
+        .v9 {
+            display: flex;
+            gap: 6px;
+        }
+
+        .v9 span {
+            width: 8px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 6px;
+        }
+
+        /* V10: Bars Thick */
+        .v10 {
+            display: flex;
+            gap: 5px;
+        }
+
+        .v10 span {
+            width: 10px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* V11: Bars with Shadow */
+        .v11 {
+            display: flex;
+            gap: 6px;
+        }
+
+        .v11 span {
+            width: 8px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 2px;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        /* V12: Bars Staggered */
+        .v12 {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 44px;
+        }
+
+        .v12 span:nth-child(1) {
+            width: 8px;
+            height: 20px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        .v12 span:nth-child(2) {
+            width: 8px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        .v12 span:nth-child(3) {
+            width: 8px;
+            height: 28px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* V13: Bars Animated Style */
+        .v13 {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .v13 span {
+            width: 6px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 3px;
+        }
+
+        /* V14: Bars Double Stack */
+        .v14 {
+            display: flex;
+            gap: 8px;
+        }
+
+        .v14 span {
+            width: 6px;
+            height: 36px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* V15: Bars Compact */
+        .v15 {
+            display: flex;
+            gap: 3px;
+        }
+
+        .v15 span {
+            width: 6px;
+            height: 32px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* Showcase */
+        .showcase {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(10, 14, 39, 0.8) 100%);
+            padding: 80px 40px;
+            border-radius: 20px;
+            margin-bottom: 60px;
+            margin-top: 60px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .showcase h2 {
+            font-size: 2rem;
+            color: #fbbf24;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .showcase-item {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .showcase-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.1);
+        }
+
+        .showcase-logo-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .showcase-item h3 {
+            font-size: 1rem;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .showcase-item p {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* Sizes */
+        .sizes-section {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(10, 14, 39, 0.8) 100%);
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin-bottom: 60px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .sizes-section h2 {
+            font-size: 1.8rem;
+            color: #fbbf24;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .sizes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 25px;
+        }
+
+        .size-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .size-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .size-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 90px;
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #cbd5e1;
+            font-weight: 700;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1f3a;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            padding: 40px 20px;
+            text-align: center;
+            color: #cbd5e1;
+            border-radius: 16px;
+            margin-top: 60px;
+        }
+
+        footer p {
+            margin: 10px 0;
+        }
+
+        footer .gold {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Badge */
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #fbbf24;
+            color: #0a0e27;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Logo Bars</h1>
+        <p style="text-align: center; color: #cbd5e1; margin-bottom: 50px;">15 Variações de Barras | Sem Itálico | K Maiúsculo</p>
+
+        <!-- Gallery -->
+        <div class="gallery">
+            <!-- V1: Bars Solid Thin -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v1">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Solid Thin</h3>
+                <p>Minimalista e elegante</p>
+            </div>
+
+            <!-- V2: Bars Solid Medium -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v2">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Solid Medium</h3>
+                <p>Equilibrado e moderno</p>
+            </div>
+
+            <!-- V3: Bars Solid Large (RECOMENDADO) -->
+            <div class="card">
+                <div class="badge">⭐ RECOMENDADO</div>
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v3">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Solid Large</h3>
+                <p>Forte e marcante (Como na imagem)</p>
+            </div>
+
+            <!-- V4: Bars Outline Thin -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v4">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Outline Thin</h3>
+                <p>Clean e sofisticado</p>
+            </div>
+
+            <!-- V5: Bars Outline Medium -->
+            <div class="card">
+                <div class="badge">⭐ POPULAR</div>
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v5">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Outline Medium</h3>
+                <p>Profissional e versátil</p>
+            </div>
+
+            <!-- V6: Bars Outline Large -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v6">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Outline Large</h3>
+                <p>Minimalista e moderno</p>
+            </div>
+
+            <!-- V7: Bars Gradient -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v7">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Gradient</h3>
+                <p>Dinâmico com gradiente</p>
+            </div>
+
+            <!-- V8: Bars Rounded -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v8">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Rounded</h3>
+                <p>Suave e amigável</p>
+            </div>
+
+            <!-- V9: Bars Pill -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v9">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Pill</h3>
+                <p>Muito arredondado e moderno</p>
+            </div>
+
+            <!-- V10: Bars Thick -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v10">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Thick</h3>
+                <p>Bold e impactante</p>
+            </div>
+
+            <!-- V11: Bars with Shadow -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v11">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Shadow</h3>
+                <p>Com efeito de profundidade</p>
+            </div>
+
+            <!-- V12: Bars Staggered -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v12">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Staggered</h3>
+                <p>Dinâmico e ritmado</p>
+            </div>
+
+            <!-- V13: Bars Compact -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v13">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Compact</h3>
+                <p>Compacto e fechado</p>
+            </div>
+
+            <!-- V14: Bars Double Stack -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v14">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Wide</h3>
+                <p>Espaçado e respira</p>
+            </div>
+
+            <!-- V15: Bars Compact Thin -->
+            <div class="card">
+                <div class="badge">⭐ FAVORITO</div>
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v15">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">Kausas</div>
+                </div>
+                <h3>Bars Compact Thin</h3>
+                <p>Minimalista e sofisticado</p>
+            </div>
+        </div>
+
+        <!-- Top Recommendations -->
+        <div class="showcase">
+            <h2>⭐ Top 3 Recomendadas</h2>
+            <div class="showcase-grid">
+                <div class="showcase-item">
+                    <div class="showcase-logo-display">
+                        <div class="icon-box">
+                            <div class="v3">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="text" style="font-size: 2rem;">Kausas</div>
+                    </div>
+                    <h3>Bars Solid Large</h3>
+                    <p>Forte, marcante e fácil de lembrar (como na sua imagem)</p>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-logo-display">
+                        <div class="icon-box">
+                            <div class="v5">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="text" style="font-size: 2rem;">Kausas</div>
+                    </div>
+                    <h3>Bars Outline Medium</h3>
+                    <p>Profissional, clean e versátil</p>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-logo-display">
+                        <div class="icon-box">
+                            <div class="v15">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="text" style="font-size: 2rem;">Kausas</div>
+                    </div>
+                    <h3>Bars Compact Thin</h3>
+                    <p>Minimalista, sofisticado e moderno</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sizes -->
+        <div class="sizes-section">
+            <h2>Escalabilidade - Bars Solid Large</h2>
+            <div class="sizes-grid">
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 0.9rem; gap: 4px;">
+                        <div class="v3" style="transform: scale(0.5); transform-origin: left center;">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700; font-size: 0.9rem;">Kausas</span>
+                    </div>
+                    <span class="size-label">16px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 1.2rem; gap: 6px;">
+                        <div class="v3" style="transform: scale(0.7); transform-origin: left center;">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700; font-size: 1.2rem;">Kausas</span>
+                    </div>
+                    <span class="size-label">32px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 1.6rem; gap: 8px;">
+                        <div class="v3" style="transform: scale(0.85); transform-origin: left center;">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700; font-size: 1.6rem;">Kausas</span>
+                    </div>
+                    <span class="size-label">64px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 2.2rem; gap: 10px;">
+                        <div class="v3">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <span style="color: #fbbf24; font-weight: 700; font-size: 2.2rem;">Kausas</span>
+                    </div>
+                    <span class="size-label">128px+</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p><span class="gold">Kausas</span> - Sistema de Logo Bars</p>
+            <p>15 Variações | Sem Itálico | K Maiúsculo | Profissional</p>
+            <p style="margin-top: 20px; font-size: 0.75rem; color: #64748b;">© 2026 Kausas - Gestão Jurídica</p>
+        </footer>
+    </div>
+</body>
+</html>

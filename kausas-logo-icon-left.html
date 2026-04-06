@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Logo Icon + Text</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: #0a0e27;
+            color: #f5f5f5;
+            padding: 60px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .card {
+            background: #1a1f3a;
+            border-radius: 16px;
+            padding: 50px 40px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .logo-display {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #cbd5e1;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .card p {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            font-style: italic;
+            letter-spacing: -1px;
+        }
+
+        /* Icon Container */
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* 1. Square Solid */
+        .v1 {
+            width: 40px;
+            height: 40px;
+            background: #fbbf24;
+            border-radius: 6px;
+        }
+
+        /* 2. Square with Border */
+        .v2 {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid #fbbf24;
+            border-radius: 6px;
+        }
+
+        /* 3. Hexagon Solid */
+        .v3 {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* 4. Circle Solid */
+        .v4 {
+            width: 40px;
+            height: 40px;
+            background: #fbbf24;
+            border-radius: 50%;
+        }
+
+        /* 5. Circle with Border */
+        .v5 {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid #fbbf24;
+            border-radius: 50%;
+        }
+
+        /* 6. Diamond */
+        .v6 {
+            width: 40px;
+            height: 40px;
+            background: #fbbf24;
+            transform: rotate(45deg);
+            border-radius: 4px;
+        }
+
+        /* 7. Triangle */
+        .v7 {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 35px solid #fbbf24;
+        }
+
+        /* 8. Rounded Square */
+        .v8 {
+            width: 40px;
+            height: 40px;
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+
+        /* 9. Double Square */
+        .v9 {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            background: #fbbf24;
+            border-radius: 6px;
+        }
+
+        .v9::before {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #0a0e27;
+            border-radius: 4px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 10. Bracket Shape */
+        .v10 {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid #fbbf24;
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+        }
+
+        /* 11. Scales */
+        .v11 {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .v11::before,
+        .v11::after {
+            content: '';
+            width: 5px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        .v11::before {
+            height: 10px;
+        }
+
+        .v11::after {
+            height: 14px;
+        }
+
+        /* 12. Hexagon Border */
+        .v12 {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* 13. Square with Dot */
+        .v13 {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid #fbbf24;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .v13::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #fbbf24;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 14. Bars */
+        .v14 {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .v14::before,
+        .v14::after {
+            content: '';
+            width: 100%;
+            height: 4px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        .v14 span {
+            width: 100%;
+            height: 4px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        /* 15. Arrow */
+        .v15 {
+            width: 40px;
+            height: 40px;
+            border: 2.5px solid #fbbf24;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .v15::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border: 2px solid #fbbf24;
+            border-left: none;
+            border-bottom: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-60%, -50%) rotate(45deg);
+        }
+
+        /* Showcase Section */
+        .showcase {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+            padding: 60px 40px;
+            border-radius: 16px;
+            margin-bottom: 60px;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .showcase-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .showcase-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .showcase-item-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .showcase-item h3 {
+            font-size: 0.875rem;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .showcase-item p {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        /* Sizes */
+        .sizes-section {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(10, 14, 39, 0.8) 100%);
+            padding: 60px 40px;
+            border-radius: 16px;
+            margin-bottom: 60px;
+        }
+
+        .sizes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 25px;
+        }
+
+        .size-item {
+            background: #1a1f3a;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .size-item:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+        }
+
+        .size-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 80px;
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1f3a;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            padding: 40px 20px;
+            text-align: center;
+            color: #cbd5e1;
+            border-radius: 16px;
+        }
+
+        footer p {
+            margin: 10px 0;
+        }
+
+        footer .gold {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kausas - Logo Icon + Text (Estilo Trello)</h1>
+
+        <!-- Variations Grid -->
+        <div class="gallery">
+            <!-- V1: Square Solid -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v1"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>1. Square Solid</h3>
+                <p>Sólido e direto</p>
+            </div>
+
+            <!-- V2: Square Border -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v2"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>2. Square Border</h3>
+                <p>Minimalista outline</p>
+            </div>
+
+            <!-- V3: Hexagon Solid -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg class="v3" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 4L32 11L32 27L20 34L8 27L8 11L20 4Z" fill="#fbbf24"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>3. Hexagon Solid</h3>
+                <p>Moderno e estruturado</p>
+            </div>
+
+            <!-- V4: Circle Solid -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v4"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>4. Circle Solid</h3>
+                <p>Suave e amigável</p>
+            </div>
+
+            <!-- V5: Circle Border -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v5"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>5. Circle Border</h3>
+                <p>Clean e elegante</p>
+            </div>
+
+            <!-- V6: Diamond -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v6"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>6. Diamond</h3>
+                <p>Dinâmico e diferente</p>
+            </div>
+
+            <!-- V7: Triangle -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v7"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>7. Triangle</h3>
+                <p>Movimento e ação</p>
+            </div>
+
+            <!-- V8: Rounded Square -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v8"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>8. Rounded Square</h3>
+                <p>Modern iOS style</p>
+            </div>
+
+            <!-- V9: Double Square -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v9"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>9. Double Square</h3>
+                <p>Camadas de complexidade</p>
+            </div>
+
+            <!-- V10: Bracket -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v10"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>10. Bracket</h3>
+                <p>Organização e estrutura</p>
+            </div>
+
+            <!-- V11: Scales -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v11"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>11. Scales</h3>
+                <p>Equilíbrio e justiça</p>
+            </div>
+
+            <!-- V12: Hexagon Border -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <svg class="v12" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 4L32 11L32 27L20 34L8 27L8 11L20 4Z" stroke="#fbbf24" stroke-width="2.5"/>
+                        </svg>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>12. Hexagon Border</h3>
+                <p>Outline moderno</p>
+            </div>
+
+            <!-- V13: Square with Dot -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v13"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>13. Square + Dot</h3>
+                <p>Foco e objetivo</p>
+            </div>
+
+            <!-- V14: Bars -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box">
+                        <div class="v14">
+                            <span></span>
+                        </div>
+                    </div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>14. Bars</h3>
+                <p>Menu/organização</p>
+            </div>
+
+            <!-- V15: Arrow -->
+            <div class="card">
+                <div class="logo-display">
+                    <div class="icon-box"><div class="v15"></div></div>
+                    <div class="text">kausas</div>
+                </div>
+                <h3>15. Arrow</h3>
+                <p>Direção e crescimento</p>
+            </div>
+        </div>
+
+        <!-- Showcase Best Variations -->
+        <div class="showcase">
+            <h2>Melhores Variações para Branding</h2>
+            <div class="showcase-grid">
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="icon-box"><div class="v1"></div></div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Square Solid</h3>
+                            <p>Melhor para logo principal</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="icon-box">
+                            <svg class="v3" style="width: 40px; height: 40px;" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 4L32 11L32 27L20 34L8 27L8 11L20 4Z" fill="#fbbf24"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Hexagon Solid</h3>
+                            <p>Melhor para logo moderna</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="showcase-item">
+                    <div class="showcase-item-logo">
+                        <div class="icon-box"><div class="v2"></div></div>
+                        <div>
+                            <div class="text" style="font-size: 1.5rem;">kausas</div>
+                            <h3>Square Border</h3>
+                            <p>Melhor para minimalista</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Size Showcase -->
+        <div class="sizes-section">
+            <h2>Escalabilidade - Variação Square Solid</h2>
+            <div class="sizes-grid">
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 0.9rem; gap: 6px;">
+                        <div style="width: 20px; height: 20px; background: #fbbf24; border-radius: 3px;"></div>
+                        <span style="color: #fbbf24; font-weight: 700; font-style: italic;">kausas</span>
+                    </div>
+                    <span class="size-label">16px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 1.2rem; gap: 8px;">
+                        <div style="width: 28px; height: 28px; background: #fbbf24; border-radius: 4px;"></div>
+                        <span style="color: #fbbf24; font-weight: 700; font-style: italic;">kausas</span>
+                    </div>
+                    <span class="size-label">32px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 1.6rem; gap: 10px;">
+                        <div style="width: 36px; height: 36px; background: #fbbf24; border-radius: 5px;"></div>
+                        <span style="color: #fbbf24; font-weight: 700; font-style: italic;">kausas</span>
+                    </div>
+                    <span class="size-label">64px</span>
+                </div>
+
+                <div class="size-item">
+                    <div class="size-preview" style="font-size: 2.2rem; gap: 12px;">
+                        <div style="width: 48px; height: 48px; background: #fbbf24; border-radius: 6px;"></div>
+                        <span style="color: #fbbf24; font-weight: 700; font-style: italic;">kausas</span>
+                    </div>
+                    <span class="size-label">128px+</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Logo System <span class="gold">Kausas</span> - Icon + Text Variations</p>
+            <p>15 Variações | Estilo Trello | Escalável | Profissional</p>
+            <p style="margin-top: 20px; font-size: 0.75rem; color: #64748b;">© 2026 Kausas - Gestão Jurídica</p>
+        </footer>
+    </div>
+</body>
+</html>
