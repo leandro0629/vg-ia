@@ -1,0 +1,547 @@
+{
+  "name": "🔔 Automação Diários TCM/TCE - COM RETRY ATÉ 12H",
+  "description": "Verifica diariamente TCM e TCE. Se não achar, tenta a cada 30min até 12h",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "days": 1
+            }
+          ],
+          "triggerAtHour": 8,
+          "triggerAtMinute": 0,
+          "timezone": "America/Belem"
+        }
+      },
+      "name": "⏰ Cron - 8h Diariamente",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verificar se ainda está dentro do horário (até 12h)\nconst agora = new Date();\nconst horaAtual = agora.getHours();\nconst minutoAtual = agora.getMinutes();\n\n// Se passou de 12h, para\nif (horaAtual >= 12) {\n  return {\n    tempoValido: false,\n    mensagem: 'Passou das 12h, parando tentativas',\n    horaAtual: `${horaAtual}:${minutoAtual < 10 ? '0' : ''}${minutoAtual}`\n  };\n}\n\nreturn {\n  tempoValido: true,\n  horaAtual: `${horaAtual}:${minutoAtual < 10 ? '0' : ''}${minutoAtual}`,\n  tentativa: $input.first().json.tentativa || 1\n};"
+      },
+      "name": "🕐 Checar Hora (até 12h?)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://tcm.ioepa.com.br/busca/",
+        "options": {
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          }
+        }
+      },
+      "name": "🌐 Scrape TCM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://www.tcepa.tc.br/diario-oficial",
+        "options": {
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          }
+        }
+      },
+      "name": "🌐 Scrape TCE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 450]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Você é um extrator de dados de diários oficiais.\n\nAnalise este HTML da página de busca do TCM/Pará e extraia:\n1. **data**: Data do diário mais recente em formato YYYY-MM-DD\n2. **url_pdf**: URL completa para download do PDF do diário\n3. **titulo**: Título ou número do diário (ex: 'Diário n. 5243')\n4. **descricao**: Breve descrição do conteúdo\n\nSe não encontrar, retorne data como null.\n\nRESPONDA APENAS EM JSON, sem markdown:\n{\"data\": \"YYYY-MM-DD\", \"url_pdf\": \"https://...\", \"titulo\": \"...\", \"descricao\": \"...\"}\n\nHTML para análise:\n{{ $node[\"Scrape TCM\"].json.body.substring(0, 5000) }}",
+              "role": "user"
+            }
+          ]
+        },
+        "maxTokens": 600
+      },
+      "name": "🤖 Claude - Analisar TCM",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [850, 100]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Você é um extrator de dados de diários oficiais.\n\nAnalise este HTML da página de diários do TCE/Pará e extraia:\n1. **data**: Data do diário mais recente em formato YYYY-MM-DD\n2. **url_pdf**: URL completa para download do PDF do diário\n3. **titulo**: Título ou número do diário (ex: 'Diário n. 1234')\n4. **descricao**: Breve descrição do conteúdo\n\nSe não encontrar, retorne data como null.\n\nRESPONDA APENAS EM JSON, sem markdown:\n{\"data\": \"YYYY-MM-DD\", \"url_pdf\": \"https://...\", \"titulo\": \"...\", \"descricao\": \"...\"}\n\nHTML para análise:\n{{ $node[\"Scrape TCE\"].json.body.substring(0, 5000) }}",
+              "role": "user"
+            }
+          ]
+        },
+        "maxTokens": 600
+      },
+      "name": "🤖 Claude - Analisar TCE",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [850, 450]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrair respostas do Claude e fazer parse seguro\nlet tcmData = { orgao: 'TCM', data: null, url_pdf: null, titulo: null, descricao: null };\nlet tceData = { orgao: 'TCE', data: null, url_pdf: null, titulo: null, descricao: null };\n\ntry {\n  const tcmMsg = $node['Claude - Analisar TCM'].json.message.content;\n  tcmData = { ...tcmData, ...JSON.parse(tcmMsg) };\n} catch(e) {\n  console.log('Erro ao parsear TCM:', e.message);\n}\n\ntry {\n  const tceMsg = $node['Claude - Analisar TCE'].json.message.content;\n  tceData = { ...tceData, ...JSON.parse(tceMsg) };\n} catch(e) {\n  console.log('Erro ao parsear TCE:', e.message);\n}\n\nreturn [tcmData, tceData];"
+      },
+      "name": "📝 Parse Respostas Claude",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "search",
+        "table": "diarios",
+        "filterBy": {
+          "fields": [
+            {
+              "name": "orgao",
+              "operator": "is",
+              "value": "TCM"
+            }
+          ]
+        },
+        "options": {
+          "limit": 1,
+          "sort": {
+            "field": "data",
+            "direction": "descending"
+          }
+        }
+      },
+      "name": "📊 Get Última Data TCM",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1250, 100]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "search",
+        "table": "diarios",
+        "filterBy": {
+          "fields": [
+            {
+              "name": "orgao",
+              "operator": "is",
+              "value": "TCE"
+            }
+          ]
+        },
+        "options": {
+          "limit": 1,
+          "sort": {
+            "field": "data",
+            "direction": "descending"
+          }
+        }
+      },
+      "name": "📊 Get Última Data TCE",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Comparar datas e identificar o que é novo\nconst tcmNovo = $input.all()[0].json;\nconst tceNovo = $input.all()[1].json;\nconst ultimaTcm = $node['Get Última Data TCM'].json?.records?.[0]?.data;\nconst ultimaTce = $node['Get Última Data TCE'].json?.records?.[0]?.data;\n\nconst tcmTemNovo = tcmNovo[0].data && (!ultimaTcm || tcmNovo[0].data > ultimaTcm);\nconst tceTemNovo = tceNovo[1].data && (!ultimaTce || tceNovo[1].data > ultimaTce);\n\nreturn {\n  tcm: { ...tcmNovo[0], novo: tcmTemNovo },\n  tce: { ...tceNovo[1], novo: tceTemNovo },\n  temNovo: tcmTemNovo || tceTemNovo,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "name": "🔍 Comparar e Validar Datas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": [
+            {
+              "condition": "custom expression",
+              "value": "={{ $node['Comparar e Validar Datas'].json.temNovo }}"
+            }
+          ]
+        }
+      },
+      "name": "❓ Encontrou Novo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $node['Comparar e Validar Datas'].json.tcm.url_pdf }}",
+        "options": {
+          "response": {
+            "response": {
+              "type": "arraybuffer"
+            }
+          }
+        }
+      },
+      "name": "⬇️ Download PDF TCM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1850, 50]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $node['Comparar e Validar Datas'].json.tce.url_pdf }}",
+        "options": {
+          "response": {
+            "response": {
+              "type": "arraybuffer"
+            }
+          }
+        }
+      },
+      "name": "⬇️ Download PDF TCE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1850, 200]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "method": "upload",
+        "bucket": "diarios",
+        "fileName": "tcm_{{ $node['Comparar e Validar Datas'].json.tcm.data }}.pdf",
+        "fileContent": "={{ $node['Download PDF TCM'].json.body }}"
+      },
+      "name": "☁️ Upload PDF TCM - Storage",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [2050, 50]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "method": "upload",
+        "bucket": "diarios",
+        "fileName": "tce_{{ $node['Comparar e Validar Datas'].json.tce.data }}.pdf",
+        "fileContent": "={{ $node['Download PDF TCE'].json.body }}"
+      },
+      "name": "☁️ Upload PDF TCE - Storage",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [2050, 200]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios",
+        "rows": {
+          "values": [
+            {
+              "key": "orgao",
+              "value": "TCM"
+            },
+            {
+              "key": "data",
+              "value": "={{ $node['Comparar e Validar Datas'].json.tcm.data }}"
+            },
+            {
+              "key": "titulo",
+              "value": "={{ $node['Comparar e Validar Datas'].json.tcm.titulo }}"
+            },
+            {
+              "key": "arquivo",
+              "value": "tcm_{{ $node['Comparar e Validar Datas'].json.tcm.data }}.pdf"
+            },
+            {
+              "key": "url_original",
+              "value": "={{ $node['Comparar e Validar Datas'].json.tcm.url_pdf }}"
+            }
+          ]
+        }
+      },
+      "name": "💾 Inserir TCM no Banco",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [2250, 50]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios",
+        "rows": {
+          "values": [
+            {
+              "key": "orgao",
+              "value": "TCE"
+            },
+            {
+              "key": "data",
+              "value": "={{ $node['Comparar e Validar Datas'].json.tce.data }}"
+            },
+            {
+              "key": "titulo",
+              "value": "={{ $node['Comparar e Validar Datas'].json.tce.titulo }}"
+            },
+            {
+              "key": "arquivo",
+              "value": "tce_{{ $node['Comparar e Validar Datas'].json.tce.data }}.pdf"
+            },
+            {
+              "key": "url_original",
+              "value": "={{ $node['Comparar e Validar Datas'].json.tce.url_pdf }}"
+            }
+          ]
+        }
+      },
+      "name": "💾 Inserir TCE no Banco",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [2250, 200]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "notifications",
+        "rows": {
+          "values": [
+            {
+              "key": "msg",
+              "value": "📋 Diário {{ $node['Comparar e Validar Datas'].json.tcm.novo ? 'TCM' : 'TCE' }} atualizado - {{ $now.format('DD/MM/YYYY HH:mm') }}"
+            },
+            {
+              "key": "read",
+              "value": false
+            },
+            {
+              "key": "tipo_notificacao",
+              "value": "diario"
+            }
+          ]
+        }
+      },
+      "name": "🔔 Criar Notificação Kausas",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [2450, 100]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios_log",
+        "rows": {
+          "values": [
+            {
+              "key": "orgao",
+              "value": "AMBOS"
+            },
+            {
+              "key": "status",
+              "value": "sucesso"
+            },
+            {
+              "key": "data_verificada",
+              "value": "={{ $now.format('YYYY-MM-DD') }}"
+            },
+            {
+              "key": "mensagem",
+              "value": "✅ Diários encontrados! TCM: {{ $node['Comparar e Validar Datas'].json.tcm.novo ? 'SIM' : 'NÃO' }}, TCE: {{ $node['Comparar e Validar Datas'].json.tce.novo ? 'SIM' : 'NÃO' }} - {{ $now.format('HH:mm') }}"
+            }
+          ]
+        }
+      },
+      "name": "📝 Log - Sucesso",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [2450, 250]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "minutes": 30
+            }
+          ]
+        }
+      },
+      "name": "⏱️ Aguardar 30min para Próxima Tentativa",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios_log",
+        "rows": {
+          "values": [
+            {
+              "key": "orgao",
+              "value": "AMBOS"
+            },
+            {
+              "key": "status",
+              "value": "sem_atualizacao"
+            },
+            {
+              "key": "data_verificada",
+              "value": "={{ $now.format('YYYY-MM-DD') }}"
+            },
+            {
+              "key": "mensagem",
+              "value": "🔄 Nenhum diário novo encontrado - Tentativa às {{ $now.format('HH:mm') }} - Próxima: 30min"
+            }
+          ]
+        }
+      },
+      "name": "📝 Log - Sem Novo (Vai Retry)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1650, 450]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios_log",
+        "rows": {
+          "values": [
+            {
+              "key": "orgao",
+              "value": "AMBOS"
+            },
+            {
+              "key": "status",
+              "value": "erro"
+            },
+            {
+              "key": "data_verificada",
+              "value": "={{ $now.format('YYYY-MM-DD') }}"
+            },
+            {
+              "key": "mensagem",
+              "value": "⏰ Passou das 12h - Parando tentativas. Nenhum diário novo foi encontrado hoje."
+            }
+          ]
+        }
+      },
+      "name": "📝 Log - Passou 12h (Parou)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [650, 700]
+    }
+  ],
+  "connections": {
+    "⏰ Cron - 8h Diariamente": {
+      "main": [
+        [
+          {
+            "node": "🕐 Checar Hora (até 12h?)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🕐 Checar Hora (até 12h?)": {
+      "main": [
+        [
+          {
+            "node": "🌐 Scrape TCM",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🌐 Scrape TCE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📝 Log - Passou 12h (Parou)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌐 Scrape TCM": {
+      "main": [[{ "node": "🤖 Claude - Analisar TCM", "type": "main", "index": 0 }]]
+    },
+    "🌐 Scrape TCE": {
+      "main": [[{ "node": "🤖 Claude - Analisar TCE", "type": "main", "index": 0 }]]
+    },
+    "🤖 Claude - Analisar TCM": {
+      "main": [[{ "node": "📝 Parse Respostas Claude", "type": "main", "index": 0 }]]
+    },
+    "🤖 Claude - Analisar TCE": {
+      "main": [[{ "node": "📝 Parse Respostas Claude", "type": "main", "index": 0 }]]
+    },
+    "📝 Parse Respostas Claude": {
+      "main": [
+        [
+          { "node": "📊 Get Última Data TCM", "type": "main", "index": 0 },
+          { "node": "📊 Get Última Data TCE", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "📊 Get Última Data TCM": {
+      "main": [[{ "node": "🔍 Comparar e Validar Datas", "type": "main", "index": 0 }]]
+    },
+    "📊 Get Última Data TCE": {
+      "main": [[{ "node": "🔍 Comparar e Validar Datas", "type": "main", "index": 0 }]]
+    },
+    "🔍 Comparar e Validar Datas": {
+      "main": [[{ "node": "❓ Encontrou Novo?", "type": "main", "index": 0 }]]
+    },
+    "❓ Encontrou Novo?": {
+      "main": [
+        [
+          { "node": "⬇️ Download PDF TCM", "type": "main", "index": 0 },
+          { "node": "⬇️ Download PDF TCE", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "📝 Log - Sem Novo (Vai Retry)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "⬇️ Download PDF TCM": {
+      "main": [[{ "node": "☁️ Upload PDF TCM - Storage", "type": "main", "index": 0 }]]
+    },
+    "⬇️ Download PDF TCE": {
+      "main": [[{ "node": "☁️ Upload PDF TCE - Storage", "type": "main", "index": 0 }]]
+    },
+    "☁️ Upload PDF TCM - Storage": {
+      "main": [[{ "node": "💾 Inserir TCM no Banco", "type": "main", "index": 0 }]]
+    },
+    "☁️ Upload PDF TCE - Storage": {
+      "main": [[{ "node": "💾 Inserir TCE no Banco", "type": "main", "index": 0 }]]
+    },
+    "💾 Inserir TCM no Banco": {
+      "main": [[{ "node": "🔔 Criar Notificação Kausas", "type": "main", "index": 0 }]]
+    },
+    "💾 Inserir TCE no Banco": {
+      "main": [[{ "node": "🔔 Criar Notificação Kausas", "type": "main", "index": 0 }]]
+    },
+    "🔔 Criar Notificação Kausas": {
+      "main": [[{ "node": "📝 Log - Sucesso", "type": "main", "index": 0 }]]
+    }
+  }
+}
