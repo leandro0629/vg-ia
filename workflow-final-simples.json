@@ -1,0 +1,209 @@
+{
+  "name": "📋 Diários TCM/TCE + Email (Simples)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"days": 1}],
+          "triggerAtHour": 8,
+          "triggerAtMinute": 0
+        }
+      },
+      "name": "Cron 8h",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const hoje = new Date();\nconst yyyy = hoje.getFullYear();\nconst mm = String(hoje.getMonth() + 1).padStart(2, '0');\nconst dd = String(hoje.getDate()).padStart(2, '0');\nconst dataFormatada = `${yyyy}.${mm}.${dd}`;\n\nreturn {\n  data: dataFormatada,\n  url_tcm: `https://tcm.ioepa.com.br/diarios/${yyyy}/${dataFormatada}.DOE.pdf`,\n  url_tce: `https://www.tcepa.tc.br/images/pdf/doe/${yyyy}/${dataFormatada}.DOE.pdf`\n};"
+      },
+      "name": "Gera URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url_tcm }}",
+        "options": {}
+      },
+      "name": "Download TCM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 100]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url_tce }}",
+        "options": {}
+      },
+      "name": "Download TCE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": [
+            {
+              "condition": "custom expression",
+              "value": "={{ $statusCode === 200 }}"
+            }
+          ]
+        }
+      },
+      "name": "Se TCM OK",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": [
+            {
+              "condition": "custom expression",
+              "value": "={{ $statusCode === 200 }}"
+            }
+          ]
+        }
+      },
+      "name": "Se TCE OK",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios",
+        "rows": {
+          "values": [
+            {"key": "orgao", "value": "TCM"},
+            {"key": "data", "value": "={{ $node[\"Gera URLs\"].json.data }}"},
+            {"key": "titulo", "value": "Diário Oficial TCM"},
+            {"key": "arquivo", "value": "tcm_{{ $node[\"Gera URLs\"].json.data }}.pdf"},
+            {"key": "url_original", "value": "={{ $node[\"Gera URLs\"].json.url_tcm }}"}
+          ]
+        }
+      },
+      "name": "Insert TCM",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1050, 50]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "diarios",
+        "rows": {
+          "values": [
+            {"key": "orgao", "value": "TCE"},
+            {"key": "data", "value": "={{ $node[\"Gera URLs\"].json.data }}"},
+            {"key": "titulo", "value": "Diário Oficial TCE"},
+            {"key": "arquivo", "value": "tce_{{ $node[\"Gera URLs\"].json.data }}.pdf"},
+            {"key": "url_original", "value": "={{ $node[\"Gera URLs\"].json.url_tce }}"}
+          ]
+        }
+      },
+      "name": "Insert TCE",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "sendTo": "leandrosmg0629@gmail.com",
+        "subject": "📋 Diário TCM {{ $now.format('DD/MM/YYYY') }}",
+        "emailType": "html",
+        "message": "<h1>Novo Diário TCM</h1><p>Data: {{ $node[\"Gera URLs\"].json.data }}</p><p><a href='{{ $node[\"Gera URLs\"].json.url_tcm }}'>Baixar PDF</a></p>"
+      },
+      "name": "Email TCM",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1250, 50]
+    },
+    {
+      "parameters": {
+        "sendTo": "leandrosmg0629@gmail.com",
+        "subject": "📋 Diário TCE {{ $now.format('DD/MM/YYYY') }}",
+        "emailType": "html",
+        "message": "<h1>Novo Diário TCE</h1><p>Data: {{ $node[\"Gera URLs\"].json.data }}</p><p><a href='{{ $node[\"Gera URLs\"].json.url_tce }}'>Baixar PDF</a></p>"
+      },
+      "name": "Email TCE",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "notifications",
+        "rows": {
+          "values": [
+            {"key": "msg", "value": "📋 Diário TCM {{ $node[\"Gera URLs\"].json.data }} disponível!"},
+            {"key": "read", "value": false}
+          ]
+        }
+      },
+      "name": "Notif TCM",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1450, 50]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "insert",
+        "table": "notifications",
+        "rows": {
+          "values": [
+            {"key": "msg", "value": "📋 Diário TCE {{ $node[\"Gera URLs\"].json.data }} disponível!"},
+            {"key": "read", "value": false}
+          ]
+        }
+      },
+      "name": "Notif TCE",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1450, 200]
+    }
+  ],
+  "connections": {
+    "Cron 8h": {
+      "main": [[{"node": "Gera URLs", "type": "main", "index": 0}]]
+    },
+    "Gera URLs": {
+      "main": [[{"node": "Download TCM", "type": "main", "index": 0}, {"node": "Download TCE", "type": "main", "index": 0}]]
+    },
+    "Download TCM": {
+      "main": [[{"node": "Se TCM OK", "type": "main", "index": 0}]]
+    },
+    "Download TCE": {
+      "main": [[{"node": "Se TCE OK", "type": "main", "index": 0}]]
+    },
+    "Se TCM OK": {
+      "main": [[{"node": "Insert TCM", "type": "main", "index": 0}, {"node": "Email TCM", "type": "main", "index": 0}], []]
+    },
+    "Se TCE OK": {
+      "main": [[{"node": "Insert TCE", "type": "main", "index": 0}, {"node": "Email TCE", "type": "main", "index": 0}], []]
+    },
+    "Insert TCM": {
+      "main": [[{"node": "Notif TCM", "type": "main", "index": 0}]]
+    },
+    "Insert TCE": {
+      "main": [[{"node": "Notif TCE", "type": "main", "index": 0}]]
+    },
+    "Email TCM": {
+      "main": [[{"node": "Notif TCM", "type": "main", "index": 0}]]
+    },
+    "Email TCE": {
+      "main": [[{"node": "Notif TCE", "type": "main", "index": 0}]]
+    }
+  }
+}

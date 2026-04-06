@@ -1,0 +1,99 @@
+{
+  "name": "Diarios TCM TCE Email",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"days": 1}],
+          "triggerAtHour": 8,
+          "triggerAtMinute": 0
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://tcm.ioepa.com.br/busca/"
+      },
+      "name": "Scrape TCM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://www.tcepa.tc.br/diario-oficial"
+      },
+      "name": "Scrape TCE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Extraia: data (YYYY-MM-DD), url_pdf, titulo. JSON: {\"data\":\"\",\"url_pdf\":\"\",\"titulo\":\"\"}\n{{ $node[\"Scrape TCM\"].json.body.substring(0,2000) }}",
+              "role": "user"
+            }
+          ]
+        }
+      },
+      "name": "Claude TCM",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [650, 100]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Extraia: data (YYYY-MM-DD), url_pdf, titulo. JSON: {\"data\":\"\",\"url_pdf\":\"\",\"titulo\":\"\"}\n{{ $node[\"Scrape TCE\"].json.body.substring(0,2000) }}",
+              "role": "user"
+            }
+          ]
+        }
+      },
+      "name": "Claude TCE",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "leandrosmg0629@gmail.com",
+        "subject": "Novo Diário",
+        "emailType": "text",
+        "message": "Novo diário encontrado"
+      },
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [850, 200]
+    }
+  ],
+  "connections": {
+    "Cron": {
+      "main": [[{"node": "Scrape TCM", "type": "main", "index": 0}, {"node": "Scrape TCE", "type": "main", "index": 0}]]
+    },
+    "Scrape TCM": {
+      "main": [[{"node": "Claude TCM", "type": "main", "index": 0}]]
+    },
+    "Scrape TCE": {
+      "main": [[{"node": "Claude TCE", "type": "main", "index": 0}]]
+    },
+    "Claude TCM": {
+      "main": [[{"node": "Gmail", "type": "main", "index": 0}]]
+    },
+    "Claude TCE": {
+      "main": [[{"node": "Gmail", "type": "main", "index": 0}]]
+    }
+  }
+}

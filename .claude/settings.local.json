@@ -14,7 +14,8 @@
       "Skill(nano-banana)",
       "Skill(nano-banana:*)",
       "Bash(npm list:*)",
-      "Bash(chmod +x /c/Users/leand/Desktop/\"JUS IA\"/execute-setup.sh)"
+      "Bash(chmod +x /c/Users/leand/Desktop/\"JUS IA\"/execute-setup.sh)",
+      "Bash(curl -s \"https://tcm.ioepa.com.br/busca/\")"
     ]
   }
 }

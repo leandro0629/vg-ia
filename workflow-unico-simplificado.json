@@ -1,0 +1,116 @@
+{
+  "name": "📋 Automação Diários + Email (Simplificado)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"days": 1}],
+          "triggerAtHour": 8,
+          "triggerAtMinute": 0
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://tcm.ioepa.com.br/busca/",
+        "options": {}
+      },
+      "name": "HTTP TCM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://www.tcepa.tc.br/diario-oficial",
+        "options": {}
+      },
+      "name": "HTTP TCE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Extraia data (YYYY-MM-DD), url_pdf e titulo do HTML. Responda em JSON: {\"data\": \"...\", \"url_pdf\": \"...\", \"titulo\": \"...\"}\n\nHTML: {{ $node[\"HTTP TCM\"].json.body.substring(0, 3000) }}",
+              "role": "user"
+            }
+          ]
+        }
+      },
+      "name": "Claude TCM",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [650, 100]
+    },
+    {
+      "parameters": {
+        "model": "claude-opus-4-6",
+        "messages": {
+          "values": [
+            {
+              "content": "Extraia data (YYYY-MM-DD), url_pdf e titulo do HTML. Responda em JSON: {\"data\": \"...\", \"url_pdf\": \"...\", \"titulo\": \"...\"}\n\nHTML: {{ $node[\"HTTP TCE\"].json.body.substring(0, 3000) }}",
+              "role": "user"
+            }
+          ]
+        }
+      },
+      "name": "Claude TCE",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "let tcm = {orgao: 'TCM', data: null};\nlet tce = {orgao: 'TCE', data: null};\n\ntry {\n  tcm = JSON.parse($node['Claude TCM'].json.message.content);\n} catch(e) {}\n\ntry {\n  tce = JSON.parse($node['Claude TCE'].json.message.content);\n} catch(e) {}\n\nreturn {tcm, tce};"
+      },
+      "name": "Parse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "search",
+        "table": "diarios",
+        "options": {}
+      },
+      "name": "Get TCM",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1050, 100]
+    },
+    {
+      "parameters": {
+        "resource": "recordApi",
+        "method": "search",
+        "table": "diarios",
+        "options": {}
+      },
+      "name": "Get TCE",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const tcm = $node['Parse'].json.tcm;\nconst tce = $node['Parse'].json.tce;\n\nreturn {\n  temNovo: true,\n  tcm,\n  tce\n};"
+      },
+      "name": "Comparar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {\n          "options": [\n            {\n              "condition": "custom expression",\n              "value": "={{ $node['Comparar'].json.temNovo }}"\n            }\n          ]\n        }\n      },\n      "name": "Se Novo",
+n      "type": "n8n-nodes-base.if",\n      "typeVersion": 1,\n      "position": [1450, 200]\n    },\n    {\n      "parameters": {\n        "method": "GET",\n        "url": "={{ $node['Comparar'].json.tcm.url_pdf }}"\n      },\n      "name": "Download PDF",\n      "type": "n8n-nodes-base.httpRequest",\n      "typeVersion": 4,\n      "position": [1650, 100]\n    },\n    {\n      "parameters": {\n        "resource": "recordApi",\n        "method": "insert",\n        "table": "diarios",\n        "rows": {\n          "values": [\n            {\n              "key": "orgao",\n              "value": "TCM"\n            },\n            {\n              "key": "data",\n              "value": "={{ $node['Comparar'].json.tcm.data }}"\n            },\n            {\n              "key": "titulo",\n              "value": "={{ $node['Comparar'].json.tcm.titulo }}"\n            },\n            {\n              "key": "arquivo",\n              "value": "tcm.pdf"\n            },\n            {\n              "key": "url_original",\n              "value": "={{ $node['Comparar'].json.tcm.url_pdf }}"\n            }\n          ]\n        }\n      },\n      "name": "Insert Diario",\n      "type": "n8n-nodes-base.supabase",\n      "typeVersion": 2,\n      "position": [1850, 100]\n    },\n    {\n      "parameters": {\n        "assignments": {\n          "assignments": [\n            {\n              "id": "1",\n              "name": "orgao",\n              "value": "TCM",\n              "type": "string"\n            },\n            {\n              "id": "2",\n              "name": "titulo",\n              "value": "={{ $node['Comparar'].json.tcm.titulo }}",\n              "type": "string"\n            },\n            {\n              "id": "3",\n              "name": "data",\n              "value": "={{ $node['Comparar'].json.tcm.data }}",\n              "type": "string"\n            }\n          ]\n        }\n      },\n      "name": "Set Email",\n      "type": "n8n-nodes-base.set",\n      "typeVersion": 3,\n      "position": [2050, 100]\n    },\n    {\n      "parameters": {\n        "sendTo": "leandrosmg0629@gmail.com",\n        "subject": "Diário {{ $json.orgao }} - {{ $json.data }}",\n        "emailType": "html",\n        "message": "<h1>Diário {{ $json.orgao }}</h1><p>Data: {{ $json.data }}</p><p>{{ $json.titulo }}</p>"\n      },\n      "name": "Gmail",\n      "type": "n8n-nodes-base.gmail",\n      "typeVersion": 2,\n      "position": [2250, 100]\n    },\n    {\n      "parameters": {\n        "resource": "recordApi",\n        "method": "insert",\n        "table": "notifications",\n        "rows": {\n          "values": [\n            {\n              "key": "msg",\n              "value": "Diário {{ $json.orgao }} atualizado"\n            },\n            {\n              "key": "read",\n              "value": false\n            }\n          ]\n        }\n      },\n      "name": "Notificar",\n      "type": "n8n-nodes-base.supabase",\n      "typeVersion": 2,\n      "position": [2450, 100]\n    }\n  ],\n  "connections": {\n    "Cron": {\n      "main": [[{\"node\": \"HTTP TCM\", \"type\": \"main\", \"index\": 0}, {\"node\": \"HTTP TCE\", \"type\": \"main\", \"index\": 0}]]\n    },\n    "HTTP TCM": {\n      "main": [[{\"node\": \"Claude TCM\", \"type\": \"main\", \"index\": 0}]]\n    },\n    "HTTP TCE": {\n      "main": [[{\"node\": \"Claude TCE\", \"type\": \"main\", \"index\": 0}]]\n    },\n    "Claude TCM": {\n      "main": [[{\"node\": \"Parse\", \"type\": \"main\", \"index\": 0}]]\n    },\n    "Claude TCE": {\n      "main": [[{\"node\": \"Parse\", \"type\": \"main\", \"index\": 0}]]\n    },\n    "Parse": {\n      "main": [[{\"node\": \"Comparar\", \"type\": \"main\", \"index\": 0}]]\n    },\n    "Comparar": {\n      "main": [[{\"node\": \"Se Novo\", \"type\": \"main\", \"index\": 0}]]\n    },\n    "Se Novo": {\n      "main\": [[{\"node\": \"Download PDF\", \"type\": \"main\", \"index\": 0}], []]\n    },\n    "Download PDF": {\n      "main": [[{\"node\": \"Insert Diario\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"Insert Diario\": {\n      \"main\": [[{\"node\": \"Set Email\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"Set Email\": {\n      \"main\": [[{\"node\": \"Gmail\", \"type\": \"main\", \"index\": 0}]]\n    },\n    \"Gmail\": {\n      \"main\": [[{\"node\": \"Notificar\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}
