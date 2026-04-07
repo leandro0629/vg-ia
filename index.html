@@ -2756,11 +2756,68 @@ saveUsers(users); // Salva localmente e sincroniza Supabase com array limpo
 
 let currentUser = null;
 
+// ── Sessão via sessionStorage (some ao fechar o navegador) ──
 function getSession() {
-  try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch { return null; }
+  try { return JSON.parse(sessionStorage.getItem(AUTH_KEY)); } catch { return null; }
 }
-function setSession(user) { localStorage.setItem(AUTH_KEY, JSON.stringify(user)); }
-function clearSession() { localStorage.removeItem(AUTH_KEY); }
+function setSession(user) { sessionStorage.setItem(AUTH_KEY, JSON.stringify(user)); }
+function clearSession() { sessionStorage.removeItem(AUTH_KEY); }
+
+// ── Timeout de inatividade: 2h, aviso 1min antes ──
+const SESSION_TIMEOUT_MS   = 2 * 60 * 60 * 1000; // 2 horas
+const SESSION_WARNING_MS   = 1 * 60 * 1000;       // aviso 1 min antes
+let _inactivityTimer  = null;
+let _warningTimer     = null;
+let _warningToastEl   = null;
+
+function _resetInactivityTimer() {
+  if (!currentUser) return;
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_warningTimer);
+  if (_warningToastEl) { _warningToastEl.remove(); _warningToastEl = null; }
+
+  _warningTimer = setTimeout(() => {
+    // Mostra aviso 1 min antes
+    _warningToastEl = document.createElement('div');
+    _warningToastEl.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+      background:#1a1a2e;border:1px solid var(--primary);color:var(--text-primary);
+      padding:14px 24px;border-radius:10px;z-index:99999;
+      box-shadow:0 4px 20px rgba(0,0,0,.5);font-size:.88rem;text-align:center;
+      display:flex;align-items:center;gap:14px;
+    `;
+    _warningToastEl.innerHTML = `
+      <span>⏱️ Sessão expira em <strong>1 minuto</strong> por inatividade.</span>
+      <button onclick="_resetInactivityTimer()" style="padding:6px 14px;background:var(--primary);color:#000;border:none;border-radius:6px;font-weight:700;cursor:pointer;">Continuar</button>
+    `;
+    document.body.appendChild(_warningToastEl);
+  }, SESSION_TIMEOUT_MS - SESSION_WARNING_MS);
+
+  _inactivityTimer = setTimeout(() => {
+    if (_warningToastEl) { _warningToastEl.remove(); _warningToastEl = null; }
+    doLogout();
+    // Mostra mensagem de sessão expirada
+    setTimeout(() => {
+      const msg = document.createElement('div');
+      msg.style.cssText = `
+        position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+        background:var(--card);border:1px solid var(--border);color:var(--text-primary);
+        padding:28px 36px;border-radius:12px;z-index:99999;text-align:center;
+        box-shadow:0 8px 32px rgba(0,0,0,.6);
+      `;
+      msg.innerHTML = `<div style="font-size:1.5rem;margin-bottom:8px">🔒</div><div style="font-weight:600;margin-bottom:4px">Sessão expirada</div><div style="font-size:.85rem;color:var(--text-secondary)">2 horas de inatividade. Faça login novamente.</div>`;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 4000);
+    }, 100);
+  }, SESSION_TIMEOUT_MS);
+}
+
+function _startInactivityWatch() {
+  ['mousemove','keydown','click','scroll','touchstart'].forEach(evt =>
+    document.addEventListener(evt, _resetInactivityTimer, { passive: true })
+  );
+  _resetInactivityTimer();
+}
 
 function doLogin() {
   const loginBtn = document.getElementById('loginBtn');
@@ -2798,6 +2855,12 @@ function quickLogin(email, pass) {
 }
 
 function doLogout() {
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_warningTimer);
+  if (_warningToastEl) { _warningToastEl.remove(); _warningToastEl = null; }
+  ['mousemove','keydown','click','scroll','touchstart'].forEach(evt =>
+    document.removeEventListener(evt, _resetInactivityTimer)
+  );
   clearSession();
   currentUser = null;
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -2812,6 +2875,7 @@ function enterApp(user) {
   document.getElementById('loginScreen').classList.add('hidden');
   updateUIForUser(user);
   navigate('dashboard');
+  _startInactivityWatch();
 }
 
 function updateUIForUser(user) {
