@@ -1039,9 +1039,9 @@
 
   .kanban-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
   .kanban-card-title {
-    font-family: 'Bodoni Moda', 'Playfair Display', Georgia, serif;
-    font-size: .97rem; font-weight: 400; line-height: 1.5; flex: 1;
-    color: var(--text-primary); letter-spacing: 0.015em;
+    font-family: var(--font-sans);
+    font-size: .88rem; font-weight: 500; line-height: 1.45; flex: 1;
+    color: var(--text-primary); letter-spacing: 0;
   }
   .kanban-card-priority { display: none; } /* substituído pela barra lateral */
 
@@ -1258,6 +1258,9 @@
   .task-comment-form { display: flex; gap: 8px; }
   .task-comment-input { flex: 1; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text-primary); font-size: .83rem; font-family: inherit; outline: none; transition: border-color .2s; resize: none; min-height: 60px; }
   .task-comment-input:focus { border-color: var(--primary); }
+  .mention-dropdown { box-shadow: 0 4px 16px rgba(0,0,0,0.25); border-radius: 8px; }
+  .mention-dropdown::-webkit-scrollbar { width: 4px; }
+  .mention-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
   /* ============ KANBAN HISTORY BADGE ============ */
   .kan-history-badge { font-size: .66rem; color: var(--text-secondary); display: flex; align-items: center; gap: 2px; }
@@ -1592,15 +1595,15 @@
           <div>
             <div class="card" style="margin-bottom:20px">
               <div class="card-header">
-                <span class="card-title">Tarefas Recentes</span>
+                <span class="card-title">Tarefas Pendentes</span>
                 <button class="btn btn-ghost btn-sm" onclick="navigate('missoes')">Ver todas</button>
               </div>
               <div class="card-body" id="dashTasks"></div>
             </div>
             <div class="card">
-              <div class="card-header"><span class="card-title">Atividade Recente</span></div>
+              <div class="card-header"><span class="card-title">✅ Checklist do Dia</span></div>
               <div class="card-body">
-                <div class="activity-feed" id="activityFeed"></div>
+                <div class="daily-checklist" id="dailyChecklist"></div>
               </div>
             </div>
           </div>
@@ -1678,7 +1681,7 @@
           <div class="card-body" style="padding:0">
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Membro</th><th>Status</th><th></th></tr></thead>
+                <thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Membro</th><th>Status</th><th style="text-align:right">Ações</th></tr></thead>
                 <tbody id="usuariosBody"></tbody>
               </table>
             </div>
@@ -2210,8 +2213,8 @@
       <div class="form-group checklist-section">
         <label class="form-label">Checklist</label>
         <div class="checklist-add-row">
-          <input class="form-input" id="taskChecklistInput" placeholder="Adicionar item ao checklist..." onkeydown="if(event.key==='Enter'){event.preventDefault();addChecklistItem();}">
-          <button class="btn btn-ghost btn-sm" type="button" onclick="addChecklistItem()">Adicionar</button>
+          <input class="form-input" id="taskChecklistInput" placeholder="Adicionar item ao checklist..." onkeydown="if(event.key==='Enter'){event.preventDefault();_pendingChecklistAdd();}">
+          <button class="btn btn-ghost btn-sm" type="button" onclick="_pendingChecklistAdd()">Adicionar</button>
         </div>
         <ul id="taskChecklistItems"></ul>
       </div>
@@ -2219,9 +2222,12 @@
       <div id="taskCommentsSection" class="task-comments-section" style="display:none">
         <div class="task-comments-title">💬 Comentários</div>
         <div class="task-comment-list" id="taskCommentList"></div>
-        <div class="task-comment-form">
-          <textarea class="task-comment-input" id="taskCommentInput" placeholder="Adicionar comentário..."></textarea>
-          <button class="btn btn-primary btn-sm" type="button" onclick="addTaskComment()">Comentar</button>
+        <div class="task-comment-form" style="flex-direction:column">
+          <div style="position:relative;width:100%">
+            <textarea class="task-comment-input" id="taskCommentInput" placeholder="Adicionar comentário... (digite @ para mencionar)"></textarea>
+            <div id="mentionDropdown" class="mention-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;max-height:200px;overflow-y:auto;z-index:1000;margin-top:4px"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" type="button" onclick="addTaskComment()" style="align-self:flex-start;margin-top:8px">Comentar</button>
         </div>
       </div>
       <div class="form-group">
@@ -2661,18 +2667,21 @@ const PERMISSIONS = {
     pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','estagiarios','relatorios','calendario','configuracoes'],
     canAddMembers: true, canDeleteMembers: true, canDeleteTasks: true,
     canSeeAllTasks: true, canAddPrazos: true, canDelegate: true,
+    canManageUsers: true,
     label: 'Sócio-Gestor', pillClass: 'role-socio'
   },
   advogado: {
-    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','relatorios','calendario','configuracoes'],
+    pages: ['dashboard','equipe','missoes','atividades','municipios','relatorios','calendario','configuracoes'],
     canAddMembers: false, canDeleteMembers: false, canDeleteTasks: true,
     canSeeAllTasks: true, canAddPrazos: true, canDelegate: true,
+    canManageUsers: false,
     label: 'Advogado(a)', pillClass: 'role-advogado'
   },
   estagiario: {
-    pages: ['dashboard','equipe','missoes','atividades','municipios','usuarios','relatorios','calendario','configuracoes'],
+    pages: ['dashboard','equipe','missoes','atividades','municipios','relatorios','calendario','configuracoes'],
     canAddMembers: false, canDeleteMembers: false, canDeleteTasks: false,
     canSeeAllTasks: true, canAddPrazos: false, canDelegate: false,
+    canManageUsers: false,
     label: 'Estagiário(a)', pillClass: 'role-estagiario'
   }
 };
@@ -2722,11 +2731,28 @@ memberUsers.forEach(memberUser => {
   if (idx === -1) {
     users.push(memberUser);
   } else {
-    users[idx] = memberUser; // Sempre atualizar para manter sincronizado
+    users[idx] = memberUser;
   }
 });
 
-saveUsers(users);
+// Remove o Leandro duplicado sem memberId
+users = users.filter(u => !(u.email === 'leandrosmg0629@gmail.com' && !u.memberId));
+
+// Remove duplicatas — mantém o registro com memberId preenchido
+const _emailMap = new Map();
+users.forEach(u => {
+  const existing = _emailMap.get(u.email);
+  if (!existing || (!existing.memberId && u.memberId)) {
+    _emailMap.set(u.email, u); // prefere o que tem memberId
+  }
+});
+const _idMap = new Map();
+[..._emailMap.values()].forEach(u => {
+  if (!_idMap.has(u.id)) _idMap.set(u.id, u);
+});
+users = [..._idMap.values()];
+
+saveUsers(users); // Salva localmente e sincroniza Supabase com array limpo
 
 let currentUser = null;
 
@@ -2750,11 +2776,7 @@ function doLogin() {
     users = loadUsers(); // recarrega sempre do localStorage
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const pass  = document.getElementById('loginPass').value;
-    console.log('[LOGIN] email digitado:', JSON.stringify(email));
-    console.log('[LOGIN] senha digitada:', JSON.stringify(pass));
-    console.log('[LOGIN] usuários no sistema:', users.map(u => ({ id: u.id, email: u.email, password: u.password })));
     const user  = users.find(u => u.email === email && u.password === pass);
-    console.log('[LOGIN] usuário encontrado:', user);
     if (!user) {
       document.getElementById('loginError').classList.add('show');
       document.getElementById('loginPass').value = '';
@@ -2805,7 +2827,8 @@ function updateUIForUser(user) {
   } else if (user.photo) {
     photoUrl = user.photo;
   } else {
-    const profileData = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
+    const pKey = 'vgai_user_profile_' + (user?.id || user?.memberId || 'guest');
+    const profileData = JSON.parse(localStorage.getItem(pKey) || '{}');
     if (profileData.foto) {
       photoUrl = profileData.foto;
     }
@@ -3099,7 +3122,19 @@ function _setupRealtime() {
       else if (key === STORAGE_KEYS.activity)  { activity   = data; }
       else if (key === STORAGE_KEYS.sharedAC)  { sharedAC   = data; }
       else if (key === STORAGE_KEYS.municipios){ municipios  = data; }
-      else if (key === USERS_KEY)              { users      = data; saveUsers(data, false); }
+      else if (key === USERS_KEY) {
+        // Deduplica por ID e email ao receber do Supabase
+        const seenIds = new Set();
+        const seenEmails = new Set();
+        const clean = data.filter(u => {
+          if (seenIds.has(u.id) || seenEmails.has(u.email)) return false;
+          seenIds.add(u.id);
+          seenEmails.add(u.email);
+          return true;
+        });
+        users = clean;
+        saveUsers(clean, true); // true = salva de volta no Supabase já limpo
+      }
       else return; // chave irrelevante — não re-renderiza
 
       // Não re-renderiza se há modal aberto
@@ -3131,7 +3166,7 @@ function _setupRealtime() {
 // ============================================================
 // STATE & STORAGE
 // ============================================================
-const STORAGE_KEYS = { members: 'lex_members', tasks: 'lex_tasks', prazos: 'lex_prazos', activity: 'lex_activity', sharedAC: 'lex_shared_ac', municipios: 'lex_municipios' };
+const STORAGE_KEYS = { members: 'lex_members', tasks: 'lex_tasks', prazos: 'lex_prazos', activity: 'lex_activity', sharedAC: 'lex_shared_ac', municipios: 'lex_municipios', dailyChecklist: 'lex_daily_checklist' };
 const ATTACH_KEY = 'lex_attachments';
 
 function load(key) {
@@ -3198,6 +3233,7 @@ let prazos = load(STORAGE_KEYS.prazos);
 let activity = load(STORAGE_KEYS.activity);
 let sharedAC = load(STORAGE_KEYS.sharedAC);
 let municipios = load(STORAGE_KEYS.municipios);
+let dailyChecklist = load(STORAGE_KEYS.dailyChecklist);
 let currentPage = 'dashboard';
 
 // SEED DATA if empty
@@ -3280,6 +3316,31 @@ if (!municipios.length) {
     { id: 20, name: 'Bonito – Prefeitura',                team: 4, contrato: 'Prefeitura Municipal de Bonito',                  obs: '' },
   ];
   save(STORAGE_KEYS.municipios, municipios);
+}
+
+// Initialize and reset daily checklist if needed
+const today = new Date().toISOString().split('T')[0];
+const lastChecklistReset = localStorage.getItem('lex_last_checklist_reset');
+if (!lastChecklistReset || lastChecklistReset !== today) {
+  dailyChecklist = [];
+
+  // Adiciona missão automática para estagiários
+  if (currentUser && members) {
+    const user = members.find(m => m.id === currentUser.memberId);
+    if (user && user.role === 'estagiario') {
+      dailyChecklist.push({
+        id: Date.now(),
+        title: 'Diários (TCM e TCE)',
+        done: false,
+        created: new Date().toISOString()
+      });
+    }
+  }
+
+  save(STORAGE_KEYS.dailyChecklist, dailyChecklist);
+  localStorage.setItem('lex_last_checklist_reset', today);
+} else if (!dailyChecklist) {
+  dailyChecklist = [];
 }
 
 // ============================================================
@@ -3420,10 +3481,10 @@ function renderDashboard() {
   checkDeadlineNotifications();
   updateNotifBadge(urgent + overdue);
 
-  // Recent tasks
+  // Pending tasks
   const myTasks = getUserTasks();
-  const recentTasks = [...myTasks].sort((a,b) => (a.done?1:-1)).slice(0,5);
-  document.getElementById('dashTasks').innerHTML = recentTasks.length ? recentTasks.map(t => taskItemHTML(t, true)).join('') : emptyState('Nenhuma tarefa ainda');
+  const pendingTasks = myTasks.filter(t => !t.done).slice(0,5);
+  document.getElementById('dashTasks').innerHTML = pendingTasks.length ? pendingTasks.map(t => taskItemHTML(t, true)).join('') : emptyState('Nenhuma tarefa pendente');
 
   // Deadlines
   const upcomingPrazos = prazos.filter(p=>!p.done).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,4);
@@ -3450,10 +3511,8 @@ function renderDashboard() {
     </div>`;
   }).join('');
 
-  // Activity
-  document.getElementById('activityFeed').innerHTML = activity.slice(0,5).map(a =>
-    `<div class="activity-item"><div class="activity-dot" style="background:${a.color}"></div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time}</div></div></div>`
-  ).join('');
+  // Render daily checklist
+  renderDailyChecklist();
 }
 
 // ============================================================
@@ -3629,21 +3688,22 @@ function taskItemHTML(t, compact) {
   const isShared = t.mode === 'compartilhada';
   const participantCount = isShared ? (t.participants || []).length : 0;
   const sharedBadge = isShared ? `<span class="badge" style="background:rgba(74,175,125,.2);color:#4caf7d">🤝 ${participantCount} participante${participantCount !== 1 ? 's' : ''}</span>` : '';
-
   // Labels/Etiquetas
   const labelColors = { 'Prazo': '#e05c5c', 'Audiência': '#ff6b6b', 'Petição': '#4caf7d', 'Contrato': '#5b8dee', 'Recurso': '#9c27b0', 'Consultoria': '#ffa94d', 'Diligência': '#e09a3a', 'Intimação': '#74b9ff', ...(t.customLabels || {}) };
   const labelsBadge = t.labels && t.labels.length > 0 ? t.labels.map(l => `<span class="badge" style="background: ${labelColors[l] || '#5b8dee'}; color: white; font-size: 0.7rem; padding: 2px 6px;">${l}</span>`).join('') : '';
 
   return `<div class="task-item">
-    <div class="task-check ${t.done?'done':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
-    <div class="task-info" onclick="event.stopPropagation(); openTaskDetail(${t.id})" style="cursor:pointer">
+    ${!compact ? `<div class="task-check ${t.done?'done':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>` : ''}
+    <div class="task-info" onclick="${compact ? `event.stopPropagation(); openTaskDetail(${t.id})` : ''}" style="${compact ? 'cursor:pointer' : ''}">
       <div class="task-title ${t.done?'done-text':''}">${tipoBadge}${t.title}</div>
       <div class="task-meta">${memberName(t.assignee)}${t.process?' · '+t.process:''} ${urgBadge} ${dueBadge} ${labelsBadge} ${clBadge} ${sharedBadge}</div>
     </div>
     ${!compact ? `<div style="display:flex;gap:4px;flex-shrink:0">
       <button class="btn btn-ghost btn-sm" onclick="openEditTask(${t.id})" title="Editar">✏️</button>
       ${canDo('canDeleteTasks') ? `<button class="btn btn-ghost btn-sm" onclick="deleteTask(${t.id})" title="Remover">✕</button>` : ''}
-    </div>` : ''}
+    </div>` : `<div style="flex-shrink:0">
+      <button class="btn btn-primary btn-sm" onclick="openTaskDetail(${t.id})" title="Ver detalhes">VER</button>
+    </div>`}
   </div>`;
 }
 function openEditTask(id) {
@@ -3691,6 +3751,86 @@ function toggleTask(id) {
   addActivity(t.done ? `Tarefa "${t.title.substring(0,30)}..." concluída` : `Tarefa reaberta`, '#4caf7d');
   renderPage(currentPage);
 }
+
+// ============================================================
+// DAILY CHECKLIST
+// ============================================================
+// Daily checklist operations handled via addEventListener in renderDailyChecklist()
+
+function renderDailyChecklist() {
+  const container = document.getElementById('dailyChecklist');
+  if (!container) return;
+
+  if (!Array.isArray(dailyChecklist)) dailyChecklist = [];
+
+  let html = '';
+  if (dailyChecklist.length > 0) {
+    html = dailyChecklist.map(item => {
+      const safeTitle = String(item.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const opacity = item.done ? 'opacity:0.6;' : '';
+      const strike = item.done ? 'text-decoration:line-through;' : '';
+      const color = item.done ? 'color:var(--text-secondary);' : '';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);${opacity}" class="checklist-item" data-item-id="${item.id}">
+        <input type="checkbox" class="checklist-checkbox" ${item.done?'checked':''} data-item-id="${item.id}" style="cursor:pointer;width:18px;height:18px">
+        <div style="flex:1;font-size:0.9rem;${strike}${color}">${safeTitle}</div>
+        <button class="btn btn-ghost btn-xs checklist-delete-btn" data-item-id="${item.id}" style="color:#f44336">×</button>
+      </div>`;
+    }).join('');
+  } else {
+    html = '<div class="empty" style="text-align:center;padding:20px"><div class="empty-icon">✅</div><div class="empty-text">Sem obrigações. Adicione uma!</div></div>';
+  }
+
+  html += '<div style="margin-top:12px;display:flex;gap:8px;width:100%">' +
+    '<input type="text" id="checklistInput" placeholder="Nova obrigação..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text);font-size:0.9rem">' +
+    '<button class="btn btn-primary btn-sm" id="checklistAddBtn" style="white-space:nowrap" type="button">Adicionar</button>' +
+    '</div>';
+
+  container.innerHTML = html;
+
+  const inputEl = document.getElementById('checklistInput');
+  const btnEl = document.getElementById('checklistAddBtn');
+
+  if (inputEl) {
+    inputEl.addEventListener('keypress', (e) => { if (e.key === 'Enter') _addChecklistItemFromInput(); });
+    inputEl.focus();
+  }
+  if (btnEl) {
+    btnEl.addEventListener('click', (e) => { e.preventDefault(); _addChecklistItemFromInput(); });
+  }
+
+  document.querySelectorAll('.checklist-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const itemId = parseInt(e.target.dataset.itemId);
+      const item = dailyChecklist.find(i => i.id === itemId);
+      if (item) {
+        item.done = !item.done;
+        save(STORAGE_KEYS.dailyChecklist, dailyChecklist);
+        renderDailyChecklist();
+      }
+    });
+  });
+
+  document.querySelectorAll('.checklist-delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const itemId = parseInt(e.target.dataset.itemId);
+      dailyChecklist = dailyChecklist.filter(i => i.id !== itemId);
+      save(STORAGE_KEYS.dailyChecklist, dailyChecklist);
+      renderDailyChecklist();
+    });
+  });
+}
+
+function _addChecklistItemFromInput() {
+  const inp = document.getElementById('checklistInput');
+  if (!inp || !inp.value.trim()) return;
+  if (!Array.isArray(dailyChecklist)) dailyChecklist = [];
+  dailyChecklist.push({ id: Date.now(), title: inp.value.trim(), done: false, created: new Date().toISOString() });
+  save(STORAGE_KEYS.dailyChecklist, dailyChecklist);
+  renderDailyChecklist();
+  inp.value = '';
+}
+
 // ============================================================
 // UNDO TOAST SYSTEM
 // ============================================================
@@ -3850,7 +3990,6 @@ function showProfile(id) {
       </div>
     </div>
     <div class="grid-2" style="gap:12px;margin-bottom:20px">
-      ${m.area ? `<div class="card"><div class="card-body"><div class="stat-label">Área</div><div style="font-size:0.9rem;font-weight:500">${m.area}</div></div></div>` : ''}
       ${m.inst ? `<div class="card"><div class="card-body"><div class="stat-label">Instituição</div><div style="font-size:0.9rem;font-weight:500">${m.inst}</div></div></div>` : ''}
       ${sup ? `<div class="card"><div class="card-body"><div class="stat-label">Responsável</div><div style="font-size:0.9rem;font-weight:500">${sup.name}</div></div></div>` : ''}
       <div class="card"><div class="card-body"><div class="stat-label">Carga</div><div style="font-size:0.9rem;font-weight:500">${m.workload || 0} processos</div></div></div>
@@ -4049,6 +4188,7 @@ function saveTask() {
       kanbanStatus: kanbanCol,
       done: false,
       mode: mode,
+      created: new Date().toISOString(),
       // Shared activity fields (if compartilhada)
       ...(mode === 'compartilhada' && {
         owner: parseInt(document.getElementById('taskOwner').value),
@@ -4589,12 +4729,7 @@ function getAvatarHTML(member, size = 'normal', showBorder = false) {
 function roleLabel(r) { return r === 'socio' ? 'Sócio-Gestor' : r === 'advogado' ? 'Advogado(a)' : r === 'estagiario' ? 'Estagiário(a)' : 'Administrativo'; }
 function avatarClass(r) { return r === 'socio' ? 'avatar-gold' : r === 'advogado' ? 'avatar-blue' : r === 'estagiario' ? 'avatar-green' : 'avatar-green'; }
 function seniorityBadge(m) {
-  if (m.role !== 'advogado' || !m.seniority) return '';
-  const isSenior = m.seniority === 'senior';
-  const bg  = isSenior ? 'rgba(200,169,110,0.15)' : 'rgba(91,141,238,0.15)';
-  const col = isSenior ? 'var(--primary)' : 'var(--info)';
-  const lbl = isSenior ? 'Sênior' : 'Júnior';
-  return `<span style="display:inline-flex;align-items:center;padding:1px 8px;border-radius:20px;font-size:.65rem;font-weight:700;background:${bg};color:${col};vertical-align:middle;margin-left:4px">${lbl}</span>`;
+  return '';
 }
 function emptyState(msg) { return `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">${msg}</div></div>`; }
 function updateNotifBadge(n) { document.getElementById('notifCount').textContent = n; }
@@ -4657,9 +4792,17 @@ function renderPage_usuarios() {
   const tbody = document.getElementById('usuariosBody');
   if (!tbody) return;
   const avatarColors = { socio: 'avatar-gold', advogado: 'avatar-blue', estagiario: 'avatar-green' };
-  tbody.innerHTML = users.map(u => {
+  // Deduplica por ID (remove duplicatas vindas do Supabase)
+  const seen = new Set();
+  const dedupedUsers = users.filter(u => {
+    if (seen.has(u.id)) return false;
+    seen.add(u.id);
+    return true;
+  });
+  tbody.innerHTML = dedupedUsers.map(u => {
     const perms = PERMISSIONS[u.profile] || {};
     const linked = u.memberId ? members.find(m => m.id === u.memberId) : null;
+    const canEdit = canDo('canManageUsers');
     return `<tr>
       <td>
         <div class="user-row-avatar ${avatarColors[u.profile]||'avatar-gold'}">${initials(u.name)}</div>
@@ -4670,7 +4813,10 @@ function renderPage_usuarios() {
       <td>${linked ? linked.name : '<span style="color:var(--text-secondary)">—</span>'}</td>
       <td><span class="user-status-active"><span class="user-status-dot"></span> Ativo</span></td>
       <td>
-        ${u.id !== 'admin' && canDo('canAddMembers') ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">Remover</button>` : ''}
+        <div style="display:flex;gap:6px;align-items:center;justify-content:flex-end">
+          ${canEdit ? `<button class="btn btn-ghost btn-sm" onclick="openEditUser('${u.id}')">✏️ Editar</button>` : ''}
+          ${canEdit && u.id !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">Remover</button>` : ''}
+        </div>
       </td>
     </tr>`;
   }).join('');
@@ -4681,6 +4827,93 @@ function deleteUser(uid) {
   users = users.filter(u => u.id !== uid);
   saveUsers(users);
   renderPage_usuarios();
+}
+
+function openEditUser(uid) {
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+
+  const teamOptions = [1,2,3,4].map(t => {
+    const info = typeof TEAM_NAMES !== 'undefined' ? (TEAM_NAMES[t] || {}) : {};
+    const linked = members.find(m => m.id === u.memberId);
+    const currentTeam = linked ? (linked.team || '') : '';
+    return `<option value="${t}" ${currentTeam == t ? 'selected' : ''}>${info.name || 'Equipe '+t}</option>`;
+  }).join('');
+
+  const modal = document.createElement('div');
+  modal.id = 'editUserModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;width:400px;max-width:95vw">
+      <div style="font-size:1rem;font-weight:600;margin-bottom:20px">✏️ Editar Usuário</div>
+      <div class="form-group">
+        <label class="form-label">Nome</label>
+        <input id="editUserNome" class="form-control" value="${u.name}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-mail</label>
+        <input id="editUserEmail" class="form-control" value="${u.email}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Equipe</label>
+        <select id="editUserTeam" class="form-control">
+          <option value="">— Sem equipe —</option>
+          ${teamOptions}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nova Senha <span style="color:var(--text-secondary);font-size:0.75rem">(deixe em branco para não alterar)</span></label>
+        <input id="editUserSenha" class="form-control" type="password" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar Senha</label>
+        <input id="editUserSenhaConfirm" class="form-control" type="password" placeholder="••••••••">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn btn-primary" style="flex:1" onclick="saveEditUser('${uid}')">Salvar</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('editUserModal').remove()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+function saveEditUser(uid) {
+  const u = users.find(x => x.id === uid);
+  if (!u) return;
+
+  const nome   = document.getElementById('editUserNome').value.trim();
+  const email  = document.getElementById('editUserEmail').value.trim();
+  const team   = parseInt(document.getElementById('editUserTeam').value) || null;
+  const senha  = document.getElementById('editUserSenha').value;
+  const senha2 = document.getElementById('editUserSenhaConfirm').value;
+
+  if (!nome || !email) { alert('Nome e e-mail são obrigatórios'); return; }
+  if (senha && senha !== senha2) { alert('As senhas não coincidem'); return; }
+  if (senha && senha.length < 6) { alert('A senha deve ter pelo menos 6 caracteres'); return; }
+
+  // Atualiza usuário
+  u.name  = nome;
+  u.email = email;
+  if (senha) u.password = senha;
+
+  // Atualiza membro vinculado
+  if (u.memberId) {
+    const m = members.find(x => x.id === u.memberId);
+    if (m) {
+      m.name  = nome;
+      m.email = email;
+      if (team) m.team = team;
+      save(STORAGE_KEYS.members, members);
+    }
+  }
+
+  saveUsers(users); // salva e sincroniza Supabase
+
+  document.getElementById('editUserModal').remove();
+  renderPage_usuarios();
+  showNotification('✅ Usuário atualizado!', 'success');
 }
 
 let editingUserId = null;
@@ -5445,8 +5678,11 @@ function openTaskDetail(id) {
             ${renderTaskActivityFeed(t)}
           </div>
           <div style="padding-top: 12px; border-top: 1px solid var(--border); margin-top: 12px;">
-            <textarea id="taskCommentInput" placeholder="Adicionar comentário..."
-              style="width: 100%; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 0.85rem; min-height: 60px; resize: none; font-family: inherit;"></textarea>
+            <div style="position:relative">
+              <textarea id="taskCommentInput" placeholder="Adicionar comentário... (digite @ para mencionar)"
+                style="width: 100%; padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 0.85rem; min-height: 60px; resize: none; font-family: inherit;"></textarea>
+              <div id="mentionDropdown" class="mention-dropdown" style="display:none;position:fixed;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;max-height:144px;overflow-y:auto;z-index:99999;min-width:220px"></div>
+            </div>
             <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
               <label style="flex: 1; display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-secondary); font-size: 0.85rem;">
                 <input type="file" id="taskCommentAttachment_${id}" multiple style="display: none;" accept="*" />
@@ -5490,6 +5726,15 @@ function openTaskDetail(id) {
           }
         });
       }
+
+      // Adicionar event listener para @mentions
+      setTimeout(() => {
+        const commentInput = document.getElementById('taskCommentInput');
+        if (commentInput) {
+          commentInput.addEventListener('input', handleMentionInput);
+        }
+      }, 100);
+
     }, 0);
   } catch(e) {
     console.error('Error in openTaskDetail:', e);
@@ -5585,6 +5830,16 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
     </div>
   `;
 
+
+  // Data de Criação
+  if (t.created) {
+    html += `
+      <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: 600;">🕐 Criado em</div>
+        <div style="color: var(--text-secondary); font-size: 0.9rem;">${new Date(t.created).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</div>
+      </div>
+    `;
+  }
 
   // Processo
   if (t.process) {
@@ -5829,13 +6084,35 @@ function renderTaskActivityFeed(t) {
     t.comments.forEach(comment => {
       const commentTime = new Date(comment.time);
       const timeStr = formatTimeAgo(commentTime);
-      const initials = comment.user.split(' ').map(n => n[0]).join('').substring(0, 2);
+      const ini = comment.user.split(' ').map(n => n[0]).join('').substring(0, 2);
+
+      // Buscar foto do perfil do autor
+      let photoUrl = null;
+      const commentMember = comment.memberId
+        ? members.find(m => m.id === comment.memberId)
+        : members.find(m => m.name === comment.user);
+      const commentUser = comment.userId
+        ? users.find(u => u.id === comment.userId)
+        : users.find(u => u.name === comment.user);
+      if (commentMember && commentMember.photo) {
+        photoUrl = commentMember.photo;
+      } else if (commentUser && commentUser.photo) {
+        photoUrl = commentUser.photo;
+      } else {
+        const pKey = 'vgai_user_profile_' + (commentUser?.id || commentUser?.memberId || commentMember?.id || '');
+        if (pKey !== 'vgai_user_profile_') {
+          const pd = JSON.parse(localStorage.getItem(pKey) || '{}');
+          if (pd.foto) photoUrl = pd.foto;
+        }
+      }
+
+      const avatarHTML = photoUrl
+        ? `<img src="${photoUrl}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+        : `<div style="width:28px;height:28px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#000;font-weight:700;font-size:0.75rem;flex-shrink:0;">${ini}</div>`;
 
       html += `
         <div style="display: flex; gap: 10px; padding: 12px; background: var(--bg-secondary); border-radius: 6px;">
-          <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 700; font-size: 0.75rem; flex-shrink: 0;">
-            ${initials}
-          </div>
+          ${avatarHTML}
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
               <span style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">${comment.user}</span>
@@ -5923,6 +6200,8 @@ function saveCommentWithAttachments(taskId, text, attachments, t) {
   if (!t.comments) t.comments = [];
   const comment = {
     user: currentUser?.name || 'Anônimo',
+    userId: currentUser?.id || null,
+    memberId: currentUser?.memberId || null,
     text: text,
     time: new Date().toISOString()
   };
@@ -5938,8 +6217,10 @@ function saveCommentWithAttachments(taskId, text, attachments, t) {
   // Limpar inputs
   const input = document.getElementById('taskCommentInput');
   const fileInput = document.getElementById(`taskCommentAttachment_${taskId}`);
+  const dropdown = document.getElementById('mentionDropdown');
   if (input) input.value = '';
   if (fileInput) fileInput.value = '';
+  if (dropdown) dropdown.style.display = 'none';
 
   openTaskDetail(taskId); // Refresh
 }
@@ -6699,21 +6980,22 @@ function renderTaskSubtasks() {
   `).join('');
 }
 
-function addChecklistItem() {
+// Funções do modal de NOVA TAREFA (pendingChecklist) — nomes com prefixo para não conflitar com task detail
+function _pendingChecklistAdd() {
   const inp = document.getElementById('taskChecklistInput');
-  const text = inp.value.trim();
+  const text = inp ? inp.value.trim() : '';
   if (!text) return;
   pendingChecklist.push({ id: 'cl' + Date.now() + Math.random(), text, done: false });
-  inp.value = '';
+  if (inp) inp.value = '';
   renderChecklistItems();
 }
 
-function toggleChecklistItem(idx) {
+function _pendingChecklistToggle(idx) {
   if (pendingChecklist[idx]) pendingChecklist[idx].done = !pendingChecklist[idx].done;
   renderChecklistItems();
 }
 
-function removeChecklistItem(idx) {
+function _pendingChecklistRemove(idx) {
   pendingChecklist.splice(idx, 1);
   renderChecklistItems();
 }
@@ -6723,9 +7005,9 @@ function renderChecklistItems() {
   if (!ul) return;
   ul.innerHTML = pendingChecklist.map((item, i) => `
     <li class="checklist-item">
-      <div class="checklist-check ${item.done?'done':''}" onclick="toggleChecklistItem(${i})">${item.done?'✓':''}</div>
+      <div class="checklist-check ${item.done?'done':''}" onclick="_pendingChecklistToggle(${i})">${item.done?'✓':''}</div>
       <span class="checklist-item-text ${item.done?'done-text':''}">${item.text}</span>
-      <button class="checklist-remove" onclick="removeChecklistItem(${i})">✕</button>
+      <button class="checklist-remove" onclick="_pendingChecklistRemove(${i})">✕</button>
     </li>
   `).join('');
 }
@@ -6741,10 +7023,11 @@ function renderTaskComments(t) {
   let html = '';
   // comments
   html += comments.map(c => {
-    const author = c.author === 'sistema' ? 'Sistema' : memberName(c.author);
+    const author = c.user || (c.author === 'sistema' ? 'Sistema' : memberName(c.author)) || 'Anônimo';
+    const highlightedText = renderMentionText(c.text);
     return `<div class="task-comment-item">
       <div class="task-comment-author">${author}</div>
-      <div class="task-comment-text">${c.text}</div>
+      <div class="task-comment-text">${highlightedText}</div>
       <div class="task-comment-time">${c.time}</div>
     </div>`;
   }).join('');
@@ -6762,6 +7045,92 @@ function renderTaskComments(t) {
   list.innerHTML = html || '<div style="font-size:.8rem;color:var(--text-secondary)">Nenhum comentário ainda.</div>';
 }
 
+// ============================================================
+// @MENTIONS SYSTEM
+// ============================================================
+let mentionAtIndex = -1;
+
+function handleMentionInput(event) {
+  const input = event.target;
+  const text = input.value;
+  const dropdown = document.getElementById('mentionDropdown');
+
+  if (!dropdown) return;
+
+  const cursorPos = input.selectionStart;
+  const beforeCursor = text.substring(0, cursorPos);
+  const atIndex = beforeCursor.lastIndexOf('@');
+
+  if (atIndex === -1 || beforeCursor.length === 0) {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  const mentionText = beforeCursor.substring(atIndex + 1).toLowerCase();
+
+  if (mentionText.includes(' ') || mentionText.includes('\n')) {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  const filtered = members.filter(m =>
+    m.name.toLowerCase().includes(mentionText) &&
+    m.id !== currentUser?.memberId
+  ).slice(0, 8);
+
+  if (filtered.length === 0) {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  const inputRect = input.getBoundingClientRect();
+  dropdown.style.top = (inputRect.bottom + 4) + 'px';
+  dropdown.style.left = inputRect.left + 'px';
+  dropdown.style.width = inputRect.width + 'px';
+
+  mentionAtIndex = atIndex;
+  dropdown.innerHTML = filtered.map(m => {
+    const photo = m.photo
+      ? `<img src="${m.photo}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0">`
+      : `<div style="width:32px;height:32px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#000;flex-shrink:0">${m.name.charAt(0)}</div>`;
+    return `<div class="mention-item" onclick="insertMention('${m.name.replace(/'/g, "\\'")}', ${mentionAtIndex})" style="display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.07)'" onmouseout="this.style.background='transparent'">
+      ${photo}
+      <span style="font-size:0.88rem;font-weight:500;color:var(--text-primary)">@${m.name}</span>
+    </div>`;
+  }).join('');
+  dropdown.style.display = 'block';
+  dropdown.style.maxHeight = '144px';
+  dropdown.style.overflowY = 'auto';
+}
+
+function insertMention(name, atIndex) {
+  const input = document.getElementById('taskCommentInput');
+  const text = input.value;
+  const cursorPos = input.selectionStart;
+
+  // Remove o @ e insere a mention
+  const beforeAt = text.substring(0, atIndex);
+  const afterCursor = text.substring(cursorPos);
+  const newText = beforeAt + '@' + name + ' ' + afterCursor;
+
+  input.value = newText;
+
+  // Posiciona cursor após o mention
+  const newCursorPos = atIndex + name.length + 2;
+  setTimeout(() => {
+    input.selectionStart = input.selectionEnd = newCursorPos;
+    input.focus();
+  }, 0);
+
+  // Fecha dropdown
+  document.getElementById('mentionDropdown').style.display = 'none';
+}
+
+function renderMentionText(text) {
+  // Destaca @mentions com cor especial
+  return text.replace(/@(\w+)/g, '<span style="color:var(--primary);font-weight:600">@$1</span>');
+}
+
 function addTaskComment() {
   const editId = parseInt(document.getElementById('taskEditId').value);
   if (!editId) return;
@@ -6773,12 +7142,16 @@ function addTaskComment() {
   if (!t.comments) t.comments = [];
   const now = new Date();
   t.comments.push({
+    user: currentUser?.name || 'Anônimo',
+    userId: currentUser?.id || null,
+    memberId: currentUser?.memberId || null,
     author: currentUser?.memberId || 'sistema',
     text,
-    time: now.toLocaleString('pt-BR')
+    time: now.toISOString()
   });
   save(STORAGE_KEYS.tasks, tasks);
   inp.value = '';
+  document.getElementById('mentionDropdown').style.display = 'none';
   renderTaskComments(t);
 }
 
@@ -7259,30 +7632,42 @@ function switchConfigTab(tab) {
 }
 
 // ===== PERFIL TAB =====
-function loadProfileConfig() {
-  // Load from Firestore or localStorage
-  const profileData = localStorage.getItem('vgai_user_profile');
-  if (profileData) {
-    try {
-      const data = JSON.parse(profileData);
-      document.getElementById('configNome').value = data.nome || currentUser.name || '';
-      document.getElementById('configEmail').value = data.email || currentUser.email || '';
-      document.getElementById('configTelefone').value = data.telefone || '';
-      document.getElementById('configCargo').value = data.cargo || currentUser.profile || '';
-      document.getElementById('configOAB').value = data.oab || '';
-      document.getElementById('configBio').value = data.bio || '';
+function profileKey() {
+  return 'vgai_user_profile_' + (currentUser?.id || currentUser?.memberId || 'guest');
+}
 
-      // Load photo if exists
-      if (data.foto) {
-        document.getElementById('profilePhotoPreview').innerHTML = `<img src="${data.foto}" style="width:100%; height:100%; border-radius:8px; object-fit:cover;">`;
-      }
-    } catch(e) {
-      console.warn('Erro ao carregar perfil:', e);
-    }
+function _applyProfileData(data) {
+  document.getElementById('configNome').value = data.nome || currentUser.name || '';
+  document.getElementById('configEmail').value = data.email || currentUser.email || '';
+  document.getElementById('configTelefone').value = data.telefone || '';
+  document.getElementById('configCargo').value = data.cargo || currentUser.profile || '';
+  document.getElementById('configOAB').value = data.oab || '';
+  document.getElementById('configBio').value = data.bio || '';
+  if (data.foto) {
+    document.getElementById('profilePhotoPreview').innerHTML = `<img src="${data.foto}" style="width:100%; height:100%; border-radius:8px; object-fit:cover;">`;
+  }
+}
+
+async function loadProfileConfig() {
+  // 1. Carrega local imediatamente (sem delay visual)
+  const local = localStorage.getItem(profileKey());
+  if (local) {
+    try { _applyProfileData(JSON.parse(local)); } catch(e) {}
   } else {
     document.getElementById('configNome').value = currentUser.name || '';
     document.getElementById('configEmail').value = currentUser.email || '';
     document.getElementById('configCargo').value = currentUser.profile || '';
+  }
+
+  // 2. Busca do Supabase e sobrescreve se mais recente
+  try {
+    const remote = await _sbLoad(profileKey());
+    if (remote) {
+      _applyProfileData(remote);
+      localStorage.setItem(profileKey(), JSON.stringify(remote)); // sincroniza local
+    }
+  } catch(e) {
+    console.warn('Não foi possível carregar perfil do Supabase:', e);
   }
 }
 
@@ -7303,10 +7688,10 @@ function handleProfilePhotoChange() {
         const photoData = e.target.result;
         document.getElementById('profilePhotoPreview').innerHTML = `<img src="${photoData}" style="width:100%; height:100%; border-radius:8px; object-fit:cover;">`;
 
-        // Save to localStorage
-        const profileData = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
+        // Save to localStorage (por usuário)
+        const profileData = JSON.parse(localStorage.getItem(profileKey()) || '{}');
         profileData.foto = photoData;
-        localStorage.setItem('vgai_user_profile', JSON.stringify(profileData));
+        localStorage.setItem(profileKey(), JSON.stringify(profileData));
 
         // Também atualizar a foto do membro no array de members
         const member = members.find(m => m.name === currentUser.name);
@@ -7346,13 +7731,13 @@ function saveProfileConfig() {
     updatedAt: new Date().toISOString()
   };
 
-  // Get existing data to preserve foto
-  const existing = JSON.parse(localStorage.getItem('vgai_user_profile') || '{}');
+  // Preservar foto existente
+  const existing = JSON.parse(localStorage.getItem(profileKey()) || '{}');
   if (existing.foto) profileData.foto = existing.foto;
 
-  localStorage.setItem('vgai_user_profile', JSON.stringify(profileData));
+  localStorage.setItem(profileKey(), JSON.stringify(profileData));
 
-  _sbSave('vgai_user_profile', profileData);
+  _sbSave(profileKey(), profileData);
 
   // Update sidebar if nome changed
   if (profileData.nome) {
