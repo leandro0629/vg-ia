@@ -2427,10 +2427,6 @@
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">Senha Atual</label>
-        <input class="form-input" id="pwCurrent" type="password" placeholder="••••••••">
-      </div>
-      <div class="form-group">
         <label class="form-label">Nova Senha</label>
         <input class="form-input" id="pwNew" type="password" placeholder="••••••••">
       </div>
@@ -3016,27 +3012,51 @@ function getUserTasks() {
 // Change password
 function showChangePassword() {
   closeUserMenu();
-  document.getElementById('pwCurrent').value = '';
   document.getElementById('pwNew').value = '';
   document.getElementById('pwConfirm').value = '';
   document.getElementById('pwError').classList.remove('show');
   document.getElementById('modalPassword').classList.add('open');
 }
-function changePassword() {
-  const cur = document.getElementById('pwCurrent').value;
+async function changePassword() {
   const nw  = document.getElementById('pwNew').value;
   const cf  = document.getElementById('pwConfirm').value;
   const err = document.getElementById('pwError');
-  if (cur !== currentUser.password) { err.textContent = 'Senha atual incorreta.'; err.classList.add('show'); return; }
-  if (nw.length < 4) { err.textContent = 'Nova senha deve ter ao menos 4 caracteres.'; err.classList.add('show'); return; }
-  if (nw !== cf) { err.textContent = 'As senhas não coincidem.'; err.classList.add('show'); return; }
-  const idx = users.findIndex(u => u.id === currentUser.id);
-  users[idx].password = nw;
-  currentUser.password = nw;
-  saveUsers(users);
-  setSession(currentUser);
-  closeModal('modalPassword');
-  alert('Senha alterada com sucesso!');
+
+  // Validações
+  if (nw.length < 6) {
+    err.textContent = 'Senha deve ter ao menos 6 caracteres.';
+    err.classList.add('show');
+    return;
+  }
+  if (nw !== cf) {
+    err.textContent = 'As senhas não coincidem.';
+    err.classList.add('show');
+    return;
+  }
+
+  try {
+    // Atualizar senha via Supabase Auth
+    const { error } = await _sb.auth.updateUser({ password: nw });
+
+    if (error) {
+      err.textContent = `Erro ao trocar senha: ${error.message}`;
+      err.classList.add('show');
+      return;
+    }
+
+    // Sucesso
+    err.classList.remove('show');
+    closeModal('modalPassword');
+    alert('✅ Senha alterada com sucesso!');
+
+    // Limpar campos
+    document.getElementById('pwNew').value = '';
+    document.getElementById('pwConfirm').value = '';
+
+  } catch (e) {
+    err.textContent = `Erro inesperado: ${e.message}`;
+    err.classList.add('show');
+  }
 }
 
 function toggleUserMenu() {
