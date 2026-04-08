@@ -1,0 +1,128 @@
+{
+  "name": "Análise Automática de Documentos - Gemini",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "documento-analisa",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const doc = $input.first().json;\nreturn {\n  json: {\n    conteudo: doc.conteudo || doc.texto || '',\n    tipoDocumento: doc.tipo || 'Documento Geral',\n    email: doc.email || 'leandrosmg0629@gmail.com'\n  }\n};"
+      },
+      "id": "extract",
+      "name": "Extrair Conteúdo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={{$env.GEMINI_API_KEY}}",
+        "options": {},
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Analise este {{$json.tipoDocumento}} e forneça:\n\n1. **RESUMO EXECUTIVO** (3-5 linhas principais)\n2. **PARTES ENVOLVIDAS** (nomes, papéis)\n3. **DATAS-CHAVE** (assinatura, prazos, vencimentos)\n4. **PONTOS CRÍTICOS** (obrigações principais, riscos)\n5. **AÇÕES RECOMENDADAS** (próximos passos)\n6. **TIMELINE** (cronograma)\n\nDocumento:\n{{$json.conteudo}}\n\nForneça em markdown estruturado."
+                }
+              ]
+            }
+          ],
+          "generationConfig": {
+            "maxOutputTokens": 2048,
+            "temperature": 0.7
+          }
+        }
+      },
+      "id": "gemini",
+      "name": "Gemini - Análise",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const response = $input.first().json;\nconst texto = response.candidates?.[0]?.content?.parts?.[0]?.text || 'Erro ao analisar documento';\n\nreturn {\n  json: {\n    analise_completa: texto,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "estruturar",
+      "name": "Estruturar Resposta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "credentials": "gmail",
+        "toEmail": "{{$json.email}}",
+        "subject": "📄 Análise Automática de Documento",
+        "emailType": "html",
+        "htmlEmail": "<html><body style='font-family: Arial; padding: 20px;'><h2>📄 Análise do Documento</h2><hr><div style='background:#f5f5f5; padding: 15px; border-radius: 5px; white-space: pre-wrap;'>{{$json.analise_completa}}</div><hr><p style='color: #666;'><strong>Data:</strong> {{$json.timestamp}}</p></body></html>"
+      },
+      "id": "email",
+      "name": "Gmail - Enviar Resultado",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "webhook": {
+      "main": [
+        [
+          {
+            "node": "extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract": {
+      "main": [
+        [
+          {
+            "node": "gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gemini": {
+      "main": [
+        [
+          {
+            "node": "estruturar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "estruturar": {
+      "main": [
+        [
+          {
+            "node": "email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

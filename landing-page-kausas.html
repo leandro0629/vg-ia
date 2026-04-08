@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAUSAS - Gestão Inteligente de Processos Jurídicos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Navbar */
+        nav {
+            background: #fff;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #1e40af;
+        }
+
+        .cta-btn {
+            background: #1e40af;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .cta-btn:hover {
+            background: #1e3a8a;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #1e40af;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            border: 2px solid white;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #1e40af;
+        }
+
+        .hero-image {
+            margin-top: 3rem;
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            font-size: 4rem;
+        }
+
+        /* Section */
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #1e40af;
+        }
+
+        .section p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* Problema Section */
+        .problema {
+            background: #f8f9fa;
+        }
+
+        .problema-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .problema-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .problema-card h3 {
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        .problema-card p {
+            color: #666;
+        }
+
+        /* Solução Section */
+        .solucao {
+            background: white;
+        }
+
+        .solucao-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            border-left: 4px solid #1e40af;
+        }
+
+        .feature-card h3 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Benefícios */
+        .beneficios {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .beneficios-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .benefit-item {
+            padding: 1.5rem;
+        }
+
+        .benefit-item:before {
+            content: "✓";
+            color: #27ae60;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+
+        /* Preços */
+        .precos {
+            background: white;
+        }
+
+        .precos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .preco-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .preco-card:hover {
+            border-color: #1e40af;
+            box-shadow: 0 8px 20px rgba(30, 64, 175, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .preco-card.destaque {
+            border-color: #1e40af;
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .preco-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .preco {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .preco-descricao {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .preco-features {
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .preco-features li {
+            list-style: none;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .preco-features li:before {
+            content: "✓";
+            color: #27ae60;
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+
+        .preco-card.destaque .preco-features li {
+            border-bottom-color: rgba(255,255,255,0.2);
+        }
+
+        /* Testimonials */
+        .testimonials {
+            background: #f8f9fa;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .testimonial-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-author {
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .testimonial-role {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        /* CTA Section */
+        .cta-final {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .cta-final h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .cta-final p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        footer a {
+            color: #1e40af;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .section {
+                padding: 3rem 1rem;
+            }
+
+            .section h2 {
+                font-size: 1.8rem;
+            }
+
+            .preco-card.destaque {
+                transform: scale(1);
+            }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal h2 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 0.8rem;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .form-submit:hover {
+            background: #1e3a8a;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <div class="logo">⚖️ KAUSAS</div>
+        <ul class="nav-links">
+            <li><a href="#features">Funcionalidades</a></li>
+            <li><a href="#precos">Preços</a></li>
+            <li><a href="#testimonials">Clientes</a></li>
+        </ul>
+        <button class="cta-btn" onclick="openModal()">Teste Grátis</button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Gestão Inteligente de Processos Jurídicos</h1>
+        <p>Organize tarefas, prazos e documentos em um único lugar. Elaborado para advogados, por quem entende do mercado.</p>
+        <div class="hero-cta">
+            <button class="btn-primary" onclick="openModal()">Começar Teste Gratuito</button>
+            <button class="btn-secondary" onclick="document.getElementById('demo').scrollIntoView()">Ver Demo</button>
+        </div>
+        <div class="hero-image">📋</div>
+    </section>
+
+    <!-- Problema Section -->
+    <section class="section problema">
+        <h2>O Problema que Advogados Enfrentam</h2>
+        <div class="problema-grid">
+            <div class="problema-card">
+                <h3>⏰ Prazos Perdidos</h3>
+                <p>Espalhar tarefas em vários sistemas significa perder prazos importantes e oportunidades.</p>
+            </div>
+            <div class="problema-card">
+                <h3>📁 Documentos Desorganizados</h3>
+                <p>Arquivos em WhatsApp, email, Google Drive... impossível encontrar quando precisa.</p>
+            </div>
+            <div class="problema-card">
+                <h3>👥 Falta de Comunicação</h3>
+                <p>Sua equipe não sabe o que está acontecendo em cada caso. Retrabalho e atrasos garantidos.</p>
+            </div>
+            <div class="problema-card">
+                <h3>⚖️ Faturamento Manual</h3>
+                <p>Horas gastas são perdidas porque ninguém controla o tempo gasto em cada processo.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solução Section -->
+    <section class="section solucao" id="features">
+        <h2>A Solução: KAUSAS</h2>
+        <p>Um sistema completo, simples e acessível para quem trabalha com direito.</p>
+        <div class="solucao-grid">
+            <div class="feature-card">
+                <div class="feature-icon">✅</div>
+                <h3>Tarefas & Prazos</h3>
+                <p>Organize tudo em um dashboard visual. Alertas automáticos para não perder nenhum prazo.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📁</div>
+                <h3>Gestão de Documentos</h3>
+                <p>Todos os documentos em um lugar. Busque, organize, compartilhe. Fim do caos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>Comentários & Colaboração</h3>
+                <p>Comunicação interna centralizada. Sua equipe sempre atualizada sem spammar no Whatsapp.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Múltiplos Usuários</h3>
+                <p>Convide sua equipe. Cada um vê o que precisa. Controle total de permissões.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3>Notificações Automáticas</h3>
+                <p>Aviso quando um prazo está perto. Lembrete de tarefas vencidas. Tudo automático.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Relatórios & Insights</h3>
+                <p>Veja quantas horas foram gastas, quantos casos estão em andamento, produtividade da equipe.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefícios Section -->
+    <section class="section beneficios">
+        <h2>Resultados que Advogados Conseguem</h2>
+        <div class="beneficios-list">
+            <div class="benefit-item">Nenhum prazo perdido (reduz exposição legal)</div>
+            <div class="benefit-item">Equipe 30% mais produtiva</div>
+            <div class="benefit-item">Documentos sempre encontrados em 5 segundos</div>
+            <div class="benefit-item">Faturamento 100% das horas gastas</div>
+            <div class="benefit-item">Clientes mais satisfeitos com respostas rápidas</div>
+            <div class="benefit-item">Setup em menos de 1 hora</div>
+        </div>
+    </section>
+
+    <!-- Preços Section -->
+    <section class="section precos" id="precos">
+        <h2>Planos Simples e Diretos</h2>
+        <p>Comece grátis. Upgrade quando quiser. Sem cartão de crédito obrigatório.</p>
+        <div class="precos-grid">
+            <div class="preco-card">
+                <h3>Starter</h3>
+                <div class="preco">R$ 199<span style="font-size: 0.6em">/mês</span></div>
+                <div class="preco-descricao">Perfeito para iniciantes</div>
+                <ul class="preco-features">
+                    <li>Até 3 usuários</li>
+                    <li>Tarefas ilimitadas</li>
+                    <li>Até 5GB de documentos</li>
+                    <li>Suporte por email</li>
+                </ul>
+                <button class="cta-btn" onclick="openModal()" style="width: 100%;">Começar</button>
+            </div>
+
+            <div class="preco-card destaque">
+                <h3>Profissional</h3>
+                <div class="preco">R$ 499<span style="font-size: 0.6em">/mês</span></div>
+                <div class="preco-descricao">Mais popular entre escritórios</div>
+                <ul class="preco-features">
+                    <li>Até 10 usuários</li>
+                    <li>Tarefas ilimitadas</li>
+                    <li>Até 50GB de documentos</li>
+                    <li>API para integrações</li>
+                    <li>Suporte por WhatsApp</li>
+                    <li>Relatórios avançados</li>
+                </ul>
+                <button class="btn-primary" onclick="openModal()" style="width: 100%; color: #1e40af;">Começar</button>
+            </div>
+
+            <div class="preco-card">
+                <h3>Enterprise</h3>
+                <div class="preco">Customizado</div>
+                <div class="preco-descricao">Para grandes escritórios</div>
+                <ul class="preco-features">
+                    <li>Usuários ilimitados</li>
+                    <li>Armazenamento customizado</li>
+                    <li>Integrações avançadas (PJe/SAJ)</li>
+                    <li>Suporte 24/7 dedicado</li>
+                    <li>SLA garantido</li>
+                </ul>
+                <button class="cta-btn" onclick="openModal()" style="width: 100%;">Solicitar Demo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="section testimonials" id="testimonials">
+        <h2>O que Clientes Dizem</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-text">"Organização total! Deixei de perder prazos e minha equipe trabalha muito mais sincronizada. Melhor investimento do meu escritório."</div>
+                <div class="testimonial-author">Maria Silva</div>
+                <div class="testimonial-role">Sócia - Escritório Silva & Associados</div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-text">"Em 3 meses recuperei o investimento só na quantidade de horas que antes perdíamos procurando documentos e sincronizando a equipe."</div>
+                <div class="testimonial-author">João Santos</div>
+                <div class="testimonial-role">Advogado - Especialista em Trabalhista</div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-text">"Setup foi trivial, interface é intuitiva. Nem precisei de treinamento. Minha equipe aprendeu em 1 dia e já tá produzindo mais."</div>
+                <div class="testimonial-author">Ana Costa</div>
+                <div class="testimonial-role">Gerente Operacional</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final Section -->
+    <section class="cta-final">
+        <h2>Pronto para Transformar Seu Escritório?</h2>
+        <p>Teste KAUSAS grátis por 14 dias. Sem cartão de crédito. Sem compromisso.</p>
+        <button class="btn-primary" onclick="openModal()" style="font-size: 1.1rem; padding: 1rem 2.5rem;">Começar Teste Gratuito</button>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">×</span>
+            <h2>Comece Seu Teste Grátis</h2>
+            <form onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Telefone / WhatsApp</label>
+                    <input type="tel" required>
+                </div>
+                <div class="form-group">
+                    <label>Nome do Escritório</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>Mensagem (opcional)</label>
+                    <textarea placeholder="Conte sobre seu escritório..."></textarea>
+                </div>
+                <button type="submit" class="form-submit">Solicitar Acesso</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #999;">Você receberá as instruções de acesso por email em poucos minutos.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 KAUSAS. Todos os direitos reservados.</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">
+            <a href="#">Termos de Serviço</a> |
+            <a href="#">Privacidade</a> |
+            <a href="mailto:suporte@kausas.com.br">Contato</a>
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.85rem; color: #999;">Desenvolvido por advogados, para advogados.</p>
+    </footer>
+
+    <script>
+        function openModal() {
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            alert('Obrigado! Em breve você receberá um email com as instruções de acesso.\n\nPara completar o cadastro, você pode enviar um email para: suporte@kausas.com.br');
+            closeModal();
+            event.target.reset();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
