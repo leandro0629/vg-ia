@@ -2738,6 +2738,13 @@ memberUsers.forEach(memberUser => {
 // Remove o Leandro duplicado sem memberId
 users = users.filter(u => !(u.email === 'leandrosmg0629@gmail.com' && !u.memberId));
 
+// Corrigir email antigo do Leandro
+const leandroUser = users.find(u => u.id === 'leandro' || (u.name && u.name.includes('Leandro')));
+if (leandroUser && leandroUser.email !== 'leandrosmg0629@gmail.com') {
+  leandroUser.email = 'leandrosmg0629@gmail.com';
+  saveUsers(users, true);
+}
+
 // Remove duplicatas — mantém o registro com memberId preenchido
 const _emailMap = new Map();
 users.forEach(u => {
@@ -2819,33 +2826,83 @@ function _startInactivityWatch() {
   _resetInactivityTimer();
 }
 
-function doLogin() {
+// ============================================================
+// AUTENTICAÇÃO COM SUPABASE AUTH (v2.0)
+// ============================================================
+async function doLogin() {
   const loginBtn = document.getElementById('loginBtn');
   const sbLoadingBar = document.getElementById('sbLoadingBar');
   const loginBtnText = document.getElementById('loginBtnText');
+  const loginError = document.getElementById('loginError');
 
   loginBtn.disabled = true;
   sbLoadingBar.classList.add('show');
   loginBtnText.style.visibility = 'hidden';
 
-  // Simula pequeno atraso para melhor UX
-  setTimeout(() => {
-    users = loadUsers(); // recarrega sempre do localStorage
-    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-    const pass  = document.getElementById('loginPass').value;
-    const user  = users.find(u => u.email === email && u.password === pass);
-    if (!user) {
-      document.getElementById('loginError').classList.add('show');
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+
+  if (!email || !pass) {
+    loginError.textContent = 'Email e senha obrigatórios';
+    loginError.classList.add('show');
+    loginBtn.disabled = false;
+    sbLoadingBar.classList.remove('show');
+    loginBtnText.style.visibility = 'visible';
+    return;
+  }
+
+  try {
+    // Sign in com Supabase Auth
+    const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
+
+    if (error || !data.user) {
+      loginError.textContent = 'Email ou senha incorretos';
+      loginError.classList.add('show');
       document.getElementById('loginPass').value = '';
       loginBtn.disabled = false;
       sbLoadingBar.classList.remove('show');
       loginBtnText.style.visibility = 'visible';
       return;
     }
-    document.getElementById('loginError').classList.remove('show');
+
+    // Buscar profile do usuário
+    const { data: profile, error: profileError } = await _sb
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      loginError.textContent = 'Perfil não encontrado. Contate o administrador.';
+      loginError.classList.add('show');
+      await _sb.auth.signOut();
+      loginBtn.disabled = false;
+      sbLoadingBar.classList.remove('show');
+      loginBtnText.style.visibility = 'visible';
+      return;
+    }
+
+    // Montar objeto currentUser
+    const user = {
+      id: data.user.id,
+      email: data.user.email,
+      profile: profile.role,
+      name: profile.name,
+      memberId: profile.member_id,
+      photo: profile.photo_url
+    };
+
+    loginError.classList.remove('show');
     setSession(user);
     enterApp(user);
-  }, 600);
+  } catch (err) {
+    console.error('[Login] Erro:', err.message);
+    document.getElementById('loginError').textContent = 'Erro ao conectar. Tente novamente.';
+    loginError.classList.add('show');
+    loginBtn.disabled = false;
+    sbLoadingBar.classList.remove('show');
+    loginBtnText.style.visibility = 'visible';
+  }
 }
 
 function quickLogin(email, pass) {
@@ -2854,13 +2911,17 @@ function quickLogin(email, pass) {
   doLogin();
 }
 
-function doLogout() {
+async function doLogout() {
   clearTimeout(_inactivityTimer);
   clearTimeout(_warningTimer);
   if (_warningToastEl) { _warningToastEl.remove(); _warningToastEl = null; }
   ['mousemove','keydown','click','scroll','touchstart'].forEach(evt =>
     document.removeEventListener(evt, _resetInactivityTimer)
   );
+
+  // Sign out do Supabase Auth
+  await _sb.auth.signOut();
+
   clearSession();
   currentUser = null;
   document.getElementById('loginScreen').classList.remove('hidden');
@@ -3020,6 +3081,182 @@ if (document.readyState === 'loading') {
   initSupabase();
 }
 
+// ============================================================
+// CAMADA DE DADOS (DB) - SUPABASE TABELAS REAIS
+// ============================================================
+const DB = {
+  OFFICE_ID: '00000000-0000-0000-0000-000000000001',
+
+  async loadMembers() {
+    if (!_sbReady) return null;
+    try {
+      const { data, error } = await _sb
+        .from('members')
+        .select('*')
+        .eq('office_id', this.OFFICE_ID)
+        .order('id');
+      if (error) { console.warn('[DB] members:', error.message); return null; }
+      return data.map(m => ({
+        id: m.id, name: m.name, role: m.role, area: m.area,
+        email: m.email, workload: m.workload, team: m.team,
+        teams: m.teams || [], seniority: m.seniority, photo: m.photo, inst: m.inst
+      }));
+    } catch(e) { console.warn('[DB] loadMembers error:', e); return null; }
+  },
+
+  async savemembers(arr) {
+    if (!_sbReady) return;
+    try {
+      const rows = arr.map(m => ({
+        id: m.id, office_id: this.OFFICE_ID, name: m.name, role: m.role,
+        area: m.area, email: m.email, workload: m.workload, team: m.team,
+        teams: m.teams || [], seniority: m.seniority, photo: m.photo, inst: m.inst
+      }));
+      const { error } = await _sb.from('members').upsert(rows, { onConflict: 'id' });
+      if (error) console.warn('[DB] saveMembers:', error.message);
+    } catch(e) { console.warn('[DB] saveMembers error:', e); }
+  },
+
+  async loadTasks() {
+    if (!_sbReady) return null;
+    try {
+      const { data, error } = await _sb
+        .from('tasks')
+        .select('*')
+        .eq('office_id', this.OFFICE_ID)
+        .order('id');
+      if (error) { console.warn('[DB] tasks:', error.message); return null; }
+      return data.map(t => ({
+        id: t.id, title: t.title, description: t.description,
+        assignee: t.assignee, priority: t.priority,
+        due: t.due, kanbanStatus: t.kanban_status,
+        checklist: t.checklist || [], comments: t.comments || [],
+        attachments: t.attachments || [], tags: t.tags || [], done: t.done
+      }));
+    } catch(e) { console.warn('[DB] loadTasks error:', e); return null; }
+  },
+
+  async saveTasks(arr) {
+    if (!_sbReady) return;
+    try {
+      const rows = arr.map(t => ({
+        id: t.id, office_id: this.OFFICE_ID, title: t.title,
+        description: t.description, assignee: t.assignee,
+        priority: t.priority, due: t.due, kanban_status: t.kanbanStatus,
+        checklist: t.checklist || [], comments: t.comments || [],
+        attachments: t.attachments || [], tags: t.tags || [], done: t.done
+      }));
+      const { error } = await _sb.from('tasks').upsert(rows, { onConflict: 'id' });
+      if (error) console.warn('[DB] saveTasks:', error.message);
+    } catch(e) { console.warn('[DB] saveTasks error:', e); }
+  },
+
+  async loadPrazos() {
+    if (!_sbReady) return null;
+    try {
+      const { data, error } = await _sb
+        .from('prazos')
+        .select('*')
+        .eq('office_id', this.OFFICE_ID)
+        .order('id');
+      if (error) { console.warn('[DB] prazos:', error.message); return null; }
+      return data.map(p => ({
+        id: p.id, title: p.title, date: p.date, resp: p.resp,
+        urgency: p.urgency, done: p.done
+      }));
+    } catch(e) { console.warn('[DB] loadPrazos error:', e); return null; }
+  },
+
+  async savePrazos(arr) {
+    if (!_sbReady) return;
+    try {
+      const rows = arr.map(p => ({
+        id: p.id, office_id: this.OFFICE_ID, title: p.title,
+        date: p.date, resp: p.resp, urgency: p.urgency, done: p.done
+      }));
+      const { error } = await _sb.from('prazos').upsert(rows, { onConflict: 'id' });
+      if (error) console.warn('[DB] savePrazos:', error.message);
+    } catch(e) { console.warn('[DB] savePrazos error:', e); }
+  },
+
+  async loadActivity() {
+    if (!_sbReady) return null;
+    try {
+      const { data, error } = await _sb
+        .from('activity_log')
+        .select('*')
+        .eq('office_id', this.OFFICE_ID)
+        .order('created_at', { ascending: false });
+      if (error) { console.warn('[DB] activity:', error.message); return null; }
+      return data.map(a => ({ text: a.text, time: a.created_at, color: a.color }));
+    } catch(e) { console.warn('[DB] loadActivity error:', e); return null; }
+  },
+
+  async addActivity(text, color) {
+    if (!_sbReady) return;
+    try {
+      const { error } = await _sb.from('activity_log').insert({
+        office_id: this.OFFICE_ID, text, color
+      });
+      if (error) console.warn('[DB] addActivity:', error.message);
+    } catch(e) { console.warn('[DB] addActivity error:', e); }
+  },
+
+  async loadSharedAC() {
+    if (!_sbReady) return null;
+    try {
+      const { data, error } = await _sb
+        .from('shared_activities')
+        .select('*')
+        .eq('office_id', this.OFFICE_ID);
+      if (error) { console.warn('[DB] shared_ac:', error.message); return null; }
+      return data.map(ac => ({
+        id: ac.id, title: ac.title, owner: ac.owner, delegator: ac.delegator,
+        status: ac.status, participants: ac.participants, checklist: ac.checklist,
+        comments: ac.comments
+      }));
+    } catch(e) { console.warn('[DB] loadSharedAC error:', e); return null; }
+  },
+
+  async saveSharedAC(arr) {
+    if (!_sbReady) return;
+    try {
+      const rows = arr.map(ac => ({
+        id: ac.id, office_id: this.OFFICE_ID, title: ac.title,
+        owner: ac.owner, delegator: ac.delegator, status: ac.status,
+        participants: ac.participants, checklist: ac.checklist,
+        comments: ac.comments
+      }));
+      const { error } = await _sb.from('shared_activities').upsert(rows, { onConflict: 'id' });
+      if (error) console.warn('[DB] saveSharedAC:', error.message);
+    } catch(e) { console.warn('[DB] saveSharedAC error:', e); }
+  },
+
+  async loadMunicipios() {
+    if (!_sbReady) return null;
+    try {
+      const { data, error } = await _sb
+        .from('municipios')
+        .select('*')
+        .eq('office_id', this.OFFICE_ID)
+        .order('id');
+      if (error) { console.warn('[DB] municipios:', error.message); return null; }
+      return data.map(m => ({ id: m.id, name: m.name, team: m.team }));
+    } catch(e) { console.warn('[DB] loadMunicipios error:', e); return null; }
+  },
+
+  async saveMunicipios(arr) {
+    if (!_sbReady) return;
+    try {
+      const rows = arr.map(m => ({
+        id: m.id, office_id: this.OFFICE_ID, name: m.name, team: m.team
+      }));
+      const { error } = await _sb.from('municipios').upsert(rows, { onConflict: 'id' });
+      if (error) console.warn('[DB] saveMunicipios:', error.message);
+    } catch(e) { console.warn('[DB] saveMunicipios error:', e); }
+  }
+};
+
 async function _sbLoad(key) {
   if (!_sb || !_sbReady) return null;
   try {
@@ -3038,20 +3275,18 @@ async function _sbLoad(key) {
   }
 }
 
+// Dispatcher para salvar dados nas tabelas reais
 async function _sbSave(key, value) {
-  if (!_sb || !_sbReady) return;
-  try {
-    const { error } = await _sb.from('app_data').upsert(
-      { key, data: value, updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    );
-    if (error) {
-      console.warn(`[Supabase] Erro ao salvar ${key}:`, error.message);
-    } else {
-      console.log(`[Supabase] ✅ ${key} sincronizado`);
-    }
-  } catch (e) {
-    console.warn(`[Supabase] Erro crítico ao salvar ${key}:`, e);
+  // Roteia para os métodos do DB baseado na chave
+  switch(key) {
+    case STORAGE_KEYS.members:    return DB.savemembers(value);
+    case STORAGE_KEYS.tasks:      return DB.saveTasks(value);
+    case STORAGE_KEYS.prazos:     return DB.savePrazos(value);
+    case STORAGE_KEYS.activity:   return DB.addActivity(...value);  // Array -> spread args
+    case STORAGE_KEYS.sharedAC:   return DB.saveSharedAC(value);
+    case STORAGE_KEYS.municipios: return DB.saveMunicipios(value);
+    default:
+      console.warn('[DB] Chave desconhecida:', key);
   }
 }
 
@@ -3089,10 +3324,13 @@ const _EMAIL_DESTINO = 'leandrosmg0629@gmail.com';
 
 async function _enviarEmailMissao(task, tipo) {
   if (!task) return;
+  // Validar se a tarefa ainda existe no array
+  const taskExiste = tasks.find(t => t.id === task.id);
+  if (!taskExiste) { console.log('[Email] ⏭️ Tarefa foi deletada, não enviando email'); return; }
   const assigneeId = parseInt(task.assignee);
   const membro = members.find(m => parseInt(m.id) === assigneeId);
   const statusLabel = {
-    'todo': 'A Fazer', 'in_progress': 'Em Andamento', 'review': 'Em Revisão',
+    'todo': 'A Fazer', 'doing': 'Em Andamento', 'in_progress': 'Em Andamento', 'review': 'Em Revisão',
     'done': 'Concluída', 'ativa': 'Ativa', 'pausada': 'Pausada'
   };
   const prioLabel = { 'low': 'Baixa', 'normal': 'Normal', 'high': 'Alta', 'critical': 'Crítica' };
@@ -3113,7 +3351,7 @@ async function _enviarEmailMissao(task, tipo) {
     data_vencimento: task.due ? new Date(task.due).toLocaleDateString('pt-BR') : 'Sem prazo',
     prioridade: prioLabel[task.priority] || task.priority || 'Normal',
     status: statusLabel[task.kanbanStatus] || task.kanbanStatus || (task.done ? 'Concluída' : 'Pendente'),
-    link_tarefa: 'https://vg-ia.vercel.app/'
+    link_tarefa: `https://vg-ia.vercel.app/?task=${task.id}`
   };
   console.log('[Email] Enviando:', payload);
   try {
@@ -3150,82 +3388,187 @@ async function _verificarPrazosEmail() {
   }
 })();
 
+// Setup Realtime com channels por tabela (RLS-aware)
 function _setupRealtime() {
   if (!_sb || !_sbReady) return;
 
-  _sb.channel('app_data_changes')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'app_data' }, (payload) => {
-      const key = payload.new.key;
-      const data = payload.new.data;
-      if (!data) return;
+  const officeFilter = `office_id=eq.${DB.OFFICE_ID}`;
 
-      // Atualiza localStorage e variáveis globais
-      try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
-
-      if (key === STORAGE_KEYS.members)  { members    = data; }
-      else if (key === STORAGE_KEYS.tasks)     { tasks      = data; }
-      else if (key === 'lex_notifications') {
-        // Mostrar notificações destinadas ao usuário atual
-        if (currentUser && currentUser.memberId) {
-          const seen = JSON.parse(localStorage.getItem('vgai_seen_notifs') || '[]');
-          data.forEach(n => {
-            if (n.to === currentUser.memberId && !seen.includes(n.id)) {
-              showNotification('📋 ' + n.msg, 'info');
-              seen.push(n.id);
-              loadNotifAlerts();
-              notifAlerts.unshift({ id: n.id, type: 'task_assign', taskId: n.taskId, title: n.msg, read: false, time: new Date().toLocaleTimeString('pt-BR') });
-              saveNotifAlerts();
-              updateNotifBadgeFromAlerts();
-            }
-          });
-          localStorage.setItem('vgai_seen_notifs', JSON.stringify(seen));
-        }
-        return;
-      }
-      else if (key === STORAGE_KEYS.prazos)    { prazos     = data; }
-      else if (key === STORAGE_KEYS.activity)  { activity   = data; }
-      else if (key === STORAGE_KEYS.sharedAC)  { sharedAC   = data; }
-      else if (key === STORAGE_KEYS.municipios){ municipios  = data; }
-      else if (key === USERS_KEY) {
-        // Deduplica por ID e email ao receber do Supabase
-        const seenIds = new Set();
-        const seenEmails = new Set();
-        const clean = data.filter(u => {
-          if (seenIds.has(u.id) || seenEmails.has(u.email)) return false;
-          seenIds.add(u.id);
-          seenEmails.add(u.email);
-          return true;
-        });
-        users = clean;
-        saveUsers(clean, true); // true = salva de volta no Supabase já limpo
-      }
-      else return; // chave irrelevante — não re-renderiza
-
-      // Não re-renderiza se há modal aberto
-      const hasModal = document.querySelector('.modal-overlay[style*="display: flex"]') ||
-                       document.getElementById('modalTask')?.style.display === 'flex';
-      if (!hasModal && currentPage) renderPage(currentPage);
-
-      console.log('[Realtime] 🔄 Atualizado:', key);
+  _sb.channel('kausas-changes')
+    // Tasks
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks', filter: officeFilter }, async (payload) => {
+      const newData = await DB.loadTasks() || tasks;
+      tasks = newData;
+      try { localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks)); } catch {}
+      if (!isModalOpen() && currentPage) renderPage(currentPage);
+      console.log('[Realtime] 🔄 Tasks atualizado');
+    })
+    // Members
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'members', filter: officeFilter }, async (payload) => {
+      const newData = await DB.loadMembers() || members;
+      members = newData;
+      try { localStorage.setItem(STORAGE_KEYS.members, JSON.stringify(members)); } catch {}
+      if (!isModalOpen() && currentPage) renderPage(currentPage);
+      console.log('[Realtime] 🔄 Members atualizado');
+    })
+    // Prazos
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'prazos', filter: officeFilter }, async (payload) => {
+      const newData = await DB.loadPrazos() || prazos;
+      prazos = newData;
+      try { localStorage.setItem(STORAGE_KEYS.prazos, JSON.stringify(prazos)); } catch {}
+      if (!isModalOpen() && currentPage) renderPage(currentPage);
+      console.log('[Realtime] 🔄 Prazos atualizado');
+    })
+    // Activity Log
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'activity_log', filter: officeFilter }, async (payload) => {
+      const newData = await DB.loadActivity() || activity;
+      activity = newData;
+      try { localStorage.setItem(STORAGE_KEYS.activity, JSON.stringify(activity)); } catch {}
+      console.log('[Realtime] 🔄 Activity atualizado');
+    })
+    // Shared Activities
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'shared_activities', filter: officeFilter }, async (payload) => {
+      const newData = await DB.loadSharedAC() || sharedAC;
+      sharedAC = newData;
+      try { localStorage.setItem(STORAGE_KEYS.sharedAC, JSON.stringify(sharedAC)); } catch {}
+      if (!isModalOpen() && currentPage) renderPage(currentPage);
+      console.log('[Realtime] 🔄 Shared Activities atualizado');
     })
     .subscribe((status) => {
-      console.log('[Realtime] Status:', status);
+      console.log('[Realtime] Channel status:', status);
     });
 
-  // Escutar notificações de tarefas atribuídas
-  _sb.channel('notifications_insert')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
-      const n = payload.new;
-      if (!currentUser || !currentUser.memberId) return;
-      if (n.to !== currentUser.memberId) return;
-      showNotification('📋 ' + n.msg, 'info');
-      loadNotifAlerts();
-      notifAlerts.unshift({ id: 'notif_' + n.id, type: 'task_assign', taskId: n.task_id, title: n.msg, read: false, time: new Date().toLocaleTimeString('pt-BR') });
-      saveNotifAlerts();
-      updateNotifBadgeFromAlerts();
-    })
-    .subscribe();
+  // Notificações pessoais (para o usuário logado)
+  if (currentUser) {
+    _sb.channel('notif-' + currentUser.id)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `to_user=eq.${currentUser.id}` }, (payload) => {
+        const n = payload.new;
+        showNotification('📋 ' + n.msg, 'info');
+        loadNotifAlerts();
+        notifAlerts.unshift({ id: 'notif_' + n.id, type: 'task_assign', taskId: n.task_id, title: n.msg, read: false, time: new Date().toLocaleTimeString('pt-BR') });
+        saveNotifAlerts();
+        updateNotifBadgeFromAlerts();
+        console.log('[Realtime] 🔔 Notificação recebida');
+      })
+      .subscribe();
+  }
 }
+
+function isModalOpen() {
+  return document.querySelector('.modal-overlay[style*="display: flex"]') ||
+         document.getElementById('modalTask')?.style.display === 'flex';
+}
+
+// ============================================================
+// MIGRAÇÃO: localStorage → Supabase (RLS)
+// ============================================================
+window.migrarDados = async function() {
+  const OFFICE_ID = '00000000-0000-0000-0000-000000000001';
+  console.log('=== 🚀 INÍCIO DA MIGRAÇÃO ===');
+  console.log('Office ID:', OFFICE_ID);
+
+  if (!_sb || !_sbReady) {
+    console.error('❌ Supabase não inicializado. Aguarde a página carregar completamente.');
+    return;
+  }
+
+  let totalMigrado = 0;
+
+  try {
+    // Members
+    console.log('\n📌 Migrando MEMBERS...');
+    const membersLocal = JSON.parse(localStorage.getItem('lex_members') || '[]');
+    if (membersLocal.length > 0) {
+      const rows = membersLocal.map(m => ({
+        id: m.id, office_id: OFFICE_ID, name: m.name || 'N/A', role: m.role || 'estagiario',
+        area: m.area || null, email: m.email || null, workload: m.workload || 5,
+        team: m.team || null, teams: m.teams || [], seniority: m.seniority || null,
+        photo: m.photo || null, inst: m.inst || null, active: true
+      }));
+      const { error } = await _sb.from('members').upsert(rows, { onConflict: 'id' });
+      if (error) console.error('❌ Erro:', error.message);
+      else { console.log(`✅ ${rows.length} members migrados`); totalMigrado += rows.length; }
+    }
+
+    // Tasks
+    console.log('\n📌 Migrando TASKS...');
+    const tasksLocal = JSON.parse(localStorage.getItem('lex_tasks') || '[]');
+    if (tasksLocal.length > 0) {
+      const rows = tasksLocal.map(t => ({
+        id: t.id, office_id: OFFICE_ID, title: t.title || 'Sem título',
+        description: t.desc || t.description || null, assignee: t.assignee || null,
+        priority: t.priority || 'normal', due: t.due || null,
+        kanban_status: t.kanbanStatus || 'todo', checklist: t.checklist || [],
+        comments: t.comments || [], attachments: t.attachments || [],
+        tags: t.tags || [], done: t.done || false
+      }));
+      const { error } = await _sb.from('tasks').upsert(rows, { onConflict: 'id' });
+      if (error) console.error('❌ Erro:', error.message);
+      else { console.log(`✅ ${rows.length} tasks migradas`); totalMigrado += rows.length; }
+    }
+
+    // Prazos
+    console.log('\n📌 Migrando PRAZOS...');
+    const prazosLocal = JSON.parse(localStorage.getItem('lex_prazos') || '[]');
+    if (prazosLocal.length > 0) {
+      const rows = prazosLocal.map(p => ({
+        id: p.id, office_id: OFFICE_ID, title: p.title || 'Sem título',
+        date: p.date || '2026-01-01', resp: p.resp || null,
+        urgency: p.urgency || 'normal', done: p.done || false
+      }));
+      const { error } = await _sb.from('prazos').upsert(rows, { onConflict: 'id' });
+      if (error) console.error('❌ Erro:', error.message);
+      else { console.log(`✅ ${rows.length} prazos migrados`); totalMigrado += rows.length; }
+    }
+
+    // Activity
+    console.log('\n📌 Migrando ACTIVITY...');
+    const activityLocal = JSON.parse(localStorage.getItem('lex_activity') || '[]');
+    if (activityLocal.length > 0) {
+      const rows = activityLocal.map(a => ({
+        office_id: OFFICE_ID, text: a.text || 'N/A', color: a.color || '#4caf7d'
+      }));
+      const { error } = await _sb.from('activity_log').insert(rows);
+      if (error) console.error('❌ Erro:', error.message);
+      else { console.log(`✅ ${rows.length} atividades migradas`); totalMigrado += rows.length; }
+    }
+
+    // Shared Activities
+    console.log('\n📌 Migrando SHARED ACTIVITIES...');
+    const sharedLocal = JSON.parse(localStorage.getItem('lex_shared_ac') || '[]');
+    if (sharedLocal.length > 0) {
+      const rows = sharedLocal.map(ac => ({
+        id: ac.id, office_id: OFFICE_ID, title: ac.title || 'Sem título',
+        owner: ac.owner || null, delegator: ac.delegator || null,
+        status: ac.status || 'ativa', participants: ac.participants || [],
+        checklist: ac.checklist || [], comments: ac.comments || []
+      }));
+      const { error } = await _sb.from('shared_activities').upsert(rows, { onConflict: 'id' });
+      if (error) console.error('❌ Erro:', error.message);
+      else { console.log(`✅ ${rows.length} atividades compartilhadas migradas`); totalMigrado += rows.length; }
+    }
+
+    // Municipios
+    console.log('\n📌 Migrando MUNICIPIOS...');
+    const munLocal = JSON.parse(localStorage.getItem('lex_municipios') || '[]');
+    if (munLocal.length > 0) {
+      const rows = munLocal.map(m => ({
+        id: m.id, office_id: OFFICE_ID, name: m.name || 'N/A', team: m.team || null
+      }));
+      const { error } = await _sb.from('municipios').upsert(rows, { onConflict: 'id' });
+      if (error) console.error('❌ Erro:', error.message);
+      else { console.log(`✅ ${rows.length} municípios migrados`); totalMigrado += rows.length; }
+    }
+
+    console.log('\n' + '='.repeat(50));
+    console.log('✅ MIGRAÇÃO CONCLUÍDA COM SUCESSO!');
+    console.log('='.repeat(50));
+    console.log(`📊 Total de registros migrados: ${totalMigrado}`);
+    console.log('Recarregue a página (F5) para ver os dados!');
+  } catch (err) {
+    console.error('❌ ERRO NA MIGRAÇÃO:', err);
+  }
+};
 
 // ============================================================
 // STATE & STORAGE
@@ -3787,7 +4130,7 @@ function openEditTask(id) {
   document.getElementById('taskMode').value = t.mode || 'individual';
   document.getElementById('modalTaskTitle').textContent = 'Editar Tarefa';
   // Checklist
-  pendingChecklist = (t.checklist || []).map(c => Object.assign({}, c));
+  pendingChecklist = (t.checklist || []).map(c => ({ ...c, text: c.text || c.item || '' }));
   renderChecklistItems();
   // Shared activity mode
   if (t.mode === 'compartilhada') {
@@ -5122,7 +5465,9 @@ function renderKanban() {
     const teamColors = { 1:'rgba(224,92,92,.08)', 2:'rgba(91,141,238,.08)', 3:'rgba(76,175,125,.08)', 4:'rgba(200,169,110,.08)' };
     const teamBorders = { 1:'rgba(224,92,92,.25)', 2:'rgba(91,141,238,.25)', 3:'rgba(76,175,125,.25)', 4:'rgba(200,169,110,.25)' };
     const avatarsHTML = teamMembers.map(m =>
-      `<div class="kan-mini-avatar ${avatarClass(m.role)}" title="${m.name}">${initials(m.name)}</div>`
+      m.photo
+        ? `<div class="kan-mini-avatar" title="${m.name}" style="overflow:hidden"><img src="${m.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+        : `<div class="kan-mini-avatar ${avatarClass(m.role)}" title="${m.name}">${initials(m.name)}</div>`
     ).join('');
     const municipiosHTML = (info.municipios || []).map(mu =>
       `<span class="chip" style="font-size:.68rem">${mu}</span>`
@@ -5727,7 +6072,7 @@ function openTaskDetail(id) {
             <!-- SEÇÃO 2: CHECKLIST -->
             <div style="border-top: 1px solid var(--border); padding-top: 16px;">
               <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; font-weight: 700; letter-spacing: 0.5px;">✓ Checklist</div>
-              <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div id="taskDetailChecklistPane" style="display: flex; flex-direction: column; gap: 8px;">
                 ${renderTaskChecklistPane(t)}
               </div>
             </div>
@@ -6114,9 +6459,9 @@ function renderTaskChecklistPane(t) {
     </div>
     <div style="display: flex; flex-direction: column; gap: 8px;">
       ${t.checklist.map((c, i) => `
-        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 6px; ${c.done ? 'opacity: 0.6;' : ''}">
-          <input type="checkbox" ${c.done ? 'checked' : ''} disabled style="cursor: not-allowed;">
-          <span style="${c.done ? 'text-decoration: line-through; color: var(--text-secondary);' : 'color: var(--text-primary);'}">${escapeHtml(c.item)}</span>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-secondary); border-radius: 6px; cursor:pointer; ${c.done ? 'opacity: 0.6;' : ''}" onclick="toggleChecklistItem(${t.id}, ${i}, ${!c.done})">
+          <input type="checkbox" ${c.done ? 'checked' : ''} style="cursor: pointer; width:18px; height:18px; pointer-events:none;">
+          <span style="flex:1; ${c.done ? 'text-decoration: line-through; color: var(--text-secondary);' : 'color: var(--text-primary);'}">${escapeHtml(c.text || c.item || '')}</span>
         </div>
       `).join('')}
     </div>
@@ -6345,7 +6690,7 @@ function showTaskChecklistEditor() {
           <input type="checkbox" ${item.done ? 'checked' : ''}
             onchange="toggleChecklistItem(${currentTaskDetailId}, ${idx}, this.checked)"
             style="cursor: pointer; width: 18px; height: 18px;">
-          <span style="flex: 1; ${item.done ? 'text-decoration: line-through; color: var(--text-secondary);' : 'color: var(--text-primary);'}">${escapeHtml(item.item)}</span>
+          <span style="flex: 1; ${item.done ? 'text-decoration: line-through; color: var(--text-secondary);' : 'color: var(--text-primary);'}">${escapeHtml(item.text || item.item || '')}</span>
           <button onclick="removeChecklistItem(${currentTaskDetailId}, ${idx})" style="border: none; background: none; color: #e05c5c; cursor: pointer; padding: 4px 8px;">🗑️</button>
         </div>
       `).join('')}
@@ -6375,7 +6720,7 @@ function addChecklistItem(taskId) {
   if (!t) return;
 
   if (!t.checklist) t.checklist = [];
-  t.checklist.push({ item: input.value.trim(), done: false });
+  t.checklist.push({ text: input.value.trim(), done: false });
 
   save(STORAGE_KEYS.tasks, tasks);
   input.value = '';
@@ -6401,6 +6746,9 @@ function toggleChecklistItem(taskId, idx, done) {
 
   t.checklist[idx].done = done;
   save(STORAGE_KEYS.tasks, tasks);
+  // Re-render the checklist pane
+  const pane = document.getElementById('taskDetailChecklistPane');
+  if (pane) pane.innerHTML = renderTaskChecklistPane(t);
 }
 
 // Editor de Etiquetas - Versão Simplificada
