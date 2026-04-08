@@ -1,0 +1,10 @@
+node_modules/
+.git/
+.env.local
+.env.*.local
+.firebase/
+*.log
+.DS_Store
+SEGURANCA_CHECKLIST.md
+exportar-dados.js
+sync-data-to-supabase.js
