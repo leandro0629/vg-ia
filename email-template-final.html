@@ -28,7 +28,7 @@ body { background:#09090b; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
 <div class="wrap">
 
   <div class="hero">
-    <div class="badge">Kauzas · Notificação</div>
+    <div class="badge">Kausas · Notificação</div>
     <h1>{{ $json.body.tipo_notificacao === 'criada' ? '📌 Nova Missão Criada' : $json.body.tipo_notificacao === 'status_mudou' ? '🔄 Status Atualizado' : $json.body.tipo_notificacao === 'prazo_3_dias' ? '⏰ Vence em 3 Dias' : $json.body.tipo_notificacao === 'prazo_2_dias' ? '⏰ Vence em 2 Dias' : '🚨 Vence Amanhã!' }}</h1>
     <p>{{ $json.body.tipo_notificacao === 'criada' ? 'Uma nova missão foi criada no sistema' : $json.body.tipo_notificacao === 'status_mudou' ? 'O status da missão foi atualizado' : 'O prazo desta missão está se aproximando — ação necessária' }}</p>
   </div>
@@ -56,13 +56,13 @@ body { background:#09090b; font-family:-apple-system,BlinkMacSystemFont,'Segoe U
     </div>
 
     <div class="cta">
-      <a href="{{ $json.body.link_tarefa }}" class="btn">Ver Missão no Kauzas →</a>
+      <a href="{{ $json.body.link_tarefa }}" class="btn">Ver Missão no Kausas →</a>
     </div>
   </div>
 
   <div class="footer">
-    <div class="logo">Kauzas – Gestão Jurídica</div>
-    <p>Notificação automática do Sistema Kauzas<br>Não responda este email · © 2026 Todos os direitos reservados</p>
+    <div class="logo">Kausas – Gestão Jurídica</div>
+    <p>Notificação automática do Sistema Kausas<br>Não responda este email · © 2026 Todos os direitos reservados</p>
   </div>
 
 </div>
