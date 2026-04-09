@@ -10,8 +10,18 @@
   ],
   "routes": [
     {
+      "src": "/index.html",
+      "dest": "index.html",
+      "headers": {
+        "cache-control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
       "src": "/(.*)",
-      "dest": "index.html"
+      "dest": "index.html",
+      "headers": {
+        "cache-control": "no-cache, no-store, must-revalidate"
+      }
     }
   ],
   "env": {
