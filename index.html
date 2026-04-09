@@ -3273,6 +3273,27 @@ const DB = {
       const { error } = await _sb.from('municipios').upsert(rows, { onConflict: 'id' });
       if (error) console.warn('[DB] saveMunicipios:', error.message);
     } catch(e) { console.warn('[DB] saveMunicipios error:', e); }
+  },
+
+  async saveProfile(profileData) {
+    if (!_sbReady || !currentUser?.id) return;
+    try {
+      const row = {
+        id: currentUser.id,
+        office_id: this.OFFICE_ID,
+        name: profileData.nome,
+        email: profileData.email,
+        role: profileData.cargo || currentUser.profile,
+        member_id: currentUser.memberId,
+        photo_url: profileData.foto,
+        telefone: profileData.telefone,
+        oab: profileData.oab,
+        bio: profileData.bio
+      };
+      const { error } = await _sb.from('profiles').upsert(row, { onConflict: 'id' });
+      if (error) console.warn('[DB] saveProfile:', error.message);
+      else console.log('[DB] ✅ Perfil salvo no Supabase');
+    } catch(e) { console.warn('[DB] saveProfile error:', e); }
   }
 };
 
@@ -3304,6 +3325,7 @@ async function _sbSave(key, value) {
     case STORAGE_KEYS.activity:   return DB.addActivity(...value);  // Array -> spread args
     case STORAGE_KEYS.sharedAC:   return DB.saveSharedAC(value);
     case STORAGE_KEYS.municipios: return DB.saveMunicipios(value);
+    case STORAGE_KEYS.profile:    return DB.saveProfile(value);
     default:
       console.warn('[DB] Chave desconhecida:', key);
   }
@@ -3592,7 +3614,7 @@ window.migrarDados = async function() {
 // ============================================================
 // STATE & STORAGE
 // ============================================================
-const STORAGE_KEYS = { members: 'lex_members', tasks: 'lex_tasks', prazos: 'lex_prazos', activity: 'lex_activity', sharedAC: 'lex_shared_ac', municipios: 'lex_municipios', dailyChecklist: 'lex_daily_checklist' };
+const STORAGE_KEYS = { members: 'lex_members', tasks: 'lex_tasks', prazos: 'lex_prazos', activity: 'lex_activity', sharedAC: 'lex_shared_ac', municipios: 'lex_municipios', dailyChecklist: 'lex_daily_checklist', profile: 'lex_profile' };
 const ATTACH_KEY = 'lex_attachments';
 
 function load(key) {
@@ -8168,7 +8190,8 @@ function saveProfileConfig() {
 
   localStorage.setItem(profileKey(), JSON.stringify(profileData));
 
-  _sbSave(profileKey(), profileData);
+  // ✅ Sincronizar com Supabase usando a chave correta
+  _sbSave(STORAGE_KEYS.profile, profileData);
 
   // Update sidebar if nome changed
   if (profileData.nome) {
@@ -8176,7 +8199,7 @@ function saveProfileConfig() {
     document.getElementById('sidebarName').textContent = profileData.nome;
   }
 
-  showNotification('✅ Perfil salvo com sucesso!', 'success');
+  showNotification('✅ Perfil salvo com sucesso! (Sincronizado com servidor)', 'success');
 }
 
 function resetProfileConfig() {
