@@ -3164,18 +3164,49 @@ const DB = {
   },
 
   async saveTasks(arr) {
-    if (!_sbReady) return;
+    if (!_sbReady) {
+      console.warn('[DB] saveTasks: Supabase não pronto');
+      return;
+    }
+    if (!arr || arr.length === 0) {
+      console.warn('[DB] saveTasks: Nenhuma tarefa para salvar');
+      return;
+    }
+
     try {
+      console.log(`[DB] Salvando ${arr.length} tarefa(s)...`);
       const rows = arr.map(t => ({
-        id: t.id, office_id: this.OFFICE_ID, title: t.title,
-        description: t.description, assignee: t.assignee,
-        priority: t.priority, due: t.due, kanban_status: t.kanbanStatus,
-        checklist: t.checklist || [], comments: t.comments || [],
-        attachments: t.attachments || [], tags: t.tags || [], done: t.done
+        id: t.id,
+        office_id: this.OFFICE_ID,
+        title: t.title,
+        description: t.description,
+        assignee: t.assignee,
+        priority: t.priority,
+        due: t.due,
+        kanban_status: t.kanbanStatus,
+        checklist: t.checklist || [],
+        comments: t.comments || [],
+        attachments: t.attachments || [],
+        tags: t.tags || [],
+        done: t.done
       }));
-      const { error } = await _sb.from('tasks').upsert(rows, { onConflict: 'id' });
-      if (error) console.warn('[DB] saveTasks:', error.message);
-    } catch(e) { console.warn('[DB] saveTasks error:', e); }
+
+      console.log('[DB] Dados a salvar:', rows);
+
+      const { data, error } = await _sb.from('tasks').upsert(rows, { onConflict: 'id' });
+
+      if (error) {
+        console.error('[DB] ❌ Erro ao salvar tarefas:', error.message);
+        console.error('[DB] Código:', error.code);
+        console.error('[DB] Detalhes:', error);
+      } else {
+        console.log('[DB] ✅ Tarefas salvas com sucesso');
+        console.log('[DB] Dados salvos:', data);
+      }
+    } catch(e) {
+      console.error('[DB] ❌ Erro crítico ao salvar tarefas:', e);
+      console.error('[DB] Stack:', e.stack);
+    }
   },
 
   async loadPrazos() {
