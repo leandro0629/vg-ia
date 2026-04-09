@@ -3284,12 +3284,15 @@ const DB = {
   },
 
   async saveProfile(profileData) {
-    if (!_sbReady || !currentUser?.id) return;
+    if (!_sbReady || !currentUser?.id) {
+      console.warn('[DB] saveProfile: Supabase não pronto ou usuário não identificado');
+      return;
+    }
     try {
       const row = {
         id: currentUser.id,
         office_id: this.OFFICE_ID,
-        name: profileData.nome,
+        name: profileData.nome || currentUser.name,
         email: profileData.email,
         role: profileData.cargo || currentUser.profile,
         member_id: currentUser.memberId,
@@ -3298,10 +3301,21 @@ const DB = {
         oab: profileData.oab,
         bio: profileData.bio
       };
-      const { error } = await _sb.from('profiles').upsert(row, { onConflict: 'id' });
-      if (error) console.warn('[DB] saveProfile:', error.message);
-      else console.log('[DB] ✅ Perfil salvo no Supabase');
-    } catch(e) { console.warn('[DB] saveProfile error:', e); }
+
+      console.log('[DB] Salvando perfil:', { id: row.id, email: row.email, name: row.name });
+
+      const { data, error } = await _sb.from('profiles').upsert(row, { onConflict: 'id' });
+
+      if (error) {
+        console.error('[DB] ❌ Erro ao salvar perfil:', error.message);
+        console.error('[DB] Detalhes:', error);
+      } else {
+        console.log('[DB] ✅ Perfil salvo no Supabase com sucesso');
+        console.log('[DB] Dados salvos:', data);
+      }
+    } catch(e) {
+      console.error('[DB] ❌ Erro crítico ao salvar perfil:', e);
+    }
   }
 };
 
@@ -8181,7 +8195,7 @@ function handleProfilePhotoChange() {
   }
 }
 
-function saveProfileConfig() {
+async function saveProfileConfig() {
   const profileData = {
     nome: document.getElementById('configNome').value,
     email: document.getElementById('configEmail').value,
@@ -8198,14 +8212,13 @@ function saveProfileConfig() {
 
   localStorage.setItem(profileKey(), JSON.stringify(profileData));
 
-  // ✅ Sincronizar com Supabase usando a chave correta
-  _sbSave(STORAGE_KEYS.profile, profileData);
+  // ✅ Aguardar sincronização com Supabase
+  await _sbSave(STORAGE_KEYS.profile, profileData);
 
-  // Update sidebar if nome changed
-  if (profileData.nome) {
-    currentUser.name = profileData.nome;
-    document.getElementById('sidebarName').textContent = profileData.nome;
-  }
+  // Atualizar currentUser com novos dados
+  currentUser.name = profileData.nome;
+  currentUser.email = profileData.email;
+  document.getElementById('sidebarName').textContent = profileData.nome;
 
   showNotification('✅ Perfil salvo com sucesso! (Sincronizado com servidor)', 'success');
 }
