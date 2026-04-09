@@ -3240,6 +3240,42 @@ const DB = {
     }
   },
 
+  async deleteTask(taskId) {
+    if (!_sbReady) {
+      console.warn('[DB] deleteTask: Supabase não pronto');
+      return;
+    }
+    try {
+      console.log('[DB] Deletando tarefa:', taskId);
+      const { error } = await _sb.from('tasks').delete().eq('id', parseInt(taskId) || taskId);
+      if (error) {
+        console.error('[DB] ❌ Erro ao deletar tarefa:', error.message);
+      } else {
+        console.log('[DB] ✅ Tarefa deletada com sucesso');
+      }
+    } catch(e) {
+      console.error('[DB] ❌ Erro crítico ao deletar tarefa:', e);
+    }
+  },
+
+  async deletePrazo(prazoId) {
+    if (!_sbReady) {
+      console.warn('[DB] deletePrazo: Supabase não pronto');
+      return;
+    }
+    try {
+      console.log('[DB] Deletando prazo:', prazoId);
+      const { error } = await _sb.from('prazos').delete().eq('id', parseInt(prazoId) || prazoId);
+      if (error) {
+        console.error('[DB] ❌ Erro ao deletar prazo:', error.message);
+      } else {
+        console.log('[DB] ✅ Prazo deletado com sucesso');
+      }
+    } catch(e) {
+      console.error('[DB] ❌ Erro crítico ao deletar prazo:', e);
+    }
+  },
+
   async loadPrazos() {
     if (!_sbReady) return null;
     try {
@@ -4450,8 +4486,8 @@ function deleteTask(id) {
       renderPage(currentPage);
     },
     onExpire: () => {
+      DB.deleteTask(id);
       save(STORAGE_KEYS.tasks, tasks);
-      _sbSave('lex_tasks', tasks);
       addActivity(`Tarefa "${removed.title.substring(0, 30)}..." removida`, '#e05c5c');
     }
   });
@@ -4502,6 +4538,7 @@ function deletePrazo(id) {
       renderPrazos();
     },
     onExpire: () => {
+      DB.deletePrazo(id);
       save(STORAGE_KEYS.prazos, prazos);
       addActivity(`Prazo "${removed.title.substring(0, 30)}" removido`, '#e05c5c');
     }
