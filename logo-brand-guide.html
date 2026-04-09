@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kausas - Brand Guide Completo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 80px;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(10, 14, 39, 0.5) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        h1 {
+            font-family: 'Sora', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .header-subtitle {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-bottom: 40px;
+        }
+
+        .main-logo-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .logo-preview {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+            background: rgba(26, 31, 58, 0.8);
+            border-radius: 15px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .logo-bars {
+            display: flex;
+            gap: 8px;
+        }
+
+        .logo-bars span {
+            width: 12px;
+            height: 52px;
+            background: #fbbf24;
+            border-radius: 2px;
+        }
+
+        .logo-text {
+            font-family: 'Sora', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: -0.5px;
+        }
+
+        /* Seções */
+        section {
+            margin-bottom: 80px;
+        }
+
+        .section-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+        }
+
+        /* Cores */
+        .colors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .color-card {
+            background: rgba(26, 31, 58, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .color-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.1);
+        }
+
+        .color-sample {
+            height: 150px;
+            width: 100%;
+        }
+
+        .color-info {
+            padding: 25px;
+        }
+
+        .color-name {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #fbbf24;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+
+        .color-usage {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Tipografia */
+        .typography-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .typography-card {
+            background: rgba(26, 31, 58, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .font-preview {
+            font-family: 'Sora', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .font-specs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .font-spec {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .spec-label {
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .spec-value {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Logo Variações */
+        .variations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .variation-card {
+            background: rgba(26, 31, 58, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .variation-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.1);
+        }
+
+        .variation-name {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fbbf24;
+            text-align: center;
+        }
+
+        .variation-description {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #fbbf24;
+            color: #0a0e27;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tamanhos */
+        .sizes-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .size-card {
+            background: rgba(26, 31, 58, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            text-align: center;
+        }
+
+        .size-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            min-height: 100px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .size-label {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+
+        .size-description {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Use Cases */
+        .usecases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .usecase-card {
+            background: rgba(26, 31, 58, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .usecase-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .usecase-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 12px;
+        }
+
+        .usecase-description {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-bottom: 15px;
+        }
+
+        .usecase-specs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Boas Práticas */
+        .practices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .practices-card {
+            background: rgba(26, 31, 58, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .practices-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .practices-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .practice-item {
+            display: flex;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .practice-check {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            margin-top: 80px;
+            color: #94a3b8;
+        }
+
+        footer p {
+            margin: 10px 0;
+        }
+
+        .footer-highlight {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .logo-bars span {
+                width: 8px;
+                height: 36px;
+            }
+
+            .logo-text {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🎨 Kausas Brand Guide</h1>
+            <p class="header-subtitle">Guia Completo de Identidade Visual</p>
+            <div class="main-logo-display">
+                <div class="logo-preview">
+                    <div class="logo-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="logo-text">Kausas</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Cores -->
+        <section>
+            <h2 class="section-title">🎨 Paleta de Cores</h2>
+            <div class="colors-grid">
+                <div class="color-card">
+                    <div class="color-sample" style="background: #FBBF24;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Ouro Premium</div>
+                        <div class="color-code">#FBBF24</div>
+                        <div class="color-code">rgb(251, 191, 36)</div>
+                        <div class="color-usage">Cor principal das barras e texto</div>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-sample" style="background: #0A0E27;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Preto Profundo</div>
+                        <div class="color-code">#0A0E27</div>
+                        <div class="color-code">rgb(10, 14, 39)</div>
+                        <div class="color-usage">Fundo recomendado</div>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-sample" style="background: #FFFFFF;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Branco</div>
+                        <div class="color-code">#FFFFFF</div>
+                        <div class="color-code">rgb(255, 255, 255)</div>
+                        <div class="color-usage">Fundo alternativo</div>
+                    </div>
+                </div>
+
+                <div class="color-card">
+                    <div class="color-sample" style="background: #FCD34D;"></div>
+                    <div class="color-info">
+                        <div class="color-name">Ouro Claro</div>
+                        <div class="color-code">#FCD34D</div>
+                        <div class="color-code">rgb(252, 211, 77)</div>
+                        <div class="color-usage">Variações e gradientes</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tipografia -->
+        <section>
+            <h2 class="section-title">🔤 Tipografia</h2>
+            <div class="typography-grid">
+                <div class="typography-card">
+                    <div class="font-preview">Kausas</div>
+                    <div class="font-specs">
+                        <div class="font-spec">
+                            <span class="spec-label">Fonte:</span>
+                            <span class="spec-value">Sora</span>
+                        </div>
+                        <div class="font-spec">
+                            <span class="spec-label">Peso:</span>
+                            <span class="spec-value">700 (Bold)</span>
+                        </div>
+                        <div class="font-spec">
+                            <span class="spec-label">Estilo:</span>
+                            <span class="spec-value">Normal</span>
+                        </div>
+                        <div class="font-spec">
+                            <span class="spec-label">Caso:</span>
+                            <span class="spec-value">Maiúscula K</span>
+                        </div>
+                        <div class="font-spec">
+                            <span class="spec-label">Cor:</span>
+                            <span class="spec-value">#FBBF24</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typography-card">
+                    <div style="font-family: 'Sora', sans-serif; font-size: 1.8rem; color: #fbbf24; margin-bottom: 20px; font-weight: 700;">Logo + Texto</div>
+                    <div class="font-specs">
+                        <div class="font-spec">
+                            <span class="spec-label">Espaço:</span>
+                            <span class="spec-value">12-20px</span>
+                        </div>
+                        <div class="font-spec">
+                            <span class="spec-label">Alinhamento:</span>
+                            <span class="spec-value">Vertical</span>
+                        </div>
+                        <div class="font-spec">
+                            <span class="spec-label">Proporção:</span>
+                            <span class="spec-value">1:1.2</span>
+                        </div>
+                        <div class="font-spec">
+                            <span class="spec-label">Aplicação:</span>
+                            <span class="spec-value">Navbar, Branding</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logo Variações -->
+        <section>
+            <h2 class="section-title">⭐ Variações Principais</h2>
+            <div class="variations-grid">
+                <div class="variation-card">
+                    <span class="badge">⭐ PADRÃO</span>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="width: 8px; height: 36px; background: #fbbf24; border-radius: 2px;"></span>
+                        <span style="width: 8px; height: 36px; background: #fbbf24; border-radius: 2px;"></span>
+                        <span style="width: 8px; height: 36px; background: #fbbf24; border-radius: 2px;"></span>
+                    </div>
+                    <div class="variation-name">V3 - Bars Solid Large</div>
+                    <div class="variation-description">Robusto e versátil. Melhor para a maioria dos casos.</div>
+                </div>
+
+                <div class="variation-card">
+                    <span class="badge">⭐ BOLD</span>
+                    <div style="display: flex; gap: 5px;">
+                        <span style="width: 10px; height: 36px; background: #fbbf24; border-radius: 2px;"></span>
+                        <span style="width: 10px; height: 36px; background: #fbbf24; border-radius: 2px;"></span>
+                        <span style="width: 10px; height: 36px; background: #fbbf24; border-radius: 2px;"></span>
+                    </div>
+                    <div class="variation-name">V10 - Bars Thick</div>
+                    <div class="variation-description">Mais grosso e impactante. Ideal para favicon.</div>
+                </div>
+
+                <div class="variation-card">
+                    <span class="badge">⭐ CLEAN</span>
+                    <div style="display: flex; gap: 5px;">
+                        <span style="width: 7px; height: 32px; border: 2px solid #fbbf24; border-radius: 2px; background: transparent;"></span>
+                        <span style="width: 7px; height: 32px; border: 2px solid #fbbf24; border-radius: 2px; background: transparent;"></span>
+                        <span style="width: 7px; height: 32px; border: 2px solid #fbbf24; border-radius: 2px; background: transparent;"></span>
+                    </div>
+                    <div class="variation-name">V5 - Bars Outline Medium</div>
+                    <div class="variation-description">Minimalista e clean. Para fundos claros.</div>
+                </div>
+
+                <div class="variation-card">
+                    <span class="badge">⭐ PREMIUM</span>
+                    <div style="display: flex; gap: 3px;">
+                        <span style="width: 6px; height: 32px; background: #fbbf24; border-radius: 2px;"></span>
+                        <span style="width: 6px; height: 32px; background: #fbbf24; border-radius: 2px;"></span>
+                        <span style="width: 6px; height: 32px; background: #fbbf24; border-radius: 2px;"></span>
+                    </div>
+                    <div class="variation-name">V15 - Bars Compact Thin</div>
+                    <div class="variation-description">Sofisticado e moderno. Premium branding.</div>
+                </div>
+
+                <div class="variation-card">
+                    <span class="badge">DINÂMICO</span>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="width: 8px; height: 36px; background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%); border-radius: 2px;"></span>
+                        <span style="width: 8px; height: 36px; background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%); border-radius: 2px;"></span>
+                        <span style="width: 8px; height: 36px; background: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%); border-radius: 2px;"></span>
+                    </div>
+                    <div class="variation-name">V7 - Bars Gradient</div>
+                    <div class="variation-description">Com gradiente. Mais dinâmico e moderno.</div>
+                </div>
+
+                <div class="variation-card">
+                    <span class="badge">SUAVE</span>
+                    <div style="display: flex; gap: 6px;">
+                        <span style="width: 8px; height: 36px; background: #fbbf24; border-radius: 4px;"></span>
+                        <span style="width: 8px; height: 36px; background: #fbbf24; border-radius: 4px;"></span>
+                        <span style="width: 8px; height: 36px; background: #fbbf24; border-radius: 4px;"></span>
+                    </div>
+                    <div class="variation-name">V8 - Bars Rounded</div>
+                    <div class="variation-description">Arredondado e amigável. Mais suave.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tamanhos -->
+        <section>
+            <h2 class="section-title">📏 Tamanhos Recomendados</h2>
+            <div class="sizes-showcase">
+                <div class="size-card">
+                    <div class="size-preview">
+                        <div style="display: flex; gap: 1px;">
+                            <span style="width: 2px; height: 12px; background: #fbbf24;"></span>
+                            <span style="width: 2px; height: 12px; background: #fbbf24;"></span>
+                            <span style="width: 2px; height: 12px; background: #fbbf24;"></span>
+                        </div>
+                    </div>
+                    <div class="size-label">Favicon</div>
+                    <div class="size-description">16-64px | Aba do navegador</div>
+                </div>
+
+                <div class="size-card">
+                    <div class="size-preview">
+                        <div style="display: flex; gap: 2px;">
+                            <span style="width: 3px; height: 20px; background: #fbbf24;"></span>
+                            <span style="width: 3px; height: 20px; background: #fbbf24;"></span>
+                            <span style="width: 3px; height: 20px; background: #fbbf24;"></span>
+                        </div>
+                    </div>
+                    <div class="size-label">Navbar/Sidebar</div>
+                    <div class="size-description">40-80px | Cabeçalho da app</div>
+                </div>
+
+                <div class="size-card">
+                    <div class="size-preview">
+                        <div style="display: flex; gap: 3px;">
+                            <span style="width: 5px; height: 30px; background: #fbbf24;"></span>
+                            <span style="width: 5px; height: 30px; background: #fbbf24;"></span>
+                            <span style="width: 5px; height: 30px; background: #fbbf24;"></span>
+                        </div>
+                    </div>
+                    <div class="size-label">Componentes</div>
+                    <div class="size-description">60-120px | Cards e buttons</div>
+                </div>
+
+                <div class="size-card">
+                    <div class="size-preview">
+                        <div style="display: flex; gap: 5px;">
+                            <span style="width: 10px; height: 50px; background: #fbbf24;"></span>
+                            <span style="width: 10px; height: 50px; background: #fbbf24;"></span>
+                            <span style="width: 10px; height: 50px; background: #fbbf24;"></span>
+                        </div>
+                    </div>
+                    <div class="size-label">Landing Page</div>
+                    <div class="size-description">200-400px | Hero section</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases -->
+        <section>
+            <h2 class="section-title">💼 Use Cases</h2>
+            <div class="usecases-grid">
+                <div class="usecase-card">
+                    <div class="usecase-icon">📌</div>
+                    <div class="usecase-title">Favicon</div>
+                    <div class="usecase-description">Logo na aba do navegador e bookmarks</div>
+                    <div class="usecase-specs">
+                        <div>✓ Variação: V10 (Bars Thick)</div>
+                        <div>✓ Tamanho: 32-64px</div>
+                        <div>✓ Formato: SVG inline</div>
+                    </div>
+                </div>
+
+                <div class="usecase-card">
+                    <div class="usecase-icon">🎯</div>
+                    <div class="usecase-title">Navbar</div>
+                    <div class="usecase-description">Logo no cabeçalho da aplicação</div>
+                    <div class="usecase-specs">
+                        <div>✓ Variação: V3 (Solid Large)</div>
+                        <div>✓ Tamanho: 40-80px</div>
+                        <div>✓ Com texto "Kausas"</div>
+                    </div>
+                </div>
+
+                <div class="usecase-card">
+                    <div class="usecase-icon">🌐</div>
+                    <div class="usecase-title">Landing Page</div>
+                    <div class="usecase-description">Logo grande em hero section</div>
+                    <div class="usecase-specs">
+                        <div>✓ Variação: V3 ou V15</div>
+                        <div>✓ Tamanho: 200-400px</div>
+                        <div>✓ Com ou sem texto</div>
+                    </div>
+                </div>
+
+                <div class="usecase-card">
+                    <div class="usecase-icon">📄</div>
+                    <div class="usecase-title">Documentos</div>
+                    <div class="usecase-description">Logo em relatórios e PDFs</div>
+                    <div class="usecase-specs">
+                        <div>✓ Variação: V3 (Solid Large)</div>
+                        <div>✓ Tamanho: 300px+</div>
+                        <div>✓ Canto superior esquerdo</div>
+                    </div>
+                </div>
+
+                <div class="usecase-card">
+                    <div class="usecase-icon">🖼️</div>
+                    <div class="usecase-title">Social Media</div>
+                    <div class="usecase-description">Logo em redes sociais e avatares</div>
+                    <div class="usecase-specs">
+                        <div>✓ Variação: V10 (Bars Thick)</div>
+                        <div>✓ Tamanho: 128-256px</div>
+                        <div>✓ Quadrado ou circular</div>
+                    </div>
+                </div>
+
+                <div class="usecase-card">
+                    <div class="usecase-icon">💼</div>
+                    <div class="usecase-title">Branding</div>
+                    <div class="usecase-description">Material de marketing e papelaria</div>
+                    <div class="usecase-specs">
+                        <div>✓ Variação: V3 ou V15</div>
+                        <div>✓ Tamanho: 300px+</div>
+                        <div>✓ PNG ou SVG de alta resolução</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Boas Práticas -->
+        <section>
+            <h2 class="section-title">✅ Boas Práticas</h2>
+            <div class="practices-grid">
+                <div class="practices-card">
+                    <div class="practices-title">
+                        <span>✓ Faça Assim</span>
+                    </div>
+                    <div class="practices-list">
+                        <div class="practice-item">
+                            <span class="practice-check">✅</span>
+                            <span>Use em fundos escuros preferencialmente</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">✅</span>
+                            <span>Mantenha espaçamento de 20% em volta</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">✅</span>
+                            <span>Use a cor ouro #FBBF24 exatamente</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">✅</span>
+                            <span>Escale proporcionalmente</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">✅</span>
+                            <span>Use V3 ou V10 como padrão</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">✅</span>
+                            <span>Deixe espaço branco/vazio em volta</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="practices-card">
+                    <div class="practices-title">
+                        <span>✗ NÃO Faça</span>
+                    </div>
+                    <div class="practices-list">
+                        <div class="practice-item">
+                            <span class="practice-check">❌</span>
+                            <span>Distorcer ou modificar proporções</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">❌</span>
+                            <span>Usar cores diferentes da paleta oficial</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">❌</span>
+                            <span>Adicionar efeitos excessivos</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">❌</span>
+                            <span>Rotacionar ou inverter a logo</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">❌</span>
+                            <span>Usar em fundos claros sem contraste</span>
+                        </div>
+                        <div class="practice-item">
+                            <span class="practice-check">❌</span>
+                            <span>Reduzir demais (&lt;16px)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p><span class="footer-highlight">Kausas</span> - Brand Guide Completo</p>
+            <p>Versão 1.0 | 2026-04-09 | Pronto para Produção ✅</p>
+            <p style="margin-top: 20px; font-size: 0.85rem;">
+                📁 Arquivos: LOGO-KAUSAS.md | kausas-logo-bars.html | logo-brand-guide.html
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
