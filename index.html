@@ -3406,8 +3406,20 @@ window.testSupabase = async function() {
 async function _sbPushNotif(toMemberId, taskId, msg) {
   if (!_sb || !_sbReady) return;
   try {
-    await _sb.from('notifications').insert({ to: toMemberId, task_id: taskId, msg, read: false });
-  } catch(e) { console.warn('[Notif] Erro ao enviar:', e); }
+    console.log('[Notif] Enviando notificação:', { to_member: toMemberId, task_id: taskId, msg });
+    const { error } = await _sb.from('notifications').insert({
+      to_member: toMemberId,
+      task_id: taskId,
+      msg,
+      read: false,
+      office_id: DB.OFFICE_ID
+    });
+    if (error) {
+      console.error('[Notif] ❌ Erro:', error.message);
+    } else {
+      console.log('[Notif] ✅ Notificação enviada com sucesso');
+    }
+  } catch(e) { console.error('[Notif] Erro crítico:', e); }
 }
 
 // ============================================================
