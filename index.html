@@ -3182,7 +3182,7 @@ const DB = {
         description: t.description,
         assignee: t.assignee,
         priority: t.priority,
-        due: t.due,
+        due: t.due && t.due.trim() ? t.due : null, // Converter string vazia em NULL
         kanban_status: t.kanbanStatus,
         checklist: t.checklist || [],
         comments: t.comments || [],
@@ -3591,7 +3591,7 @@ window.migrarDados = async function() {
       const rows = tasksLocal.map(t => ({
         id: t.id, office_id: OFFICE_ID, title: t.title || 'Sem título',
         description: t.desc || t.description || null, assignee: t.assignee || null,
-        priority: t.priority || 'normal', due: t.due || null,
+        priority: t.priority || 'normal', due: (t.due && typeof t.due === 'string' && t.due.trim()) ? t.due : null,
         kanban_status: t.kanbanStatus || 'todo', checklist: t.checklist || [],
         comments: t.comments || [], attachments: t.attachments || [],
         tags: t.tags || [], done: t.done || false
