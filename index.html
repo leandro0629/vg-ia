@@ -2933,11 +2933,38 @@ async function doLogout() {
   closeUserMenu();
 }
 
-function enterApp(user) {
+async function enterApp(user) {
   currentUser = user;
   setSession(user);
   document.getElementById('loginScreen').classList.add('hidden');
   updateUIForUser(user);
+
+  // 🔄 Carregar dados do Supabase assim que entra
+  if (_sbReady) {
+    console.log('[App] Carregando dados do Supabase...');
+    const [newTasks, newMembers, newPrazos] = await Promise.all([
+      DB.loadTasks(),
+      DB.loadMembers(),
+      DB.loadPrazos()
+    ]);
+
+    if (newTasks && newTasks.length > 0) {
+      tasks = newTasks;
+      try { localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(tasks)); } catch {}
+      console.log('[App] ✅ Tarefas carregadas do Supabase:', tasks.length);
+    }
+    if (newMembers && newMembers.length > 0) {
+      members = newMembers;
+      try { localStorage.setItem(STORAGE_KEYS.members, JSON.stringify(members)); } catch {}
+      console.log('[App] ✅ Membros carregados do Supabase:', members.length);
+    }
+    if (newPrazos && newPrazos.length > 0) {
+      prazos = newPrazos;
+      try { localStorage.setItem(STORAGE_KEYS.prazos, JSON.stringify(prazos)); } catch {}
+      console.log('[App] ✅ Prazos carregados do Supabase:', prazos.length);
+    }
+  }
+
   navigate('dashboard');
   _startInactivityWatch();
 }
