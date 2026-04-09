@@ -3175,23 +3175,27 @@ const DB = {
 
     try {
       console.log(`[DB] Salvando ${arr.length} tarefa(s)...`);
-      const rows = arr.map(t => ({
-        id: t.id,
-        office_id: this.OFFICE_ID,
-        title: t.title,
-        description: t.description,
-        assignee: t.assignee,
-        priority: t.priority,
-        due: t.due && t.due.trim() ? t.due : null, // Converter string vazia em NULL
-        kanban_status: t.kanbanStatus,
-        checklist: t.checklist || [],
-        comments: t.comments || [],
-        attachments: t.attachments || [],
-        tags: t.tags || [],
-        done: t.done
-      }));
+      const rows = arr.map(t => {
+        const row = {
+          id: parseInt(t.id) || Date.now(),
+          office_id: this.OFFICE_ID,
+          title: t.title || 'Sem título',
+          description: t.description || t.desc || null,
+          assignee: t.assignee ? parseInt(t.assignee) : null,
+          priority: t.priority || 'normal',
+          due: (t.due && typeof t.due === 'string' && t.due.trim()) ? t.due : null,
+          kanban_status: t.kanbanStatus || 'todo',
+          checklist: Array.isArray(t.checklist) ? t.checklist : [],
+          comments: Array.isArray(t.comments) ? t.comments : [],
+          attachments: Array.isArray(t.attachments) ? t.attachments : [],
+          tags: Array.isArray(t.tags) ? t.tags : [],
+          done: t.done || false
+        };
+        console.log('[DB] Row a salvar:', row);
+        return row;
+      });
 
-      console.log('[DB] Dados a salvar:', rows);
+      console.log('[DB] Total de rows:', rows.length);
 
       const { data, error } = await _sb.from('tasks').upsert(rows, { onConflict: 'id' });
 
@@ -4726,6 +4730,7 @@ function saveTask() {
       }
     }
     tasks.push(t);
+    console.log('[Task] Nova tarefa criada:', t);
     save(STORAGE_KEYS.tasks, tasks);
     addActivity(`Tarefa "${title.substring(0,30)}..." criada`, '#5b8dee');
     // Enviar notificação para o responsável
