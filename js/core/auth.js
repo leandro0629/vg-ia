@@ -84,7 +84,7 @@ export function initializeUsers() {
     { id: 'nicole', email: 'nicole@vgai.com', password: 'nicole123', profile: 'advogado', name: 'Nicole', memberId: 10 },
     { id: 'felipe', email: 'felipe@vgai.com', password: 'felipe123', profile: 'advogado', name: 'Felipe', memberId: 11 },
     { id: 'erika', email: 'erika@vgai.com', password: 'erika123', profile: 'advogado', name: 'Erika', memberId: 12 },
-    { id: 'leandro', email: 'leandrosmg0629@gmail.com', password: 'legal0629', profile: 'admin', name: 'Leandro Andrade', memberId: 13 },
+    { id: 'leandro', email: 'leandrosmg0629@gmail.com', password: 'legal0629', profile: 'estagiario', name: 'Leandro Andrade', memberId: 13 },
     { id: 'roger', email: 'roger@vgai.com', password: 'roger123', profile: 'estagiario', name: 'Roger Cunha', memberId: 14 },
   ];
 
