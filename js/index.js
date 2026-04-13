@@ -107,43 +107,8 @@ window.saveUsers = saveUsers;
 window.quickLogin = quickLogin;
 window.doLogout = doLogout;
 
-// ─── doLogin wrapper (usado pelo HTML) ───
-window.doLogin = async () => {
-  const emailInput = document.getElementById('loginEmail');
-  const passInput = document.getElementById('loginPass');
-  const errorEl = document.getElementById('loginError');
-  const email = emailInput?.value.trim().toLowerCase() || '';
-  const password = passInput?.value || '';
-  if (!email || !password) {
-    if (errorEl) {
-      errorEl.textContent = 'Email e senha obrigatórios';
-      errorEl.classList.add('show');
-    }
-    return;
-  }
-  const loginBtn = document.getElementById('loginBtn');
-  if (loginBtn) loginBtn.disabled = true;
-  const loadingBar = document.getElementById('sbLoadingBar');
-  if (loadingBar) loadingBar.classList.add('show');
-  const result = await quickLogin(email, password);
-  if (loginBtn) loginBtn.disabled = false;
-  if (loadingBar) loadingBar.classList.remove('show');
-  if (result.error) {
-    if (errorEl) {
-      errorEl.textContent = result.error;
-      errorEl.classList.add('show');
-    }
-    if (passInput) passInput.value = '';
-  } else if (result.user) {
-    window.currentUser = result.user;
-    if (errorEl) errorEl.classList.remove('show');
-    if (!window._sb) await initSupabase();
-    document.getElementById('loginScreen').classList.add('hidden');
-    window._setupRealtime?.();
-    startInactivityWatch();
-    navigate('dashboard');
-  }
-};
+// ─── doLogin (chamado pelo HTML) ───
+window.doLogin = window.quickLogin;
 window.canDo = canDo;
 window.canSeePage = canSeePage;
 window.changePassword = changePassword;
