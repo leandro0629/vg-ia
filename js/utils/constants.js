@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   sharedAC: 'lex_shared_ac',
   municipios: 'lex_municipios',
   users: 'lex_users',
+  dailyChecklist: 'lex_daily_checklist',
 };
 
 // Pages
