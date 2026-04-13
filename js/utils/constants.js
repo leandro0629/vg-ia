@@ -94,8 +94,8 @@ export const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 horas
 export const SESSION_WARNING_MS = 1 * 60 * 1000; // aviso 1 min antes
 
 // Supabase Config
-export const SUPABASE_URL = 'https://wsmyhihhvdctbvlefnij.supabase.co';
-export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indzteeh3hhZDJjdGJ2bGVmbmlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjM5Mzc1MzEsImV4cCI6MjAzOTUxMzUzMX0.x5w47e4D5uOAhCNqTrLsK-0f3QsQ3vAv1VNHrxHbGqo';
+export const SUPABASE_URL = 'https://eelhcdhefkkjvfirmwmi.supabase.co';
+export const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlbGhjZGhlZmtranZmaXJtd21pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMTM4NDEsImV4cCI6MjA5MDU4OTg0MX0.SRSUBguizunIqmbrFIT2DfYW3aQfxaYcuBS-NNMT86c';
 
 // Teams
 export const TEAMS = [
