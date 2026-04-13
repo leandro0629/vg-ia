@@ -8,6 +8,7 @@ import { load, save, loadAttachments, saveAttachment, deleteAttachment, getAttac
 import { initSupabase, _setupRealtime, testSupabase, testRealtime } from './core/supabase.js';
 import {
   currentUser as cu,
+  setCurrentUser,
   getSession,
   setSession,
   clearSession,
@@ -246,6 +247,7 @@ async function initializeApp() {
   const session = getSession();
   if (session) {
     window.currentUser = session;
+    setCurrentUser(session);
     console.log('✅ Sessão recuperada:', session.name);
 
     // 5. Inicializar Supabase
@@ -319,6 +321,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       } else if (result.user) {
         // Login bem-sucedido
         window.currentUser = result.user;
+        setCurrentUser(result.user);
         if (errorEl) errorEl.classList.remove('show');
 
         // Inicializar Supabase se não estiver
