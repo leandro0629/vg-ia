@@ -1,27 +1,5 @@
 {
-  "name": "vg-ia",
   "version": 2,
-  "public": false,
-  "builds": [
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/index.html",
-      "dest": "index.html",
-      "headers": {
-        "cache-control": "no-cache, no-store, must-revalidate"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "index.html",
-      "headers": {
-        "cache-control": "no-cache, no-store, must-revalidate"
-      }
-    }
-  ]
+  "buildCommand": "",
+  "outputDirectory": "."
 }
