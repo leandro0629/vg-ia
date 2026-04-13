@@ -3,6 +3,40 @@
 // All functions auto-exposed to global scope for inline onclick
 // ============================================================
 
+// ─── Update UI for logged-in user (sidebar name/role/avatar, nav visibility) ───
+function updateUIForUser(user) {
+  if (!user) return;
+  const perms = PERMISSIONS[user.profile] || PERMISSIONS['estagiario'];
+  const avatarEl = document.getElementById('sidebarAvatar');
+  const member = members && members.find(m => m.name === user.name);
+  let photoUrl = member?.photo || user.photo || null;
+  if (!photoUrl) {
+    const pKey = 'vgai_user_profile_' + (user?.id || user?.memberId || 'guest');
+    const profileData = JSON.parse(localStorage.getItem(pKey) || '{}');
+    if (profileData.foto) photoUrl = profileData.foto;
+  }
+  if (avatarEl) {
+    if (photoUrl) {
+      avatarEl.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      avatarEl.textContent = user.name ? user.name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase() : '?';
+    }
+  }
+  const nameEl = document.getElementById('sidebarName');
+  const roleEl = document.getElementById('sidebarRole');
+  if (nameEl) nameEl.textContent = user.name;
+  if (roleEl) roleEl.textContent = perms.label;
+  const pill = document.getElementById('topbarRolePill');
+  if (pill) { pill.textContent = perms.label; pill.className = 'role-pill ' + perms.pillClass; }
+  document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+    const page = item.dataset.page;
+    item.style.display = perms.pages.includes(page) ? '' : 'none';
+  });
+  const cadastrosLabel = document.getElementById('navLabelCadastros');
+  if (cadastrosLabel) cadastrosLabel.style.display = (user.profile === 'socio' || user.profile === 'admin') ? '' : 'none';
+  updateAddButton();
+}
+
 // DB stub - operations handled via window._sbSave from module
 const DB = {
   async deleteTask(id) { /* data already removed from array; Supabase sync via _sbSave */ },

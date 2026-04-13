@@ -264,6 +264,7 @@ async function initializeApp() {
     window._setupRealtime?.();
     startInactivityWatch();
     navigate('dashboard');
+    if (typeof window.updateUIForUser === 'function') window.updateUIForUser(session);
   } else {
     console.log('⚠️ Nenhuma sessão ativa');
     document.getElementById('loginScreen').classList.remove('hidden');
@@ -334,6 +335,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         window._setupRealtime?.();
         startInactivityWatch();
         navigate('dashboard');
+        if (typeof window.updateUIForUser === 'function') window.updateUIForUser(result.user);
       }
     });
   }
