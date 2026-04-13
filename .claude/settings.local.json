@@ -15,7 +15,10 @@
       "Skill(nano-banana:*)",
       "Bash(npm list:*)",
       "Bash(chmod +x /c/Users/leand/Desktop/\"JUS IA\"/execute-setup.sh)",
-      "Bash(curl -s \"https://tcm.ioepa.com.br/busca/\")"
+      "Bash(curl -s \"https://tcm.ioepa.com.br/busca/\")",
+      "Bash(vercel --version)",
+      "Bash(vercel --prod)",
+      "Bash(grep -l \"CREATE TABLE.*profiles\\\\|CREATE TABLE public.profiles\" *.sql *.md)"
     ]
   }
 }
