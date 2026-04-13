@@ -69,9 +69,11 @@ export function toggleSidebarMobile() {
 }
 
 export function closeSidebarMobile() {
-  const sidebar = document.querySelector('.sidebar');
-  if (sidebar) {
-    sidebar.classList.add('mobile-hidden');
+  if (window.innerWidth < 768) {
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+      sidebar.classList.add('mobile-hidden');
+    }
   }
 }
 
