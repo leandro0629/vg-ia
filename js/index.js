@@ -108,7 +108,30 @@ window.quickLogin = quickLogin;
 window.doLogout = doLogout;
 
 // ─── doLogin (chamado pelo HTML) ───
-window.doLogin = window.quickLogin;
+window.doLogin = async function() {
+  const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
+  const pass = document.getElementById('loginPass')?.value || '';
+  const errorEl = document.getElementById('loginError');
+  if (!email || !pass) {
+    if (errorEl) { errorEl.textContent = 'Email e senha obrigatórios'; errorEl.classList.add('show'); }
+    return;
+  }
+  const btn = document.getElementById('loginBtn');
+  if (btn) btn.disabled = true;
+  const r = await quickLogin(email, pass);
+  if (btn) btn.disabled = false;
+  if (r.error) {
+    if (errorEl) { errorEl.textContent = r.error; errorEl.classList.add('show'); }
+  } else if (r.user) {
+    window.currentUser = r.user;
+    if (errorEl) errorEl.classList.remove('show');
+    if (!window._sb) await initSupabase();
+    document.getElementById('loginScreen')?.classList.add('hidden');
+    window._setupRealtime?.();
+    startInactivityWatch();
+    navigate('dashboard');
+  }
+};
 window.canDo = canDo;
 window.canSeePage = canSeePage;
 window.changePassword = changePassword;
