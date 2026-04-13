@@ -51,7 +51,7 @@ export function initializeUsers() {
   // Admin account (sempre sincronizado)
   const _adminAccount = {
     id: 'admin',
-    email: 'admin@vgai.com',
+    email: 'kausasvgadmin@gmail.com',
     password: 'admin123',
     profile: 'admin',
     name: 'Admin Geral',
