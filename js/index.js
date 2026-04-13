@@ -30,6 +30,50 @@ import { navigate, renderPage, getCurrentPage, toggleSidebarCollapse, toggleSide
 // ─── Utils ───
 import { escapeHTML, roleLabel, formatDate, getDaysLeft, getDeadlineStatus, generateId, debounce, throttle, deepClone, slugify } from './utils/helpers.js';
 
+// ─── Audit Module ───
+import {
+  logAction,
+  getAuditLog,
+  clearAuditLog,
+  exportAuditLog,
+  downloadAuditLog,
+  getAuditStats,
+  formatAuditEntry,
+} from './core/audit.js';
+
+// ─── Feature Modules ───
+import {
+  saveTask,
+  deleteTask,
+  toggleTaskStatus,
+  cycleTaskPriority,
+  assignTask,
+} from './features/tasks.js';
+import {
+  saveMember,
+  deleteMember,
+  editMember,
+  previewMemberPhoto,
+  removePendingPhoto,
+} from './features/members.js';
+import {
+  savePrazo,
+  donePrazo,
+  deletePrazo,
+  reopenPrazo,
+} from './features/prazos.js';
+import {
+  saveMunicipio,
+  deleteMunicipio,
+} from './features/municipios.js';
+import {
+  renderAuditoria,
+  filterAudit,
+  searchAudit,
+  loadMoreAudit,
+  confirmClearAudit,
+} from './features/auditoria.js';
+
 // ─── Global State ───
 window.currentUser = null;
 window.currentPage = 'dashboard';
@@ -40,6 +84,13 @@ window.activity = [];
 window.sharedAC = [];
 window.municipios = [];
 window.notifAlerts = [];
+
+// ─── Feature State ───
+window.pendingChecklist = [];
+window.pendingAttachments = [];
+window.pendingTaskParticipants = [];
+window.pendingTaskSubtasks = [];
+window.pendingEditPhoto = null;
 
 // ─── Storage Keys ───
 window.STORAGE_KEYS = STORAGE_KEYS;
@@ -105,6 +156,46 @@ window.initSupabase = initSupabase;
 window._setupRealtime = _setupRealtime;
 window.testSupabase = testSupabase;
 window.testRealtime = testRealtime;
+
+// ─── Audit Functions ───
+window.logAction = logAction;
+window.getAuditLog = getAuditLog;
+window.clearAuditLog = clearAuditLog;
+window.exportAuditLog = exportAuditLog;
+window.downloadAuditLog = downloadAuditLog;
+window.getAuditStats = getAuditStats;
+window.formatAuditEntry = formatAuditEntry;
+
+// ─── Feature Functions (Tasks) ───
+window.saveTask = saveTask;
+window.deleteTask = deleteTask;
+window.toggleTaskStatus = toggleTaskStatus;
+window.cycleTaskPriority = cycleTaskPriority;
+window.assignTask = assignTask;
+
+// ─── Feature Functions (Members) ───
+window.saveMember = saveMember;
+window.deleteMember = deleteMember;
+window.editMember = editMember;
+window.previewMemberPhoto = previewMemberPhoto;
+window.removePendingPhoto = removePendingPhoto;
+
+// ─── Feature Functions (Prazos) ───
+window.savePrazo = savePrazo;
+window.donePrazo = donePrazo;
+window.deletePrazo = deletePrazo;
+window.reopenPrazo = reopenPrazo;
+
+// ─── Feature Functions (Municipios) ───
+window.saveMunicipio = saveMunicipio;
+window.deleteMunicipio = deleteMunicipio;
+
+// ─── Feature Functions (Auditoria) ───
+window.renderAuditoria = renderAuditoria;
+window.filterAudit = filterAudit;
+window.searchAudit = searchAudit;
+window.loadMoreAudit = loadMoreAudit;
+window.confirmClearAudit = confirmClearAudit;
 
 // ─── Initialize Application ───
 async function initializeApp() {
