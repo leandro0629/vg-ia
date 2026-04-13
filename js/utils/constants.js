@@ -32,7 +32,7 @@ export const ALL_PAGES = [
 // Permissions Matrix
 export const PERMISSIONS = {
   admin: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
     canAddMembers: true,
     canDeleteMembers: true,
     canDeleteTasks: true,
@@ -44,7 +44,7 @@ export const PERMISSIONS = {
     pillClass: 'role-admin',
   },
   socio: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
     canAddMembers: true,
     canDeleteMembers: true,
     canDeleteTasks: true,

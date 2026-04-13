@@ -1536,6 +1536,10 @@
           <span class="icon">🔐</span>
           <span class="nav-item-label">Usuários</span>
         </div>
+        <div class="nav-item" data-page="auditoria" onclick="navigate('auditoria'); closeSidebarMobile();">
+          <span class="icon">🕵️</span>
+          <span class="nav-item-label">Auditoria</span>
+        </div>
       </div>
 
       <!-- System Section -->
@@ -1691,6 +1695,64 @@
                 <thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Membro</th><th>Status</th><th style="text-align:right">Ações</th></tr></thead>
                 <tbody id="usuariosBody"></tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUDITORIA -->
+      <div class="page" id="page-auditoria">
+        <div class="section-header" style="margin-bottom:16px">
+          <div>
+            <span class="section-title">Auditoria</span>
+            <span style="font-size:.8rem;color:var(--text-secondary);margin-left:8px">Registro de ações do sistema</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="downloadAuditLog('csv')">⬇ CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadAuditLog('json')">⬇ JSON</button>
+            <button class="btn btn-danger btn-sm" id="btnClearAudit" onclick="confirmClearAudit()" style="display:none">🗑 Limpar</button>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div id="auditStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
+
+        <!-- Filtros + Busca -->
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+          <div class="filter-row" id="auditFilters" style="margin-bottom:0">
+            <button class="filter-btn active" onclick="filterAudit('todas',this)">Todas</button>
+            <button class="filter-btn" onclick="filterAudit('tasks',this)">Tarefas</button>
+            <button class="filter-btn" onclick="filterAudit('prazos',this)">Prazos</button>
+            <button class="filter-btn" onclick="filterAudit('members',this)">Membros</button>
+            <button class="filter-btn" onclick="filterAudit('municipios',this)">Contratos</button>
+            <button class="filter-btn" onclick="filterAudit('auth',this)">Auth</button>
+          </div>
+          <input class="form-input" id="auditSearch" placeholder="Buscar..."
+                 oninput="searchAudit(this.value)" style="max-width:220px;padding:6px 10px">
+        </div>
+
+        <!-- Tabela -->
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data/Hora</th>
+                    <th>Usuário</th>
+                    <th>Categoria</th>
+                    <th>Ação</th>
+                    <th>Descrição</th>
+                  </tr>
+                </thead>
+                <tbody id="auditBody"></tbody>
+              </table>
+            </div>
+            <div id="auditLoadMore" style="display:none;padding:12px;text-align:center">
+              <button class="btn btn-ghost btn-sm" onclick="loadMoreAudit()">Carregar mais</button>
+            </div>
+            <div id="auditEmpty" style="display:none;padding:32px;text-align:center;color:var(--text-secondary)">
+              Nenhum registro encontrado
             </div>
           </div>
         </div>
