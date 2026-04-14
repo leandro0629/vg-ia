@@ -11,19 +11,55 @@ let _search = '';
 
 // ─── Lookup tables ───
 export const TIPOS_ACAO = [
+  // Ações Constitucionais
   { value: 'HC',         label: 'Habeas Corpus (HC)' },
   { value: 'MS',         label: 'Mandado de Segurança (MS)' },
-  { value: 'AP',         label: 'Ação Penal (AP)' },
+  { value: 'MI',         label: 'Mandado de Injunção (MI)' },
+  { value: 'ADI',        label: 'Ação Direta de Inconstitucionalidade (ADI)' },
+  { value: 'ADC',        label: 'Ação Declaratória de Constitucionalidade (ADC)' },
+
+  // Ações Cíveis
   { value: 'AO',         label: 'Ação Ordinária' },
-  { value: 'AI',         label: 'Agravo de Instrumento (AI)' },
-  { value: 'ARE',        label: 'Agravo em RE (ARE)' },
+  { value: 'AC',         label: 'Apelação Cível (AC)' },
+  { value: 'Execucao',   label: 'Execução de Sentença' },
+  { value: 'Inventario', label: 'Inventário e Partilha' },
+  { value: 'Cautelar',   label: 'Ação Cautelar' },
+
+  // Ações Penais
+  { value: 'AP',         label: 'Ação Penal (AP)' },
+  { value: 'APCond',     label: 'Ação Penal Condenada' },
+  { value: 'HC',         label: 'Habeas Corpus (HC)' },
+
+  // Recursos
   { value: 'RE',         label: 'Recurso Extraordinário (RE)' },
   { value: 'REsp',       label: 'Recurso Especial (REsp)' },
-  { value: 'RHC',        label: 'Recurso em HC (RHC)' },
-  { value: 'AC',         label: 'Apelação Cível (AC)' },
-  { value: 'Execucao',   label: 'Execução' },
-  { value: 'Inventario', label: 'Inventário' },
-  { value: 'Trabalhista',label: 'Trabalhista' },
+  { value: 'RHC',        label: 'Recurso em Habeas Corpus (RHC)' },
+  { value: 'AI',         label: 'Agravo de Instrumento (AI)' },
+  { value: 'ARE',        label: 'Agravo em Recurso Extraordinário (ARE)' },
+  { value: 'ED',         label: 'Embargos de Declaração (ED)' },
+  { value: 'EI',         label: 'Embargos Infringentes (EI)' },
+
+  // Ações Trabalhistas
+  { value: 'Trabalhista',label: 'Ação Trabalhista' },
+  { value: 'RecTrab',    label: 'Recurso Trabalhista' },
+
+  // Ações Eleitorais
+  { value: 'AIME',       label: 'Ação por Impugnação de Mandato Eletivo (AIME)' },
+  { value: 'RCE',        label: 'Ação de Rescisão de Concessão Eleitoral' },
+  { value: 'AcaoEleitoral', label: 'Ação Eleitoral' },
+  { value: 'RCED',       label: 'Recurso Contra Exclusão de Duplicata' },
+  { value: 'RecEleitor', label: 'Recurso Eleitoral' },
+
+  // Ações Administrativas
+  { value: 'Mandado',    label: 'Mandado de Segurança Administrativo' },
+  { value: 'AcaoADM',    label: 'Ação Administrativa' },
+  { value: 'Repeticao',  label: 'Ação de Repetição de Indébito' },
+
+  // Outras Ações
+  { value: 'Rescisoria', label: 'Ação Rescisória' },
+  { value: 'Nunciacao',  label: 'Ação de Nunciação de Obra Nova' },
+  { value: 'Possessoria',label: 'Ação Possessória' },
+  { value: 'Reivindicacao', label: 'Ação de Reivindicação' },
   { value: 'Outro',      label: 'Outro' },
 ];
 
