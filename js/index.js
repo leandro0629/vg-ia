@@ -211,6 +211,21 @@ window.switchConfigTab = switchConfigTab;
 window.switchCalendarView = switchCalendarView;
 window.switchMissionView = switchMissionView;
 
+// ─── User Menu Functions ───
+// Importar e expor as funções do menu do usuário de legacy.js
+window.toggleUserMenu = function() {
+  const userMenu = document.getElementById('userMenu');
+  if (userMenu) {
+    userMenu.classList.toggle('open');
+  }
+};
+window.closeUserMenu = function() {
+  const userMenu = document.getElementById('userMenu');
+  if (userMenu) {
+    userMenu.classList.remove('open');
+  }
+};
+
 // ─── Helper Functions ───
 window.escapeHTML = escapeHTML;
 window.roleLabel = roleLabel;
