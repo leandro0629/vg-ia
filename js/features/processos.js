@@ -28,7 +28,6 @@ export const TIPOS_ACAO = [
   // Ações Penais
   { value: 'AP',         label: 'Ação Penal (AP)' },
   { value: 'APCond',     label: 'Ação Penal Condenada' },
-  { value: 'HC',         label: 'Habeas Corpus (HC)' },
 
   // Recursos
   { value: 'RE',         label: 'Recurso Extraordinário (RE)' },
