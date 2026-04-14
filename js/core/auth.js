@@ -172,16 +172,41 @@ export async function initializeUsers() {
   return users;
 }
 
+// ─── Password Overrides (sincroniza senhas alteradas via Supabase) ───
+const _OVERRIDES_KEY = 'lex_password_overrides';
+
+function _loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(_OVERRIDES_KEY)) || []; } catch { return []; }
+}
+
+function _saveOverride(userId, hash) {
+  const overrides = _loadOverrides();
+  const idx = overrides.findIndex((o) => o.userId === userId);
+  if (idx === -1) overrides.push({ userId, hash });
+  else overrides[idx].hash = hash;
+  localStorage.setItem(_OVERRIDES_KEY, JSON.stringify(overrides));
+  // Sincronizar com Supabase
+  if (typeof window._sbSave === 'function') window._sbSave(_OVERRIDES_KEY, overrides);
+}
+
 // ─── Quick Login ───
 export async function quickLogin(email, pass, rememberMe = false) {
   const users = loadUsers();
   const hashed = await hashPassword(pass);
-  const user = users.find((u) => {
-    if (u._hashed) return u.email === email && u.password === hashed;
-    return u.email === email && u.password === pass; // legado
-  });
 
+  const user = users.find((u) => u.email === email);
   if (!user) return { error: 'Email ou senha incorretos' };
+
+  // Checar override de senha (reset pelo admin ou troca pelo usuário)
+  const overrides = _loadOverrides();
+  const override = overrides.find((o) => o.userId === user.id);
+  const activeHash = override ? override.hash : user.password;
+
+  const match = user._hashed || override
+    ? activeHash === hashed
+    : user.password === pass; // legado
+
+  if (!match) return { error: 'Email ou senha incorretos' };
 
   const sessionUser = {
     id: user.id,
@@ -276,10 +301,16 @@ export async function adminResetPassword(userId, newPassword) {
   const idx = users.findIndex((u) => u.id === userId);
   if (idx === -1) return { error: 'Usuário não encontrado' };
 
-  users[idx].password = await hashPassword(newPassword);
+  const hash = await hashPassword(newPassword);
+
+  // Salvar localmente
+  users[idx].password = hash;
   users[idx]._hashed = true;
   users[idx]._passwordChanged = true;
   saveUsers(users);
+
+  // Sincronizar via override (propaga para todos os dispositivos)
+  _saveOverride(userId, hash);
 
   // Marcar pedido como resolvido
   const requests = _loadResetRequests();
@@ -374,9 +405,14 @@ export async function changePassword(oldPassword, newPassword) {
 
   if (!passwordMatch) return { error: 'Senha atual incorreta' };
 
-  users[userIdx].password = await hashPassword(newPassword);
+  const newHash = await hashPassword(newPassword);
+  users[userIdx].password = newHash;
   users[userIdx]._hashed = true;
   users[userIdx]._passwordChanged = true;
   saveUsers(users);
+
+  // Sincronizar via override (propaga para todos os dispositivos)
+  _saveOverride(currentUser.id, newHash);
+
   return { success: true };
 }
