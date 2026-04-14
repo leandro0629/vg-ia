@@ -260,7 +260,7 @@ async function initializeApp() {
   initNotificationStyles();
 
   // 2. Inicializar usuários
-  window.users = initializeUsers();
+  window.users = await initializeUsers();
 
   // 3. Carregar dados do localStorage
   const state = initializeStorage();

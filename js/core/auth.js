@@ -14,6 +14,17 @@ let _inactivityTimer = null;
 let _warningTimer = null;
 let _warningToastEl = null;
 
+// ─── Password Hashing (SHA-256 via Web Crypto API) ───
+const _SALT = 'kausas_vg_salt_2024';
+
+export async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + _SALT);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 // ─── Session Management ───
 export function getSession() {
   try {
@@ -40,23 +51,23 @@ export function loadUsers() {
   }
 }
 
-export function saveUsers(users, syncRemote = true) {
+export function saveUsers(users, syncRemote = false) {
+  // Bug #2 fix: nunca sincronizar usuários com Supabase (senhas não devem sair do device)
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  // Sync com Supabase se disponível
-  if (syncRemote && typeof window._sbSave === 'function') {
-    window._sbSave(USERS_KEY, users);
-  }
 }
 
 // ─── Initialize Users (setup na primeira carga) ───
-export function initializeUsers() {
+export async function initializeUsers() {
   let users = loadUsers();
 
-  // Admin account (sempre sincronizado)
+  // Admin account
+  const adminPlain = 'legal0629';
+  const adminHash = await hashPassword(adminPlain);
   const _adminAccount = {
     id: 'admin',
     email: 'kausasvgadmin@gmail.com',
-    password: 'legal0629',
+    password: adminHash,
+    _hashed: true,
     profile: 'admin',
     name: 'Admin Geral',
     memberId: null,
@@ -67,35 +78,50 @@ export function initializeUsers() {
   if (_adminIdx === -1) {
     users.unshift(_adminAccount);
   } else {
-    users[_adminIdx] = _adminAccount;
+    // Bug #1 fix: preservar senha se o usuário a tiver mudado
+    const existing = users[_adminIdx];
+    if (existing._passwordChanged) {
+      users[_adminIdx] = { ..._adminAccount, password: existing.password, _passwordChanged: true };
+    } else {
+      users[_adminIdx] = _adminAccount;
+    }
   }
 
-  // Team members (sempre sincronizados)
-  const memberUsers = [
-    { id: 'gleydson', email: 'gleydson@vgai.com', password: 'gleydson123', profile: 'socio', name: 'Gleydson', memberId: 1 },
-    { id: 'caio', email: 'caio@vgai.com', password: 'caio123', profile: 'advogado', name: 'Caio', memberId: 2 },
-    { id: 'izabelle', email: 'izabelle@vgai.com', password: 'izabelle123', profile: 'advogado', name: 'Izabelle', memberId: 3 },
-    { id: 'juli', email: 'juli@vgai.com', password: 'juli123', profile: 'estagiario', name: 'Juli', memberId: 4 },
-    { id: 'yuripompeu', email: 'yuripompeu@vgai.com', password: 'yuri123', profile: 'advogado', name: 'Yuri Pompeu', memberId: 5 },
-    { id: 'nakano', email: 'nakano@vgai.com', password: 'nakano123', profile: 'advogado', name: 'Nakano', memberId: 6 },
-    { id: 'larissa', email: 'larissa@vgai.com', password: 'larissa123', profile: 'estagiario', name: 'Larissa', memberId: 7 },
-    { id: 'wagner', email: 'wagner@vgai.com', password: 'wagner123', profile: 'socio', name: 'Wagner', memberId: 8 },
-    { id: 'yuribeleza', email: 'yuribeleza@vgai.com', password: 'yuri123', profile: 'advogado', name: 'Yuri Beleza', memberId: 9 },
-    { id: 'nicole', email: 'nicole@vgai.com', password: 'nicole123', profile: 'advogado', name: 'Nicole', memberId: 10 },
-    { id: 'felipe', email: 'felipe@vgai.com', password: 'felipe123', profile: 'advogado', name: 'Felipe', memberId: 11 },
-    { id: 'erika', email: 'erika@vgai.com', password: 'erika123', profile: 'advogado', name: 'Erika', memberId: 12 },
-    { id: 'leandro', email: 'leandrosmg0629@gmail.com', password: 'legal0629', profile: 'estagiario', name: 'Leandro Andrade', memberId: 13 },
-    { id: 'roger', email: 'roger@vgai.com', password: 'roger123', profile: 'estagiario', name: 'Roger Cunha', memberId: 14 },
+  // Team members com senhas hasheadas
+  const memberUsersPlain = [
+    { id: 'gleydson',    email: 'gleydson@vgai.com',           password: 'gleydson123',    profile: 'socio',      name: 'Gleydson',       memberId: 1 },
+    { id: 'caio',        email: 'caio@vgai.com',               password: 'caio123',        profile: 'advogado',   name: 'Caio',           memberId: 2 },
+    { id: 'izabelle',    email: 'izabelle@vgai.com',           password: 'izabelle123',    profile: 'advogado',   name: 'Izabelle',       memberId: 3 },
+    { id: 'juli',        email: 'juli@vgai.com',               password: 'juli123',        profile: 'estagiario', name: 'Juli',           memberId: 4 },
+    { id: 'yuripompeu',  email: 'yuripompeu@vgai.com',         password: 'yuripompeu123',  profile: 'advogado',   name: 'Yuri Pompeu',    memberId: 5 },
+    { id: 'nakano',      email: 'nakano@vgai.com',             password: 'nakano123',      profile: 'advogado',   name: 'Nakano',         memberId: 6 },
+    { id: 'larissa',     email: 'larissa@vgai.com',            password: 'larissa123',     profile: 'estagiario', name: 'Larissa',        memberId: 7 },
+    { id: 'wagner',      email: 'wagner@vgai.com',             password: 'wagner123',      profile: 'socio',      name: 'Wagner',         memberId: 8 },
+    { id: 'yuribeleza',  email: 'yuribeleza@vgai.com',         password: 'yuribeleza123',  profile: 'advogado',   name: 'Yuri Beleza',    memberId: 9 },
+    { id: 'nicole',      email: 'nicole@vgai.com',             password: 'nicole123',      profile: 'advogado',   name: 'Nicole',         memberId: 10 },
+    { id: 'felipe',      email: 'felipe@vgai.com',             password: 'felipe123',      profile: 'advogado',   name: 'Felipe',         memberId: 11 },
+    { id: 'erika',       email: 'erika@vgai.com',              password: 'erika123',       profile: 'advogado',   name: 'Erika',          memberId: 12 },
+    { id: 'leandro',     email: 'leandrosmg0629@gmail.com',    password: 'legal0629',      profile: 'estagiario', name: 'Leandro Andrade',memberId: 13 },
+    { id: 'roger',       email: 'roger@vgai.com',              password: 'roger123',       profile: 'estagiario', name: 'Roger Cunha',    memberId: 14 },
   ];
 
-  memberUsers.forEach((memberUser) => {
+  for (const memberUser of memberUsersPlain) {
+    const hashed = await hashPassword(memberUser.password);
+    const hashedUser = { ...memberUser, password: hashed, _hashed: true };
+
     const idx = users.findIndex((u) => u.id === memberUser.id);
     if (idx === -1) {
-      users.push(memberUser);
+      users.push(hashedUser);
     } else {
-      users[idx] = memberUser;
+      // Bug #1 fix: preservar senha se o usuário a tiver mudado
+      const existing = users[idx];
+      if (existing._passwordChanged) {
+        users[idx] = { ...hashedUser, password: existing.password, _passwordChanged: true };
+      } else {
+        users[idx] = hashedUser;
+      }
     }
-  });
+  }
 
   // Remove duplicates
   const _emailMap = new Map();
@@ -120,7 +146,13 @@ export function initializeUsers() {
 // ─── Quick Login (Email + Senha) ───
 export async function quickLogin(email, pass) {
   const users = loadUsers();
-  const user = users.find((u) => u.email === email && u.password === pass);
+
+  // Suporte a senhas em texto plano (migração) e hasheadas
+  const hashed = await hashPassword(pass);
+  const user = users.find((u) => {
+    if (u._hashed) return u.email === email && u.password === hashed;
+    return u.email === email && u.password === pass; // legado
+  });
 
   if (!user) {
     return { error: 'Email ou senha incorretos' };
@@ -158,8 +190,10 @@ export async function doLogout() {
   const loginScreen = document.getElementById('loginScreen');
   if (loginScreen) {
     loginScreen.classList.remove('hidden');
-    document.getElementById('loginEmail').value = '';
-    document.getElementById('loginPass').value = '';
+    const emailEl = document.getElementById('loginEmail');
+    const passEl = document.getElementById('loginPass');
+    if (emailEl) emailEl.value = '';
+    if (passEl) passEl.value = '';
   }
 }
 
@@ -242,19 +276,32 @@ export function canSeePage(page) {
 }
 
 // ─── Change Password ───
-export function changePassword(oldPassword, newPassword) {
+export async function changePassword(oldPassword, newPassword) {
   if (!currentUser) {
     return { error: 'Usuário não autenticado' };
   }
 
   const users = loadUsers();
   const userIdx = users.findIndex((u) => u.id === currentUser.id);
+  if (userIdx === -1) return { error: 'Usuário não encontrado' };
 
-  if (userIdx === -1 || users[userIdx].password !== oldPassword) {
+  const existingUser = users[userIdx];
+
+  // Comparar hash da senha antiga
+  const oldHash = await hashPassword(oldPassword);
+  const passwordMatch = existingUser._hashed
+    ? existingUser.password === oldHash
+    : existingUser.password === oldPassword; // legado
+
+  if (!passwordMatch) {
     return { error: 'Senha atual incorreta' };
   }
 
-  users[userIdx].password = newPassword;
+  // Bug #1 fix: salvar hash da nova senha + marcar como modificada pelo usuário
+  users[userIdx].password = await hashPassword(newPassword);
+  users[userIdx]._hashed = true;
+  users[userIdx]._passwordChanged = true;
+
   saveUsers(users);
   return { success: true };
 }
