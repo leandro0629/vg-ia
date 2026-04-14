@@ -164,6 +164,12 @@ function _renderTable() {
         <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:3px;">${faseLbl}</div>
       </td>
       <td>
+        ${p.ultimaMovimentacao
+          ? `<div style="font-size:0.82rem;color:var(--text-primary);">${new Date(p.ultimaMovimentacao+'T00:00:00').toLocaleDateString('pt-BR')}</div>
+             ${p.descMovimentacao ? `<div style="font-size:0.7rem;color:var(--text-secondary);margin-top:2px;">${esc(p.descMovimentacao)}</div>` : ''}`
+          : '<span style="color:var(--text-secondary);font-size:0.82rem;">—</span>'}
+      </td>
+      <td>
         ${resp
           ? `<div style="display:flex;align-items:center;gap:6px;">
               <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#d97706);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#000;font-weight:800;font-size:0.7rem;">${initials}</div>
