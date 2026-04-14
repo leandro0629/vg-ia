@@ -70,7 +70,7 @@ export async function _sbSave(key, value) {
 export async function _sbLoadAll() {
   if (!_sbReady || !_sb) return;
   try {
-    const keys = ['lex_tasks', 'lex_members', 'lex_prazos', 'lex_activity', 'lex_shared_ac', 'lex_municipios', 'lex_processos'];
+    const keys = ['lex_tasks', 'lex_members', 'lex_prazos', 'lex_activity', 'lex_shared_ac', 'lex_municipios', 'lex_processos', 'lex_reset_requests'];
     const { data, error } = await _sb.from('app_data').select('key, data').in('key', keys);
     if (error) { console.error('❌ Erro ao carregar do Supabase:', error); return; }
     if (!data || !data.length) return;
@@ -106,7 +106,8 @@ export async function _sbLoadAll() {
       else if (key === 'lex_activity')   { window.activity = value; activity = value; }
       else if (key === 'lex_shared_ac')  { window.sharedAC = value; sharedAC = value; }
       else if (key === 'lex_municipios') { window.municipios = value; }
-      else if (key === 'lex_processos')  { processos = value; window.processos = value; }
+      else if (key === 'lex_processos')      { processos = value; window.processos = value; }
+      else if (key === 'lex_reset_requests') { localStorage.setItem('lex_reset_requests', JSON.stringify(value)); }
     });
 
     if (shouldRerender) {
@@ -174,7 +175,12 @@ export function _setupRealtime() {
           else if (key === 'lex_activity')   { activity = newData; window.activity = newData; }
           else if (key === 'lex_shared_ac')  { sharedAC = newData; window.sharedAC = newData; }
           else if (key === 'lex_municipios') { window.municipios = newData; }
-          else if (key === 'lex_processos')  { processos = newData; window.processos = newData; }
+          else if (key === 'lex_processos')      { processos = newData; window.processos = newData; }
+          else if (key === 'lex_reset_requests') {
+            localStorage.setItem('lex_reset_requests', JSON.stringify(newData));
+            // Atualizar badge do sino em tempo real
+            if (typeof window.updateNotifBadgeFromAlerts === 'function') window.updateNotifBadgeFromAlerts();
+          }
 
           // Notificações desativadas - sync silencioso
           // (remover comentário abaixo para reativar notificações)
