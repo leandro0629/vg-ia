@@ -267,7 +267,8 @@ function closeUserMenu() {
 }
 document.addEventListener('click', e => {
   const wrap = document.querySelector('.user-menu-wrap');
-  if (wrap && !wrap.contains(e.target)) closeUserMenu();
+  const profile = document.querySelector('.sidebar-profile');
+  if (wrap && !wrap.contains(e.target) && !profile?.contains(e.target)) closeUserMenu();
 });
 
 function navigate(page) {
