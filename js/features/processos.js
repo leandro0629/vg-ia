@@ -126,9 +126,10 @@ function _getFiltered() {
 
 // ─── Main Render ───
 export function renderProcessos() {
-  // Garantir que window.processos está carregado — fallback para localStorage
-  // (resolve timing issue: routing chama renderProcessos antes do _sbLoadAll terminar)
-  if (!window.processos || !window.processos.length) {
+  // Fallback para localStorage APENAS se window.processos estiver vazio
+  // (timing: routing chama renderProcessos antes do _sbLoadAll terminar)
+  // Não sobrescrever se window.processos já foi populado pelo Supabase (_sbLoadAll)
+  if ((!window.processos || !window.processos.length) && !window._sbLoadAllDone) {
     try {
       const raw = localStorage.getItem('lex_processos');
       if (raw) {
@@ -339,6 +340,11 @@ export function saveProcesso() {
 
 // ─── Delete ───
 export function confirmDeleteProcesso(id) {
+  const canManage = ['admin', 'socio', 'advogado'].includes(window.currentUser?.profile);
+  if (!canManage) {
+    window.showNotification?.('Sem permissão para deletar processos', 'error');
+    return;
+  }
   const p = (window.processos || []).find(x => x.id === id);
   if (!p) return;
   openDeleteProcessoModal(id, p);

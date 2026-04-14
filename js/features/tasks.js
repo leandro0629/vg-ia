@@ -168,6 +168,10 @@ export function saveTask() {
  * Deletar tarefa com auditoria
  */
 export function deleteTask(id) {
+  if (!window.canDo?.('canDeleteTasks')) {
+    window.showNotification?.('Sem permissão para deletar tarefas', 'error');
+    return;
+  }
   const idx = window.tasks.findIndex(t => t.id === id);
   if (idx === -1) return;
 
@@ -368,8 +372,4 @@ function setTaskStatus(taskId, status) {
   }
 
   window.save(window.STORAGE_KEYS.tasks, window.tasks);
-
-  if (typeof window._sbSave === 'function') {
-    window._sbSave('lex_tasks', window.tasks);
-  }
 }

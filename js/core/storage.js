@@ -70,21 +70,8 @@ export function clearAllAttachments() {
   localStorage.removeItem('lex_attachments');
 }
 
-// ─── Supabase Sync ───
-export async function _sbSave(key, value) {
-  if (!_sbReady) return;
-  try {
-    const timestamp = new Date().toISOString();
-    const { error } = await _sb.from('app_data').upsert(
-      { key, data: value, updated_at: timestamp },
-      { onConflict: 'key' }
-    );
-    if (error) console.error('❌ Erro ao salvar:', error);
-    else console.log('✅ Sincronizado com Supabase:', key);
-  } catch (e) {
-    console.error('❌ Erro:', e);
-  }
-}
+// ─── Supabase Sync (delegado para supabase.js via window._sbSave) ───
+// A função real está em js/core/supabase.js — exposta via window._sbSave em index.js
 
 // ─── Initialize Storage (carregar dados na inicialização) ───
 export function initializeStorage() {

@@ -399,11 +399,23 @@ function renderDashboard() {
   const urgent = tasks.filter(t => t.priority === 'urgente' && !t.done).length;
   const overdue = prazos.filter(p => !p.done && new Date(p.date) < new Date()).length;
 
+  // Stat: Prazos em Risco (≤ 7 dias)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const prazoEmRisco = prazos.filter(p => {
+    if (p.done) return false;
+    const d = new Date(p.date + 'T00:00:00');
+    const days = Math.round((d - today) / 86400000);
+    return days <= 7;
+  }).length;
+  const prazoVencido = prazos.filter(p => !p.done && new Date(p.date) < today).length;
+
   document.getElementById('statGrid').innerHTML = `
     <div class="stat-card gold"><div class="stat-icon">👥</div><div class="stat-label">Membros</div><div class="stat-value">${members.length}</div></div>
     <div class="stat-card blue"><div class="stat-icon">✓</div><div class="stat-label">Tarefas Abertas</div><div class="stat-value">${pending}</div></div>
     <div class="stat-card red"><div class="stat-icon">⚠</div><div class="stat-label">Urgentes</div><div class="stat-value">${urgent}</div></div>
     <div class="stat-card green"><div class="stat-icon">🤝</div><div class="stat-label">At. Compartilhadas</div><div class="stat-value">${sharedAC.filter(a=>a.status!=='concluida').length}</div></div>
+    <div class="stat-card red" style="cursor:pointer" onclick="navigate('calendario');switchCalendarView('prazos')"><div class="stat-icon">⚖️</div><div class="stat-label">⚠️ Prazos em Risco</div><div class="stat-value">${prazoEmRisco}</div><div class="stat-value-small" style="color:#e05c5c;margin-top:4px">${prazoVencido > 0 ? prazoVencido + ' vencido(s)' : 'nenhum vencido'}</div></div>
   `;
   checkDeadlineNotifications();
   updateNotifBadge(urgent + overdue);
@@ -2567,6 +2579,37 @@ function buildCalEvents() {
     });
   });
 
+  // Adicionar prazos dos processos ao calendário
+  (processos || []).forEach(proc => {
+    if (!proc.proximoPrazo) return;
+    const d = new Date(proc.proximoPrazo + 'T12:00:00');
+    const diffDays = Math.ceil((d - today) / 86400000);
+
+    // Determinar classe CSS baseado no status do processo
+    let cssClass = 'ev-prazo'; // padrão
+    if (proc.status === 'encerrado' || proc.status === 'arquivado') {
+      cssClass = 'ev-concluido';
+    } else if (diffDays <= 0) {
+      cssClass = 'ev-critico'; // vencido
+    } else if (proc.urgency === 'critica') {
+      cssClass = 'ev-critico';
+    }
+
+    // Label com ícone de processo e número
+    let label = '⚖️ ' + (proc.numero || 'Processo');
+    if (!proc.proximoPrazo && diffDays <= 0) label = '⚠ ' + label;
+    else if (!proc.proximoPrazo && diffDays === 1) label = 'D-1 ' + label;
+    else if (!proc.proximoPrazo && diffDays === 2) label = 'D-2 ' + label;
+
+    events.push({
+      date: proc.proximoPrazo, label, cssClass,
+      type: 'processo', id: proc.id,
+      memberId: proc.responsavelId || null,
+      municipioId: proc.municipioId || null,
+      processoNumero: proc.numero
+    });
+  });
+
   tasks.forEach(t => {
     if (!t.due) return;
     let cssClass = t.done ? 'ev-concluido' : 'ev-tarefa';
@@ -2690,6 +2733,13 @@ function calClickEvent(type, id) {
   } else if (type === 'ac') {
     const ac = sharedAC.find(a => a.id === id);
     if (ac) openDetalheAC(ac);
+  } else if (type === 'processo') {
+    // Abrir modal de detalhes do processo
+    if (window.openProcessoDetail) {
+      window.openProcessoDetail(id);
+    } else if (window.openProcessoModal) {
+      window.openProcessoModal(id);
+    }
   }
 }
 
@@ -4023,11 +4073,8 @@ let calendarView = 'mes';
 function switchCalendarView(v) {
   calendarView = v;
   document.getElementById('calendario-mes').style.display = v === 'mes' ? '' : 'none';
-  document.getElementById('calendario-prazos').style.display = v === 'prazos' ? '' : 'none';
   document.getElementById('tab-calendario-mes').classList.toggle('active', v === 'mes');
-  document.getElementById('tab-calendario-prazos').classList.toggle('active', v === 'prazos');
   if (v === 'mes') renderCalendario();
-  else if (v === 'prazos') renderPrazos();
 }
 
 function renderPrazoList() {
@@ -4270,19 +4317,52 @@ function saveNotifAlerts() { localStorage.setItem(NOTIF_ALERTS_KEY, JSON.stringi
 function checkDeadlineNotifications() {
   loadNotifAlerts();
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   prazos.forEach(p => {
     if (p.done) return;
-    const d = new Date(p.date + 'T12:00:00');
-    const days = Math.ceil((d - today) / 86400000);
-    if (days <= 2) {
-      const exists = notifAlerts.find(a => a.type === 'prazo' && a.prazoId === p.id && !a.read);
-      if (!exists) {
-        notifAlerts.push({ id: 'na' + Date.now() + p.id, type: 'prazo', prazoId: p.id, title: p.title, days, read: false });
-        saveNotifAlerts();
-      }
+    const d = new Date(p.date + 'T00:00:00');
+    const days = Math.round((d - today) / 86400000);
+
+    // Apenas gera alertas para prazos dentro de 7 dias ou vencidos
+    if (days > 7) return;
+
+    // Definir nível de alerta baseado em dias restantes
+    let alertLevel = null;
+    if (days <= 0) alertLevel = 'vencido';
+    else if (days === 1) alertLevel = 'critico';
+    else if (days <= 3) alertLevel = 'urgente';
+    else if (days <= 7) alertLevel = 'atencao';
+
+    if (!alertLevel) return;
+
+    const alertId = `prazo_${p.id}_${alertLevel}`;
+
+    // Não duplicar alertas não-lidos para o mesmo prazo+nível
+    const exists = notifAlerts.find(a => a.id === alertId && !a.read);
+    if (!exists) {
+      notifAlerts.push({
+        id: alertId,
+        type: 'prazo',
+        prazoId: p.id,
+        title: p.title,
+        days: days,
+        urgency: p.urgency,
+        read: false,
+        createdAt: Date.now()
+      });
+      saveNotifAlerts();
     }
   });
+
+  // Manter apenas os últimos 100 alertas
+  if (notifAlerts.length > 100) {
+    notifAlerts = notifAlerts.slice(-100);
+    saveNotifAlerts();
+  }
+
   updateNotifBadgeFromAlerts();
+  startAlertTimer();
 }
 
 function updateNotifBadgeFromAlerts() {
@@ -4294,6 +4374,54 @@ function updateNotifBadgeFromAlerts() {
   const resetPending = isAdmin && typeof getPendingResetRequests === 'function'
     ? getPendingResetRequests().length : 0;
   document.getElementById('notifCount').textContent = unread + urgent + resetPending;
+}
+
+// ============================================================
+// FEATURE: PERIODIC ALERT TOASTS
+// ============================================================
+function startAlertTimer() {
+  if (window._alertTimerStarted) return;
+  window._alertTimerStarted = true;
+
+  // Disparar toasts imediatamente
+  _fireToastAlerts();
+
+  // Depois, a cada 6 horas
+  setInterval(_fireToastAlerts, 6 * 60 * 60 * 1000);
+}
+
+function _fireToastAlerts() {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  // Prazos críticos: vencidos ou amanhã
+  const criticos = (prazos || []).filter(p => {
+    if (p.done) return false;
+    const d = new Date(p.date + 'T00:00:00');
+    const days = Math.round((d - hoje) / 86400000);
+    return days <= 1; // vencido ou amanhã
+  });
+
+  // Mostrar máximo 3 toasts com delay entre eles
+  criticos.slice(0, 3).forEach((p, i) => {
+    setTimeout(() => {
+      const d = new Date(p.date + 'T00:00:00');
+      const days = Math.round((d - hoje) / 86400000);
+      let msg = '';
+
+      if (days < 0) {
+        msg = `VENCIDO há ${Math.abs(days)} dia(s)`;
+      } else if (days === 0) {
+        msg = 'Vence HOJE';
+      } else if (days === 1) {
+        msg = 'Vence AMANHÃ';
+      }
+
+      if (window.showNotification) {
+        window.showNotification(`⚠️ Prazo: ${p.title} — ${msg}`, 'error');
+      }
+    }, i * 1500); // 1.5s de delay entre toasts
+  });
 }
 
 // (renderNotifPanel and markAllRead updated above with deadline alert support)

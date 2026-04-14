@@ -294,7 +294,9 @@ export function getPendingResetRequests() {
 }
 
 export async function adminResetPassword(userId, newPassword) {
-  if (window.currentUser?.profile !== 'admin' && window.currentUser?.profile !== 'socio') {
+  if (!userId || !newPassword) return { error: 'Parâmetros inválidos' };
+  if (!window.currentUser) return { error: 'Não autenticado' };
+  if (window.currentUser.profile !== 'admin' && window.currentUser.profile !== 'socio') {
     return { error: 'Sem permissão' };
   }
   const users = loadUsers();

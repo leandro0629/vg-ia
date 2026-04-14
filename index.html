@@ -1561,15 +1561,15 @@
           <span class="icon">📋</span>
           <span class="nav-item-label">Contratos</span>
         </div>
+        <div class="nav-item" data-page="processos" onclick="navigate('processos'); closeSidebarMobile();">
+          <span class="icon">⚖️</span>
+          <span class="nav-item-label">Processos</span>
+        </div>
       </div>
 
       <!-- Admin Section -->
       <div class="nav-section">
         <div class="nav-label" id="navLabelCadastros">Cadastros</div>
-        <div class="nav-item" data-page="processos" onclick="navigate('processos'); closeSidebarMobile();">
-          <span class="icon">⚖️</span>
-          <span class="nav-item-label">Processos</span>
-        </div>
         <div class="nav-item" data-page="usuarios" onclick="navigate('usuarios'); closeSidebarMobile();">
           <span class="icon">🔐</span>
           <span class="nav-item-label">Usuários</span>
@@ -1580,14 +1580,6 @@
         </div>
       </div>
 
-      <!-- System Section -->
-      <div class="nav-section">
-        <div class="nav-label">Sistema</div>
-        <div class="nav-item" data-page="configuracoes" onclick="navigate('configuracoes'); closeSidebarMobile();">
-          <span class="icon">⚙️</span>
-          <span class="nav-item-label">Configurações</span>
-        </div>
-      </div>
     </nav>
 
     <!-- Bottom Profile & Menu -->
@@ -1604,6 +1596,7 @@
       <!-- User Menu -->
       <div class="user-menu-wrap" style="margin-top: 8px;">
         <div class="user-menu" id="userMenu">
+          <div class="user-menu-item" onclick="toggleUserMenu(); navigate('configuracoes'); closeSidebarMobile();">⚙️ Configurações</div>
           <div class="user-menu-item" onclick="showChangePassword()">🔑 Alterar senha</div>
           <div class="user-menu-item danger" onclick="doLogout()">↩ Sair</div>
         </div>
@@ -1874,7 +1867,6 @@
         <!-- Abas -->
         <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:8px">
           <button class="missao-tab active" id="tab-calendario-mes" onclick="switchCalendarView('mes')">📅 Mês</button>
-          <button class="missao-tab" id="tab-calendario-prazos" onclick="switchCalendarView('prazos')">📋 Prazos</button>
         </div>
 
         <!-- View de Mês (Calendário) -->
@@ -1907,23 +1899,6 @@
           </div>
         </div>
 
-        <!-- View de Prazos (Lista) -->
-        <div id="calendario-prazos" style="display:none">
-          <div class="card">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center">
-              <span class="card-title">Controle de Prazos Processuais</span>
-              <button class="btn btn-primary btn-sm" onclick="openPrazoModal()">+ Novo Prazo</button>
-            </div>
-            <div class="card-body">
-              <div class="table-wrap">
-                <table id="prazoTable">
-                  <thead><tr><th>Prazo</th><th>Processo</th><th>Responsável</th><th>Data</th><th>Status</th><th></th></tr></thead>
-                  <tbody id="prazoBody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- PROCESSOS -->

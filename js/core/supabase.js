@@ -83,10 +83,18 @@ export async function _sbLoadAll() {
       let useSupabase = true;
       try {
         const localRaw = localStorage.getItem(key);
-        if (localRaw && sbUpdatedAt) {
+        if (localRaw) {
           const localMeta = localStorage.getItem(key + '_updated_at');
-          if (localMeta && new Date(localMeta) >= new Date(sbUpdatedAt)) {
-            useSupabase = false; // localStorage é mais recente, manter local
+          if (!sbUpdatedAt) {
+            // Supabase não tem timestamp — manter dados locais
+            useSupabase = false;
+          } else if (localMeta) {
+            const localTime = new Date(localMeta).getTime();
+            const sbTime = new Date(sbUpdatedAt).getTime();
+            // Só usar Supabase se o timestamp for válido e mais recente
+            if (!isNaN(localTime) && !isNaN(sbTime) && localTime >= sbTime) {
+              useSupabase = false; // localStorage é mais recente, manter local
+            }
           }
         }
       } catch {}
@@ -111,10 +119,24 @@ export async function _sbLoadAll() {
       else if (key === 'lex_password_overrides') { localStorage.setItem('lex_password_overrides', JSON.stringify(value)); }
     });
 
+    window._sbLoadAllDone = true;
+
     if (shouldRerender) {
       console.log('✅ Dados carregados do Supabase');
-      if (window.currentPage && typeof window.renderPage === 'function') {
-        window.renderPage(window.currentPage);
+      const pageToRender = window.currentPage || currentPage;
+      if (pageToRender && typeof window.renderPage === 'function') {
+        window.renderPage(pageToRender);
+      }
+      // Se a página ainda não foi definida, aguardar até que seja
+      else if (typeof window.renderPage === 'function') {
+        const _waitForPage = setInterval(() => {
+          const p = window.currentPage || currentPage;
+          if (p) {
+            clearInterval(_waitForPage);
+            window.renderPage(p);
+          }
+        }, 300);
+        setTimeout(() => clearInterval(_waitForPage), 5000); // timeout de segurança
       }
     }
   } catch (e) {
@@ -155,12 +177,18 @@ export function _setupRealtime() {
       // Atualizar estado local e localStorage baseado na chave
       if (newData) {
         // Verificar se os dados realmente mudaram (evita re-renders desnecessários)
-        const currentJson = JSON.stringify(key === 'lex_tasks' ? tasks :
-                                         key === 'lex_members' ? members :
-                                         key === 'lex_prazos' ? prazos :
-                                         key === 'lex_activity' ? activity :
-                                         key === 'lex_shared_ac' ? sharedAC :
-                                         key === 'lex_processos' ? processos : []);
+        // Para chaves não rastreadas em memória, comparar com localStorage
+        let currentData;
+        if      (key === 'lex_tasks')     currentData = tasks;
+        else if (key === 'lex_members')   currentData = members;
+        else if (key === 'lex_prazos')    currentData = prazos;
+        else if (key === 'lex_activity')  currentData = activity;
+        else if (key === 'lex_shared_ac') currentData = sharedAC;
+        else if (key === 'lex_processos') currentData = processos;
+        else {
+          try { currentData = JSON.parse(localStorage.getItem(key) || 'null'); } catch { currentData = null; }
+        }
+        const currentJson = JSON.stringify(currentData);
         const newJson = JSON.stringify(newData);
 
         if (currentJson !== newJson) {
