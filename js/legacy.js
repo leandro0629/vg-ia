@@ -1706,7 +1706,21 @@ function renderNotifPanel() {
   const unreadAlerts = _notifAlerts.filter(a => !a.read);
   const urgent = tasks.filter(t => t.priority === 'urgente' && !t.done);
   const overdue = prazos.filter(p => !p.done && new Date(p.date + 'T12:00:00') < new Date());
+  // Pedidos de reset pendentes (apenas admin/socio)
+  const isAdmin = currentUser?.profile === 'admin' || currentUser?.profile === 'socio';
+  const resetRequests = isAdmin && typeof getPendingResetRequests === 'function'
+    ? getPendingResetRequests() : [];
+  const resetItems = resetRequests.map(r => ({
+    icon: '🔑', iconClass: 'notif-icon-warn',
+    title: 'Pedido de recuperação de senha',
+    desc: `${r.userName} (${r.userEmail})`,
+    time: new Date(r.createdAt).toLocaleString('pt-BR'),
+    unread: true,
+    resetUserId: r.userId,
+  }));
+
   const items = [
+    ...resetItems,
     ...unreadAlerts.filter(a => a.type === 'task_assign').map(a => ({ icon: '📋', iconClass: 'notif-icon-info', title: 'Tarefa atribuída a você', desc: a.title, time: a.time || 'Agora', unread: true })),
     ...unreadAlerts.filter(a => a.type === 'prazo').map(a => ({ icon: '⏰', iconClass: 'notif-icon-danger', title: `Prazo em ${a.days <= 0 ? 'vencido' : a.days + ' dia(s)'}`, desc: a.title, time: 'Alerta automático', unread: true })),
     ...urgent.map(t => ({ icon: '⚠️', iconClass: 'notif-icon-danger', title: 'Tarefa urgente', desc: t.title, time: 'Prazo: ' + (t.due ? new Date(t.due+'T12:00:00').toLocaleDateString('pt-BR') : '—'), unread: true })),
@@ -1725,6 +1739,7 @@ function renderNotifPanel() {
         <div class="notif-title">${n.title}</div>
         <div class="notif-desc">${n.desc}</div>
         <div class="notif-time">${n.time}</div>
+        ${n.resetUserId ? `<button onclick="openResetPasswordModal('${n.resetUserId}')" style="margin-top:6px;padding:4px 10px;background:var(--primary);color:#000;border:none;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;">🔑 Resetar Senha</button>` : ''}
       </div>
     </div>`).join('');
 }
@@ -1741,9 +1756,101 @@ function markAllRead() {
 // ============================================================
 // USUÁRIOS
 // ============================================================
+function openResetPasswordModal(userId) {
+  // Fechar painel de notificações
+  document.getElementById('notifPanel')?.classList.remove('open');
+  document.getElementById('notifOverlay')?.classList.remove('open');
+
+  const u = users.find(x => x.id === userId);
+  if (!u) return;
+
+  // Remover modal anterior se existir
+  document.getElementById('resetPasswordModal')?.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'resetPasswordModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:99999';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;width:400px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:1rem;font-weight:700;color:var(--text-primary)">🔑 Resetar Senha</div>
+        <button onclick="document.getElementById('resetPasswordModal').remove()" style="background:none;border:none;color:var(--text-secondary);font-size:1.2rem;cursor:pointer">✕</button>
+      </div>
+      <div style="background:var(--bg-secondary);border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.88rem;color:var(--text-secondary)">
+        Definindo nova senha para <strong style="color:var(--text-primary)">${u.name}</strong> (${u.email})
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nova Senha</label>
+        <input id="resetNewPass" type="password" class="form-input" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar Nova Senha</label>
+        <input id="resetConfirmPass" type="password" class="form-input" placeholder="Repetir senha">
+      </div>
+      <div id="resetPassError" style="display:none;color:#e05c5c;font-size:0.85rem;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+        <button onclick="document.getElementById('resetPasswordModal').remove()" class="btn btn-ghost">Cancelar</button>
+        <button onclick="confirmResetPassword('${userId}')" class="btn btn-primary">Salvar Nova Senha</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+async function confirmResetPassword(userId) {
+  const newPass = document.getElementById('resetNewPass')?.value || '';
+  const confirmPass = document.getElementById('resetConfirmPass')?.value || '';
+  const errEl = document.getElementById('resetPassError');
+
+  if (newPass.length < 6) {
+    if (errEl) { errEl.textContent = 'A senha deve ter no mínimo 6 caracteres'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (newPass !== confirmPass) {
+    if (errEl) { errEl.textContent = 'As senhas não coincidem'; errEl.style.display = 'block'; }
+    return;
+  }
+
+  const result = await adminResetPassword(userId, newPass);
+  if (result.error) {
+    if (errEl) { errEl.textContent = result.error; errEl.style.display = 'block'; }
+    return;
+  }
+
+  document.getElementById('resetPasswordModal')?.remove();
+  showNotification?.('✅ Senha redefinida com sucesso!', 'success');
+  renderPage_usuarios();
+  updateNotifBadgeFromAlerts();
+}
+
 function renderPage_usuarios() {
   const tbody = document.getElementById('usuariosBody');
   if (!tbody) return;
+
+  // Banner de pedidos de reset pendentes (admin/socio)
+  const isAdmin = currentUser?.profile === 'admin' || currentUser?.profile === 'socio';
+  const resetBanner = document.getElementById('resetRequestsBanner');
+  if (isAdmin && typeof getPendingResetRequests === 'function') {
+    const pending = getPendingResetRequests();
+    if (resetBanner) {
+      if (pending.length > 0) {
+        resetBanner.style.display = 'block';
+        resetBanner.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-weight:700;color:#e09a3a;margin-bottom:4px">🔑 ${pending.length} pedido(s) de recuperação de senha pendente(s)</div>
+              <div style="font-size:0.85rem;color:var(--text-secondary)">${pending.map(r => r.userName).join(', ')}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${pending.map(r => `<button class="btn btn-primary btn-sm" onclick="openResetPasswordModal('${r.userId}')">Resetar: ${r.userName}</button>`).join('')}
+            </div>
+          </div>
+        `;
+      } else {
+        resetBanner.style.display = 'none';
+      }
+    }
+  }
   const avatarColors = { socio: 'avatar-gold', advogado: 'avatar-blue', estagiario: 'avatar-green' };
   // Deduplica por ID (remove duplicatas vindas do Supabase)
   const seen = new Set();
@@ -4182,7 +4289,11 @@ function updateNotifBadgeFromAlerts() {
   loadNotifAlerts();
   const unread = notifAlerts.filter(a => !a.read).length;
   const urgent = tasks.filter(t => t.priority === 'urgente' && !t.done).length;
-  document.getElementById('notifCount').textContent = unread + urgent;
+  // Incluir pedidos de reset pendentes no badge (apenas para admin/socio)
+  const isAdmin = currentUser?.profile === 'admin' || currentUser?.profile === 'socio';
+  const resetPending = isAdmin && typeof getPendingResetRequests === 'function'
+    ? getPendingResetRequests().length : 0;
+  document.getElementById('notifCount').textContent = unread + urgent + resetPending;
 }
 
 // (renderNotifPanel and markAllRead updated above with deadline alert support)
