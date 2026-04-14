@@ -21,6 +21,9 @@ import {
   canDo,
   canSeePage,
   changePassword,
+  requestPasswordReset,
+  getPendingResetRequests,
+  adminResetPassword,
 } from './core/auth.js';
 
 // ─── UI Modules ───
@@ -122,6 +125,7 @@ window.doLogout = doLogout;
 window.doLogin = async function() {
   const email = (document.getElementById('loginEmail')?.value || '').trim().toLowerCase();
   const pass = document.getElementById('loginPass')?.value || '';
+  const rememberMe = document.getElementById('loginRememberMe')?.checked || false;
   const errorEl = document.getElementById('loginError');
   if (!email || !pass) {
     if (errorEl) { errorEl.textContent = 'Email e senha obrigatórios'; errorEl.classList.add('show'); }
@@ -129,7 +133,7 @@ window.doLogin = async function() {
   }
   const btn = document.getElementById('loginBtn');
   if (btn) btn.disabled = true;
-  const r = await quickLogin(email, pass);
+  const r = await quickLogin(email, pass, rememberMe);
   if (btn) btn.disabled = false;
   if (r.error) {
     if (errorEl) { errorEl.textContent = r.error; errorEl.classList.add('show'); }
@@ -146,6 +150,41 @@ window.doLogin = async function() {
 window.canDo = canDo;
 window.canSeePage = canSeePage;
 window.changePassword = changePassword;
+window.requestPasswordReset = requestPasswordReset;
+window.getPendingResetRequests = getPendingResetRequests;
+window.adminResetPassword = adminResetPassword;
+
+// ─── Funções do modal "Esqueci minha senha" ───
+window.openForgotPassword = function() {
+  const overlay = document.getElementById('forgotPasswordOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    document.getElementById('forgotEmail').value = '';
+    document.getElementById('forgotStep1').style.display = 'block';
+    document.getElementById('forgotStep2').style.display = 'none';
+    const errEl = document.getElementById('forgotError');
+    if (errEl) errEl.style.display = 'none';
+  }
+};
+window.closeForgotPassword = function() {
+  const overlay = document.getElementById('forgotPasswordOverlay');
+  if (overlay) overlay.style.display = 'none';
+};
+window.submitForgotPassword = function() {
+  const email = (document.getElementById('forgotEmail')?.value || '').trim().toLowerCase();
+  const errEl = document.getElementById('forgotError');
+  if (!email) {
+    if (errEl) { errEl.textContent = 'Informe seu e-mail'; errEl.style.display = 'block'; }
+    return;
+  }
+  const result = requestPasswordReset(email);
+  if (result.error) {
+    if (errEl) { errEl.textContent = result.error; errEl.style.display = 'block'; }
+  } else {
+    document.getElementById('forgotStep1').style.display = 'none';
+    document.getElementById('forgotStep2').style.display = 'block';
+  }
+};
 
 // ─── UI Functions (expose to window) ───
 window.openModal = openModal;
@@ -341,8 +380,9 @@ window.addEventListener('DOMContentLoaded', async () => {
       const loadingBar = document.getElementById('sbLoadingBar');
       if (loadingBar) loadingBar.classList.add('show');
 
-      // Tentar login
-      const result = await quickLogin(email, password);
+      // Tentar login (com "lembrar de mim")
+      const rememberMe = document.getElementById('loginRememberMe')?.checked || false;
+      const result = await quickLogin(email, password, rememberMe);
 
       loginBtn.disabled = false;
       if (loadingBar) loadingBar.classList.remove('show');
