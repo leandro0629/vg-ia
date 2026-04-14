@@ -5,7 +5,7 @@
 // ─── Core Modules ───
 import { AUTH_KEY, USERS_KEY, STORAGE_KEYS, PERMISSIONS } from './utils/constants.js';
 import { load, save, loadAttachments, saveAttachment, deleteAttachment, getAttachmentData, clearAllAttachments, initializeStorage, _sbSave } from './core/storage.js';
-import { initSupabase, _setupRealtime, testSupabase, testRealtime } from './core/supabase.js';
+import { initSupabase, _setupRealtime, testSupabase, testRealtime, _sbLoadAll } from './core/supabase.js';
 import {
   currentUser as cu,
   setCurrentUser,
@@ -74,6 +74,15 @@ import {
   loadMoreAudit,
   confirmClearAudit,
 } from './features/auditoria.js';
+import {
+  renderProcessos,
+  filterProcessos,
+  searchProcessos,
+  openProcessoModal,
+  openProcessoDetail,
+  saveProcesso,
+  confirmDeleteProcesso,
+} from './features/processos.js';
 
 // ─── Global State ───
 window.currentUser = null;
@@ -84,6 +93,7 @@ window.prazos = [];
 window.activity = [];
 window.sharedAC = [];
 window.municipios = [];
+window.processos  = [];
 window.notifAlerts = [];
 
 // ─── Feature State ───
@@ -183,6 +193,7 @@ window.initSupabase = initSupabase;
 window._setupRealtime = _setupRealtime;
 window.testSupabase = testSupabase;
 window.testRealtime = testRealtime;
+window._sbLoadAll = _sbLoadAll;
 
 // ─── Audit Functions ───
 window.logAction = logAction;
@@ -224,9 +235,26 @@ window.searchAudit = searchAudit;
 window.loadMoreAudit = loadMoreAudit;
 window.confirmClearAudit = confirmClearAudit;
 
+// ─── Feature Functions (Processos) ───
+window.renderProcessos      = renderProcessos;
+window.filterProcessos      = filterProcessos;
+window.searchProcessos      = searchProcessos;
+window.openProcessoModal    = openProcessoModal;
+window.openProcessoDetail   = openProcessoDetail;
+window.saveProcesso         = saveProcesso;
+window.confirmDeleteProcesso = confirmDeleteProcesso;
+
 // ─── Initialize Application ───
 async function initializeApp() {
   console.log('🚀 Inicializando KAUSAS...');
+
+  // Reset automático via ?reset na URL
+  if (new URLSearchParams(window.location.search).has('reset')) {
+    const keys = ['lex_tasks','lex_prazos','lex_members','lex_activity','lex_shared_ac','lex_municipios'];
+    keys.forEach(k => { localStorage.removeItem(k); localStorage.removeItem(k + '_updated_at'); });
+    console.log('🧹 localStorage limpo via ?reset');
+    window.history.replaceState({}, '', window.location.pathname);
+  }
 
   // 1. Inicializar estilos de notificação
   initNotificationStyles();
@@ -242,6 +270,7 @@ async function initializeApp() {
   window.activity = state.activity;
   window.sharedAC = state.sharedAC;
   window.municipios = state.municipios || [];
+  window.processos  = state.processos  || [];
 
   // 4. Verificar sessão anterior
   const session = getSession();
@@ -259,7 +288,12 @@ async function initializeApp() {
     // 7. Inicializar sidebar
     initializeSidebar();
 
-    // 8. Entrar na app
+    // 8. Carregar dados do Supabase ANTES de mostrar a app
+    console.log('⏳ Carregando dados do Supabase...');
+    await _sbLoadAll();
+    console.log('✅ Dados carregados do Supabase');
+
+    // 9. Entrar na app
     document.getElementById('loginScreen').classList.add('hidden');
     window._setupRealtime?.();
     startInactivityWatch();
@@ -329,6 +363,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (!window._sb) {
           await initSupabase();
         }
+
+        // Carregar dados do Supabase ANTES de mostrar a app
+        console.log('⏳ Carregando dados do Supabase...');
+        await _sbLoadAll();
+        console.log('✅ Dados carregados do Supabase');
 
         // Entrar na app
         document.getElementById('loginScreen').classList.add('hidden');

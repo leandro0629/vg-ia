@@ -172,6 +172,20 @@ export function deleteTask(id) {
   if (idx === -1) return;
 
   const removed = window.tasks.splice(idx, 1)[0];
+
+  // Salvar IMEDIATAMENTE para Supabase (não esperar undo timeout)
+  window.save(window.STORAGE_KEYS.tasks, window.tasks);
+
+  // 📋 AUDITORIA - Tarefa deletada
+  window.logAction({
+    action: 'task.delete',
+    category: 'tasks',
+    description: `Tarefa "${removed.title.substring(0,50)}" deletada`,
+    entityId: id,
+    entityTitle: removed.title,
+    color: '#e05c5c'
+  });
+
   window.renderPage(window.currentPage);
 
   window.showUndoToast({
@@ -180,26 +194,12 @@ export function deleteTask(id) {
     onUndo: () => {
       window.tasks.splice(idx, 0, removed);
       window.save(window.STORAGE_KEYS.tasks, window.tasks);
-      if (typeof window._sbSave === 'function') {
-        window._sbSave('lex_tasks', window.tasks);
-      }
       window.renderPage(window.currentPage);
     },
     onExpire: () => {
       if (typeof window.DB?.deleteTask === 'function') {
         window.DB.deleteTask(id);
       }
-      window.save(window.STORAGE_KEYS.tasks, window.tasks);
-
-      // 📋 AUDITORIA - Tarefa deletada
-      window.logAction({
-        action: 'task.delete',
-        category: 'tasks',
-        description: `Tarefa "${removed.title.substring(0,50)}" deletada`,
-        entityId: id,
-        entityTitle: removed.title,
-        color: '#e05c5c'
-      });
     }
   });
 }

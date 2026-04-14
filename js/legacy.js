@@ -37,6 +37,185 @@ function updateUIForUser(user) {
   updateAddButton();
 }
 
+// Stubs para funções de notificação/email (não bloqueiam o fluxo principal)
+function _sbPushNotif(toMemberId, taskId, msg) {
+  // notificação via Supabase — implementar se necessário
+  console.log('[notif]', toMemberId, msg);
+}
+
+// Helpers para formatação de email
+function _formatStatusPT(status) {
+  const map = {
+    'todo': 'A Fazer',
+    'doing': 'Em Andamento',
+    'review': 'Em Revisão',
+    'done': 'Concluído',
+    'in-progress': 'Em Progresso',
+    'blocked': 'Bloqueado'
+  };
+  return map[status] || (status.charAt(0).toUpperCase() + status.slice(1));
+}
+
+function _formatDatePT(dateStr) {
+  if (!dateStr) return '';
+  // Converte YYYY-MM-DD para DD/MM/YYYY
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+function _capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function _enviarEmailMissao(task, tipo) {
+  if (!task || !task.assignee) {
+    console.warn('[email] Task sem assignee, pulando email');
+    return;
+  }
+
+  // Encontrar membro responsável
+  const member = members.find(m => m.id === task.assignee);
+  if (!member || !member.email) {
+    console.warn('[email] Membro não encontrado ou sem email:', task.assignee);
+    return;
+  }
+
+  // Construir payload com formatação
+  const payload = {
+    destinatario_email: member.email,
+    tipo_notificacao: tipo, // 'criada', 'status_mudou', etc
+    titulo: _capitalize(task.title),
+    responsavel: member.name,
+    status: _formatStatusPT(task.kanbanStatus || 'todo'),
+    prioridade: _capitalize(task.priority || 'normal'),
+    data_vencimento: _formatDatePT(task.due || ''),
+    link_tarefa: `${window.location.origin}/#tasks/${task.id}`,
+  };
+
+  console.log('[email] Enviando notificação:', payload);
+
+  // Fazer chamada em background (non-blocking)
+  fetch(
+    'https://leandro0629.app.n8n.cloud/webhook/email-notificacao-nova-tarefa',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }
+  )
+    .then(response => {
+      console.log('📧 Resposta webhook:', response.status);
+      return response.text().catch(() => '');
+    })
+    .then(text => {
+      if (text) console.log('📧 Webhook response:', text);
+      console.log('✅ Email enviado para:', member.email);
+    })
+    .catch(err => {
+      console.error('❌ Erro ao chamar webhook:', err.message);
+    });
+}
+
+// Enviar email para todos os participantes (membros) de uma tarefa
+function _enviarEmailParticipantesTask(task, tipo, novosIds) {
+  if (!task || !task.participants || !task.participants.length) return;
+
+  // Se novosIds fornecido, só notifica os novos; senão notifica todos
+  const ids = novosIds || task.participants.map(p => p.memberId);
+  if (!ids.length) return;
+
+  const delegatorMember = currentUser ? members.find(m => m.id === currentUser.memberId) : null;
+  const delegadorNome = delegatorMember?.name || currentUser?.name || 'Equipe';
+
+  const destinatarios = ids
+    .map(id => members.find(m => m.id === id))
+    .filter(m => m && m.email);
+
+  if (!destinatarios.length) {
+    console.warn('[email-task-members] Nenhum participante com email');
+    return;
+  }
+
+  destinatarios.forEach(member => {
+    const payload = {
+      destinatario_email: member.email,
+      tipo_notificacao: tipo || 'atividade_criada',
+      titulo: _capitalize(task.title),
+      responsavel: member.name,
+      descricao: _capitalize(task.desc || ''),
+      processo: _capitalize(task.process || ''),
+      prioridade: _capitalize(task.priority || 'normal'),
+      data_vencimento: _formatDatePT(task.due || ''),
+      delegado_por: delegadorNome,
+      total_participantes: task.participants.length,
+      link_tarefa: `${window.location.origin}/#tasks/${task.id}`,
+    };
+
+    console.log('[email-task-members] Enviando para:', member.email, payload);
+
+    fetch(
+      'https://leandro0629.app.n8n.cloud/webhook/email-notificacao-nova-tarefa',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    )
+      .then(r => r.text().catch(() => ''))
+      .then(() => console.log('✅ Email membro tarefa enviado para:', member.email))
+      .catch(err => console.error('❌ Erro email membro tarefa:', err.message));
+  });
+}
+
+// Enviar email para todos os participantes de uma atividade compartilhada
+function _enviarEmailAC(ac, tipo) {
+  if (!ac || !ac.participants || !ac.participants.length) return;
+
+  const delegator = members.find(m => m.id === ac.delegator);
+  const delegatorName = delegator?.name || 'Equipe';
+
+  // Coleta todos os membros participantes com email
+  const destinatarios = ac.participants
+    .map(p => members.find(m => m.id === p.memberId))
+    .filter(m => m && m.email);
+
+  if (!destinatarios.length) {
+    console.warn('[email-ac] Nenhum participante com email encontrado');
+    return;
+  }
+
+  destinatarios.forEach(member => {
+    const payload = {
+      destinatario_email: member.email,
+      tipo_notificacao: tipo || 'atividade_criada',
+      titulo: _capitalize(ac.title),
+      responsavel: member.name,
+      descricao: _capitalize(ac.desc || ''),
+      processo: _capitalize(ac.process || ''),
+      prioridade: _capitalize(ac.priority || 'normal'),
+      data_vencimento: _formatDatePT(ac.due || ''),
+      delegado_por: delegatorName,
+      total_participantes: ac.participants.length,
+      link_tarefa: `${window.location.origin}/#atividades`,
+    };
+
+    console.log('[email-ac] Enviando para:', member.email, payload);
+
+    fetch(
+      'https://leandro0629.app.n8n.cloud/webhook/email-notificacao-nova-tarefa',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    )
+      .then(r => r.text().catch(() => ''))
+      .then(() => console.log('✅ Email AC enviado para:', member.email))
+      .catch(err => console.error('❌ Erro email AC:', err.message));
+  });
+}
+
 // DB stub - operations handled via window._sbSave from module
 const DB = {
   async deleteTask(id) { /* data already removed from array; Supabase sync via _sbSave */ },
@@ -132,7 +311,8 @@ function renderPage(page) {
   else if (page === 'relatorios') renderRelatorios();
   else if (page === 'calendario') switchCalendarView('mes');
   else if (page === 'configuracoes') loadConfigPage();
-  else if (page === 'auditoria' && typeof window.renderAuditoria === 'function') window.renderAuditoria();
+  else if (page === 'auditoria'  && typeof window.renderAuditoria  === 'function') window.renderAuditoria();
+  else if (page === 'processos'  && typeof window.renderProcessos  === 'function') window.renderProcessos();
 }
 
 // ============================================================
@@ -432,9 +612,8 @@ function taskItemHTML(t, compact) {
   const tipoBadge = t.tipo ? `<span class="tipo-badge">${tipoLabel(t.tipo)}</span>` : '';
   const cl = t.checklist || [];
   const clBadge = cl.length ? `<span class="checklist-progress">✓ ${cl.filter(c=>c.done).length}/${cl.length}</span>` : '';
-  const isShared = t.mode === 'compartilhada';
-  const participantCount = isShared ? (t.participants || []).length : 0;
-  const sharedBadge = isShared ? `<span class="badge" style="background:rgba(74,175,125,.2);color:#4caf7d">🤝 ${participantCount} participante${participantCount !== 1 ? 's' : ''}</span>` : '';
+  const participantCount = (t.participants || []).length;
+  const sharedBadge = participantCount > 0 ? `<span class="badge" style="background:rgba(74,175,125,.2);color:#4caf7d">🤝 ${participantCount} participante${participantCount !== 1 ? 's' : ''}</span>` : '';
   // Labels/Etiquetas
   const labelColors = { 'Prazo': '#e05c5c', 'Audiência': '#ff6b6b', 'Petição': '#4caf7d', 'Contrato': '#5b8dee', 'Recurso': '#9c27b0', 'Consultoria': '#ffa94d', 'Diligência': '#e09a3a', 'Intimação': '#74b9ff', ...(t.customLabels || {}) };
   const labelsBadge = t.labels && t.labels.length > 0 ? t.labels.map(l => `<span class="badge" style="background: ${labelColors[l] || '#5b8dee'}; color: white; font-size: 0.7rem; padding: 2px 6px;">${l}</span>`).join('') : '';
@@ -467,27 +646,21 @@ function openEditTask(id) {
   document.getElementById('taskDesc').value     = t.desc || '';
   document.getElementById('taskTipo').value     = t.tipo || '';
   document.getElementById('taskMunicipio').value = t.municipio || '';
-  document.getElementById('taskMode').value = t.mode || 'individual';
   document.getElementById('modalTaskTitle').textContent = 'Editar Tarefa';
   // Checklist
   pendingChecklist = (t.checklist || []).map(c => ({ ...c, text: c.text || c.item || '' }));
   renderChecklistItems();
-  // Shared activity mode
-  if (t.mode === 'compartilhada') {
-    document.getElementById('taskOwner').value = t.owner || t.assignee;
-    pendingTaskParticipants = (t.participants || []).map(p => p.memberId).filter(m => m !== t.assignee);
-    pendingTaskSubtasks = (t.participants || []).find(p => p.memberId === t.assignee)?.subtasks?.map(s => Object.assign({}, s)) || [];
-    fillTaskOwnerSelect();
-    renderTaskParticipants();
-    renderTaskSubtasks();
-  }
-  document.getElementById('taskCompartilhadaSection').style.display = t.mode === 'compartilhada' ? '' : 'none';
+  // Membros
+  pendingTaskParticipants = (t.participants || []).map(p => p.memberId).filter(m => m !== t.assignee);
+  initTaskMembers();
   // Comments + history
   renderTaskComments(t);
   document.getElementById('taskCommentsSection').style.display = '';
   pendingAttachments = [];
   renderAttachPreview();
-  document.getElementById('modalTask').classList.add('open');
+  const modalTask = document.getElementById('modalTask');
+  modalTask.style.display = 'flex';
+  modalTask.classList.add('open');
 }
 function toggleTask(id) {
   const t = tasks.find(t => t.id === id);
@@ -638,23 +811,51 @@ function _dismissToast(toastId) {
 }
 
 function deleteTask(id) {
+  console.log('[deleteTask] Iniciando deleção da tarefa:', id);
   const idx = tasks.findIndex(t => t.id === id);
-  if (idx === -1) return;
+  if (idx === -1) { console.log('[deleteTask] Tarefa não encontrada'); return; }
   const removed = tasks.splice(idx, 1)[0];
+  console.log('[deleteTask] Tarefa removida do array:', removed.title);
+
+  // Salvar IMEDIATAMENTE para Supabase (não esperar undo timeout)
+  try {
+    save(STORAGE_KEYS.tasks, tasks);
+    console.log('[deleteTask] Salvo em localStorage/Supabase');
+  } catch (e) {
+    console.error('[deleteTask] Erro ao salvar:', e);
+  }
+
+  // Auditoria (não bloqueia)
+  if (typeof logAction === 'function') {
+    try {
+      logAction({
+        action: 'task.delete',
+        category: 'tasks',
+        description: `Tarefa "${removed.title.substring(0,50)}" deletada`,
+        entityId: id,
+        entityTitle: removed.title,
+        color: '#e05c5c'
+      });
+    } catch (e) {
+      console.log('[deleteTask] Aviso: logAction falhou', e.message);
+    }
+  }
+
+  console.log('[deleteTask] Re-renderizando página');
   renderPage(currentPage);
 
   showUndoToast({
     label: 'Tarefa removida',
     title: removed.title,
     onUndo: () => {
+      console.log('[deleteTask] Desfazendo deleção');
       tasks.splice(idx, 0, removed);
       save(STORAGE_KEYS.tasks, tasks);
-      _sbSave('lex_tasks', tasks);
       renderPage(currentPage);
     },
     onExpire: () => {
+      console.log('[deleteTask] Undo expirou, finalizando deleção');
       DB.deleteTask(id);
-      save(STORAGE_KEYS.tasks, tasks);
       addActivity(`Tarefa "${removed.title.substring(0, 30)}..." removida`, '#e05c5c');
     }
   });
@@ -694,6 +895,18 @@ function deletePrazo(id) {
   const idx = prazos.findIndex(p => p.id === id);
   if (idx === -1) return;
   const removed = prazos.splice(idx, 1)[0];
+
+  // Salvar IMEDIATAMENTE para Supabase (não esperar undo timeout)
+  save(STORAGE_KEYS.prazos, prazos);
+  logAction({
+    action: 'prazo.delete',
+    category: 'prazos',
+    description: `Prazo "${removed.title.substring(0,50)}" deletado`,
+    entityId: id,
+    entityTitle: removed.title,
+    color: '#e05c5c'
+  });
+
   renderPrazos();
 
   showUndoToast({
@@ -706,7 +919,6 @@ function deletePrazo(id) {
     },
     onExpire: () => {
       DB.deletePrazo(id);
-      save(STORAGE_KEYS.prazos, prazos);
       addActivity(`Prazo "${removed.title.substring(0, 30)}" removido`, '#e05c5c');
     }
   });
@@ -838,7 +1050,9 @@ function openTaskModal() {
   fillAssigneeSelect('taskAssignee');
   fillMunicipioSelect();
   clearTaskForm();
-  document.getElementById('modalTask').classList.add('open');
+  const modalTask = document.getElementById('modalTask');
+  modalTask.style.display = 'flex';
+  modalTask.classList.add('open');
 }
 function openMemberModal(type) {
   const title = currentPage === 'estagiarios' ? 'Novo Estagiário' : 'Novo Membro';
@@ -870,8 +1084,8 @@ function saveTask() {
     // Edit existing task
     const t = tasks.find(x => x.id === editId);
     if (t) {
-      const mode = document.getElementById('taskMode').value;
       const oldAssignee = t.assignee;
+      const oldParticipantIds = (t.participants || []).map(p => p.memberId);
       t.title    = title;
       t.assignee = parseInt(document.getElementById('taskAssignee').value);
       t.priority = document.getElementById('taskPriority').value;
@@ -881,27 +1095,9 @@ function saveTask() {
       t.tipo     = document.getElementById('taskTipo').value;
       t.municipio = document.getElementById('taskMunicipio').value;
       t.checklist = pendingChecklist.slice();
-      t.mode = mode;
-      if (mode === 'compartilhada') {
-        t.owner = parseInt(document.getElementById('taskOwner').value);
-        t.participants = pendingTaskParticipants.map(memberId => ({
-          memberId,
-          subtasks: []
-        }));
-        t.delegationLog = t.delegationLog || [];
-        t.status = t.status || 'ativa';
-        if (pendingTaskSubtasks.length) {
-          const ownerParticipant = t.participants.find(p => p.memberId === t.assignee);
-          if (ownerParticipant) {
-            ownerParticipant.subtasks = pendingTaskSubtasks.slice();
-          } else {
-            t.participants.push({
-              memberId: t.assignee,
-              subtasks: pendingTaskSubtasks.slice()
-            });
-          }
-        }
-      }
+      t.participants = pendingTaskParticipants.map(memberId => ({
+        memberId
+      }));
       if (pendingAttachments.length) {
         pendingAttachments.forEach(a => { if (a._data) saveAttachment(a.id, a._data); });
         const meta = pendingAttachments.map(({id, name, type, size}) => ({id, name, type, size}));
@@ -913,11 +1109,15 @@ function saveTask() {
       if (t.assignee !== oldAssignee && t.assignee !== currentUser?.memberId) {
         _sbPushNotif(t.assignee, t.id, `${currentUser.name} atribuiu a missão "${title.substring(0,40)}" a você`);
       }
+      // 📧 Email para novos membros adicionados
+      const novosIds = pendingTaskParticipants.filter(id => !oldParticipantIds.includes(id));
+      if (novosIds.length) {
+        _enviarEmailParticipantesTask(t, 'atividade_criada', novosIds);
+      }
     }
   } else {
     // New task
     const kanbanCol = document.getElementById('modalTask').dataset.kanbanCol || 'todo';
-    const mode = document.getElementById('taskMode').value;
     const t = {
       id: Date.now(), title,
       assignee: parseInt(document.getElementById('taskAssignee').value),
@@ -935,31 +1135,11 @@ function saveTask() {
       })(),
       kanbanStatus: kanbanCol,
       done: false,
-      mode: mode,
       created: new Date().toISOString(),
-      // Shared activity fields (if compartilhada)
-      ...(mode === 'compartilhada' && {
-        owner: parseInt(document.getElementById('taskOwner').value),
-        participants: pendingTaskParticipants.map(memberId => ({
-          memberId,
-          subtasks: []
-        })),
-        delegationLog: [],
-        status: 'ativa'
-      })
+      participants: pendingTaskParticipants.map(memberId => ({
+        memberId
+      }))
     };
-    // If compartilhada, add subtasks to assignee (owner of the shared activity)
-    if (mode === 'compartilhada' && pendingTaskSubtasks.length) {
-      const ownerParticipant = t.participants.find(p => p.memberId === t.assignee);
-      if (ownerParticipant) {
-        ownerParticipant.subtasks = pendingTaskSubtasks.slice();
-      } else {
-        t.participants.push({
-          memberId: t.assignee,
-          subtasks: pendingTaskSubtasks.slice()
-        });
-      }
-    }
     tasks.push(t);
     console.log('[Task] Nova tarefa criada:', t);
     save(STORAGE_KEYS.tasks, tasks);
@@ -968,8 +1148,12 @@ function saveTask() {
     if (t.assignee && currentUser && t.assignee !== currentUser.memberId) {
       _sbPushNotif(t.assignee, t.id, `${currentUser.name} atribuiu a missão "${title.substring(0,40)}" a você`);
     }
-    // 📧 Email notificação - missão criada
+    // 📧 Email notificação - missão criada (responsável)
     _enviarEmailMissao(t, 'criada');
+    // 📧 Email notificação - membros adicionados à tarefa
+    if (t.participants && t.participants.length > 0) {
+      _enviarEmailParticipantesTask(t, 'atividade_criada');
+    }
   }
   closeModal('modalTask');
   clearTaskForm();
@@ -980,7 +1164,6 @@ function clearTaskForm() {
   document.getElementById('taskPriority').value = 'normal';
   document.getElementById('taskTipo').value = '';
   document.getElementById('taskMunicipio').value = '';
-  document.getElementById('taskMode').value = 'individual';
   document.getElementById('modalTaskTitle').textContent = 'Nova Tarefa';
   pendingChecklist = [];
   renderChecklistItems();
@@ -990,11 +1173,7 @@ function clearTaskForm() {
   pendingAttachments = [];
   renderAttachPreview();
   pendingTaskParticipants = [];
-  pendingTaskSubtasks = [];
-  document.getElementById('taskCompartilhadaSection').style.display = 'none';
-  document.getElementById('taskParticipantsSection').innerHTML = '';
-  document.getElementById('taskSubtaskInput').value = '';
-  document.getElementById('taskSubtaskItems').innerHTML = '';
+  initTaskMembers();
 }
 
 let pendingMemberPhoto = null;
@@ -1081,6 +1260,18 @@ let acFilter = 'todas';
 function renderAC(filter) {
   acFilter = filter;
   let list = [...sharedAC];
+
+  // Admin e sócio veem tudo; outros membros só veem atividades em que participam
+  const isManager = currentUser?.profile === 'admin' || currentUser?.profile === 'socio';
+  if (!isManager) {
+    const mid = currentUser?.memberId;
+    list = list.filter(a =>
+      a.delegator === mid ||
+      a.owner === mid ||
+      a.participants.some(p => p.memberId === mid)
+    );
+  }
+
   if (filter === 'ativas')     list = list.filter(a => a.status !== 'concluida');
   if (filter === 'concluidas') list = list.filter(a => a.status === 'concluida');
   if (filter === 'minhas') {
@@ -1152,7 +1343,15 @@ function acCardHTML(ac) {
         <div class="ac-title">${ac.title}</div>
         <div class="ac-meta">
           <span>👤 Delegado por: <strong>${delegator?.name.split(' ').slice(0,2).join(' ')||'–'}</strong></span>
-          <span>👥 ${ac.participants.length} participantes</span>
+          <span style="display:flex;align-items:center;gap:6px">👥
+            <div style="display:flex;gap:-4px;align-items:center">
+              ${ac.participants.map(p => {
+                const m = members.find(x => x.id === p.memberId);
+                return m ? `<div title="${m.name}" style="display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--bg-secondary);border:1px solid var(--border);font-size:0.65rem;font-weight:700;margin-left:-8px">${initials(m.name)}</div>` : '';
+              }).join('')}
+            </div>
+            ${ac.participants.length} ${ac.participants.length === 1 ? 'participante' : 'participantes'}
+          </span>
           ${ac.process ? `<span>📄 ${ac.process}</span>` : ''}
           ${days !== null ? `<span style="color:${days<=1?'var(--danger)':days<=3?'var(--warn)':'var(--text-secondary)'}">📅 ${days<=0?'Vencida':days===1?'Amanhã':due.toLocaleDateString('pt-BR')}</span>` : ''}
         </div>
@@ -1356,6 +1555,7 @@ function saveNovaAC() {
   sharedAC.unshift(ac);
   save(STORAGE_KEYS.sharedAC, sharedAC);
   addActivity(`Atividade compartilhada "${title.substring(0,30)}" criada`, '#c8a96e');
+  _enviarEmailAC(ac, 'atividade_criada');
   closeModal('modalNovaAC');
   renderAC(acFilter);
 }
@@ -1462,7 +1662,11 @@ function fillSupervisorSelect() {
   const adv = members.filter(m => m.role === 'advogado');
   document.getElementById('memberSupervisor').innerHTML = `<option value="">– Selecione –</option>` + adv.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
 }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  modal.classList.remove('open');
+  modal.style.display = 'none';
+}
 function memberName(id) { const m = members.find(m => m.id === id); return m ? m.name.split(' ').slice(0,2).join(' ') : '–'; }
 function initials(name) { return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
 function getAvatarHTML(member, size = 'normal', showBorder = false) {
@@ -1869,6 +2073,10 @@ function renderKanban() {
 
   // Attach drag events
   board.querySelectorAll('.kanban-card').forEach(card => {
+    // Evitar adicionar listeners múltiplas vezes
+    if (card.dataset.dragListenerAdded) return;
+    card.dataset.dragListenerAdded = 'true';
+
     card.addEventListener('dragstart', e => {
       dragSrcId = parseInt(card.dataset.id);
       card.classList.add('dragging');
@@ -1912,7 +2120,7 @@ function kanCardHTML(t) {
         : `<div class="kanban-card-avatar ${avatarClass(m.role)}">${initials(m.name)}</div>`)
     : '';
 
-  return `<div class="kanban-card" draggable="true" data-id="${t.id}" onclick="openTaskDetail(${t.id})" style="cursor:pointer">
+  return `<div class="kanban-card" draggable="true" data-id="${t.id}" onclick="event.stopPropagation(); openTaskDetail(${t.id})" style="cursor:pointer">
     <div class="kanban-card-prio-bar" style="background:${prioColor}"></div>
     ${labelsHTML}
     <div class="kanban-card-top">
@@ -2078,7 +2286,9 @@ function openKanbanAdd(colId) {
   fillAssigneeSelect('taskAssignee');
   fillMunicipioSelect();
   clearTaskForm();
-  document.getElementById('modalTask').classList.add('open');
+  const modalTask = document.getElementById('modalTask');
+  modalTask.style.display = 'flex';
+  modalTask.classList.add('open');
   // Store target column to set after save
   document.getElementById('modalTask').dataset.kanbanCol = colId;
 }
@@ -2385,14 +2595,17 @@ function escapeHtml(text) {
 }
 
 function openTaskDetail(id) {
+  console.log(`📂 openTaskDetail chamado para task ${id}`);
   try {
     const t = tasks.find(x => x.id === id);
-    if (!t) { console.warn('Task not found:', id); return; }
+    if (!t) { console.warn('❌ Task not found:', id); return; }
 
     currentTaskDetailId = id;
     const due = t.due ? new Date(t.due + 'T12:00:00') : null;
     const assignee = members.find(m => m.id === t.assignee);
     const municipio = municipios.find(m => m.id === parseInt(t.municipio));
+
+    console.log('✅ Task encontrada:', t.title);
 
     // Cores por prioridade
     const prioColors = { urgente: '#e05c5c', normal: '#5b8dee', baixa: '#4caf7d' };
@@ -2460,22 +2673,29 @@ function openTaskDetail(id) {
     const contentEl = document.getElementById('taskDetailContent');
     let titleEl = document.getElementById('taskDetailTitle');
 
-    if (!modalEl || !contentEl || !titleEl) {
-      console.error('Modal elements not found');
-      return;
-    }
+    if (!modalEl) { console.error('❌ modalTaskDetail não encontrado'); return; }
+    if (!contentEl) { console.error('❌ taskDetailContent não encontrado'); return; }
+    if (!titleEl) { console.error('❌ taskDetailTitle não encontrado'); return; }
 
+    console.log('✅ Elementos do modal encontrados');
     contentEl.innerHTML = html;
 
-    // Se titleEl foi substituído por um container editor, recriá-lo como h3
-    if (titleEl.tagName !== 'H3') {
-      console.log('🔄 Recriando h3, titleEl atual é:', titleEl.tagName);
+    // Se titleEl não existe ou foi substituído, recriá-lo
+    if (!titleEl || titleEl.tagName !== 'H3') {
+      console.log('🔄 Recriando h3, titleEl:', titleEl ? titleEl.tagName : 'não encontrado');
       const newTitleEl = document.createElement('h3');
       newTitleEl.id = 'taskDetailTitle';
       newTitleEl.style.cssText = 'font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.15s;';
       newTitleEl.onmouseover = function() { this.style.background = 'var(--bg-secondary)'; };
       newTitleEl.onmouseout = function() { this.style.background = 'transparent'; };
-      titleEl.replaceWith(newTitleEl);
+
+      if (titleEl) {
+        titleEl.replaceWith(newTitleEl);
+      } else {
+        // Se não existe, inserir como primeiro filho do modal
+        const modalInner = document.getElementById('modalTaskDetailInner');
+        if (modalInner) modalInner.insertBefore(newTitleEl, modalInner.firstChild);
+      }
       titleEl = newTitleEl;
       console.log('✅ H3 recriado e inserido');
     }
@@ -2487,7 +2707,9 @@ function openTaskDetail(id) {
       e.stopPropagation();
       editFieldInline(id, 'title', t.title);
     };
+    modalEl.style.display = 'flex';
     modalEl.classList.add('open');
+    console.log('✅ Modal aberto:', modalEl, 'classes:', modalEl.className);
 
     // Barra de cor por prioridade no topo do modal
     const modalInner = document.getElementById('modalTaskDetailInner');
@@ -2502,11 +2724,13 @@ function openTaskDetail(id) {
       };
     }
 
-    // Setup attachment file listener
+    // Setup attachment file listener (com cleanup de listeners antigos)
     setTimeout(() => {
       const fileInput = document.getElementById(`taskCommentAttachment_${id}`);
       if (fileInput) {
-        fileInput.addEventListener('change', function() {
+        // Remover todos os listeners antigos
+        fileInput.removeEventListener('change', null);
+        fileInput.addEventListener('change', function handleFileChange() {
           const displayEl = document.getElementById(`attachmentNames_${id}`);
           if (displayEl && this.files.length > 0) {
             const fileNames = Array.from(this.files).map(f => f.name).join(', ');
@@ -2521,6 +2745,9 @@ function openTaskDetail(id) {
       setTimeout(() => {
         const commentInput = document.getElementById('taskCommentInput');
         if (commentInput) {
+          // Remover listener antigo
+          commentInput.removeEventListener('input', handleMentionInput);
+          // Adicionar novo listener
           commentInput.addEventListener('input', handleMentionInput);
         }
       }, 100);
@@ -2533,54 +2760,66 @@ function openTaskDetail(id) {
 
 // Renderizar Pane de Detalhes
 function renderTaskDetailPane(t, assignee, municipio, due) {
-  const C = (onclick, content) => `onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'" onclick="${onclick}" style="cursor:pointer;"`;
-  const cell = (label, valueHTML, onclick = '') => `
-    <div ${onclick ? `onclick="${onclick}" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'"` : ''} style="padding:9px 11px;background:var(--bg-secondary);border-radius:8px;${onclick?'cursor:pointer;':''}transition:background 0.15s;">
-      <div style="font-size:0.65rem;color:var(--text-secondary);text-transform:uppercase;font-weight:700;letter-spacing:0.4px;margin-bottom:5px;">${label}</div>
-      ${valueHTML}
+  // Célula padrão — label + valor, fundo uniforme, tamanho padronizado
+  const LABEL = `font-size:0.63rem;color:var(--text-secondary);text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:6px;`;
+  const CELL  = `padding:10px 12px;background:var(--bg-secondary);border-radius:8px;transition:background 0.15s;`;
+  const CELL_CLICK = `${CELL}cursor:pointer;`;
+
+  const cell = (label, valueHTML, onclick = '') => {
+    const hover = onclick ? `onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg-secondary)'"` : '';
+    const click = onclick ? `onclick="${onclick}"` : '';
+    return `<div ${click} ${hover} style="${onclick ? CELL_CLICK : CELL}">
+      <div style="${LABEL}">${label}</div>
+      <div style="line-height:1.4;">${valueHTML}</div>
     </div>`;
+  };
+  const emptyCell = () => `<div style="${CELL}"></div>`;
+  const row2 = (a, b) => `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:stretch;">${a}${b}</div>`;
 
   let html = '';
 
-
   // — Linha 1: Responsável + Etiquetas —
   const labelColors = { 'Prazo':'#e05c5c','Audiência':'#ff6b6b','Petição':'#4caf7d','Contrato':'#5b8dee','Recurso':'#9c27b0','Consultoria':'#ffa94d','Diligência':'#e09a3a','Intimação':'#74b9ff',...(t.customLabels||{}) };
-  const roleColor = { socio:'#f59e0b', gestor:'#8b5cf6', advogado:'#3b82f6', assistente:'#10b981', estagiario:'#64748b' };
 
   const memberHTML = assignee ? `
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#d97706);
-        display:flex;align-items:center;justify-content:center;color:#000;font-weight:800;font-size:0.88rem;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#d97706);flex-shrink:0;
+        display:flex;align-items:center;justify-content:center;color:#000;font-weight:800;font-size:0.85rem;">
         ${assignee.name.charAt(0).toUpperCase()}
       </div>
       <div>
-        <div style="font-weight:700;font-size:0.95rem;color:var(--text-primary);">${assignee.name}</div>
-        <div style="font-size:0.75rem;color:var(--text-secondary);">${roleLabel(assignee.role)}</div>
+        <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">${assignee.name}</div>
+        <div style="font-size:0.72rem;color:var(--text-secondary);">${roleLabel(assignee.role)}</div>
       </div>
-    </div>` : `<div style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.9rem;"><span style="width:28px;height:28px;border-radius:50%;border:1.5px dashed var(--border);display:inline-flex;align-items:center;justify-content:center;">+</span> Atribuir membro</div>`;
+    </div>`
+    : `<div style="display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.85rem;">
+        <span style="width:26px;height:26px;border-radius:50%;border:1.5px dashed var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:1rem;">+</span>
+        Atribuir membro
+       </div>`;
 
   const labelsHTML = t.labels && t.labels.length > 0
-    ? t.labels.map(l => `<span style="padding:4px 10px;background:${labelColors[l]||'#5b8dee'}22;color:${labelColors[l]||'#5b8dee'};border:1px solid ${labelColors[l]||'#5b8dee'}55;border-radius:20px;font-size:0.8rem;font-weight:700;">${l}</span>`).join('')
-    : `<span style="color:var(--text-secondary);font-size:0.88rem;opacity:0.7;">+ Adicionar etiqueta</span>`;
+    ? t.labels.map(l => `<span style="padding:3px 9px;background:${labelColors[l]||'#5b8dee'}22;color:${labelColors[l]||'#5b8dee'};border:1px solid ${labelColors[l]||'#5b8dee'}55;border-radius:20px;font-size:0.78rem;font-weight:700;">${l}</span>`).join('')
+    : `<span style="color:var(--text-secondary);font-size:0.85rem;opacity:0.6;">+ Adicionar etiqueta</span>`;
 
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
-    ${cell('👤 Responsável', memberHTML, `showTaskMembersEditor(${t.id})`)}
-    ${cell('🏷️ Etiquetas', `<div style="display:flex;flex-wrap:wrap;gap:4px;">${labelsHTML}</div>`, `showTaskLabelsEditor(${t.id})`)}
-  </div>`;
+  html += row2(
+    cell('👤 Responsável', memberHTML, `showTaskMembersEditor(${t.id})`),
+    cell('🏷️ Etiquetas', `<div style="display:flex;flex-wrap:wrap;gap:4px;">${labelsHTML}</div>`, `showTaskLabelsEditor(${t.id})`)
+  );
 
-  // — Linha 2: Data Entrega + Status (como badges) —
-  let dateValueHTML = `<span style="font-size:0.82rem;color:var(--text-secondary);opacity:0.5;">Não definida</span>`;
+  // — Linha 2: Data Entrega + Status —
+  let dateValueHTML = `<span style="font-size:0.85rem;color:var(--text-secondary);opacity:0.5;">Não definida</span>`;
   if (due) {
     const daysLeft = Math.ceil((due - new Date()) / 86400000);
-    let bg = '#5b8dee22', color = '#5b8dee', border = '#5b8dee55', status = '';
-    if (daysLeft < 0)  { bg='#e05c5c22'; color='#e05c5c'; border='#e05c5c55'; status='Vencida'; }
-    else if (daysLeft===0) { bg='#e09a3a22'; color='#e09a3a'; border='#e09a3a55'; status='Hoje'; }
-    else if (daysLeft===1) { bg='#e09a3a22'; color='#e09a3a'; border='#e09a3a55'; status='Amanhã'; }
+    let color = '#5b8dee', bg = '#5b8dee22', border = '#5b8dee55', badge = '';
+    if (daysLeft < 0)      { color='#e05c5c'; bg='#e05c5c22'; border='#e05c5c55'; badge='Vencida'; }
+    else if (daysLeft===0) { color='#e09a3a'; bg='#e09a3a22'; border='#e09a3a55'; badge='Hoje'; }
+    else if (daysLeft===1) { color='#e09a3a'; bg='#e09a3a22'; border='#e09a3a55'; badge='Amanhã'; }
     dateValueHTML = `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-      <span style="font-weight:700;font-size:0.92rem;color:${color};">${due.toLocaleDateString('pt-BR')}</span>
-      ${status ? `<span style="padding:3px 9px;background:${bg};color:${color};border:1px solid ${border};border-radius:20px;font-size:0.75rem;font-weight:700;">${status}</span>` : ''}
+      <span style="font-size:0.88rem;font-weight:700;color:${color};">${due.toLocaleDateString('pt-BR')}</span>
+      ${badge ? `<span style="padding:2px 8px;background:${bg};color:${color};border:1px solid ${border};border-radius:20px;font-size:0.72rem;font-weight:700;">${badge}</span>` : ''}
     </div>`;
   }
+
   const kanbanStatus = t.kanbanStatus || (t.done ? 'done' : 'todo');
   const statusMap = {
     todo:   { label: 'A Fazer',      color: '#6b7190', bg: '#6b719022', border: '#6b719055', icon: '○' },
@@ -2589,51 +2828,63 @@ function renderTaskDetailPane(t, assignee, municipio, due) {
     done:   { label: 'Concluído',    color: '#4caf7d', bg: '#4caf7d22', border: '#4caf7d55', icon: '✓' },
   };
   const s = statusMap[kanbanStatus] || statusMap.todo;
-  const statusValueHTML = `<span style="padding:4px 12px;background:${s.bg};color:${s.color};border:1px solid ${s.border};border-radius:20px;font-size:0.88rem;font-weight:700;cursor:pointer;" title="Clique para avançar status">${s.icon} ${s.label}</span>`;
+  const statusValueHTML = `<span style="padding:3px 10px;background:${s.bg};color:${s.color};border:1px solid ${s.border};border-radius:20px;font-size:0.85rem;font-weight:700;cursor:pointer;" title="Clique para avançar status">${s.icon} ${s.label}</span>`;
 
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
-    ${cell('📅 Data Entrega', dateValueHTML, `editFieldInline(${t.id},'due','${t.due||''}')`)}
-    ${cell('Status', statusValueHTML, `toggleTaskStatus(${t.id})`)}
-  </div>`;
+  html += row2(
+    cell('📅 Data Entrega', dateValueHTML, `editFieldInline(${t.id},'due','${t.due||''}')`),
+    cell('📊 Status', statusValueHTML, `toggleTaskStatus(${t.id})`)
+  );
 
   // — Linha 3: Prioridade + Criado em —
-  const prioBg = t.priority==='urgente'?'#e05c5c22':t.priority==='normal'?'#5b8dee22':'#4caf7d22';
+  const prioBg    = t.priority==='urgente'?'#e05c5c22':t.priority==='normal'?'#5b8dee22':'#4caf7d22';
   const prioColor = t.priority==='urgente'?'#e05c5c':t.priority==='normal'?'#5b8dee':'#4caf7d';
-  const prioBorder = t.priority==='urgente'?'#e05c5c55':t.priority==='normal'?'#5b8dee55':'#4caf7d55';
-  const prioLabel = t.priority==='urgente'?'● Urgente':t.priority==='normal'?'● Normal':'● Baixa';
-  const prioHTML = `<span style="padding:4px 12px;background:${prioBg};color:${prioColor};border:1px solid ${prioBorder};border-radius:20px;font-size:0.88rem;font-weight:700;">${prioLabel}</span>`;
-  const createdHTML = t.created ? `<span style="font-size:0.82rem;color:var(--text-secondary);">${new Date(t.created).toLocaleDateString('pt-BR')}</span>` : '';
+  const prioBdr   = t.priority==='urgente'?'#e05c5c55':t.priority==='normal'?'#5b8dee55':'#4caf7d55';
+  const prioLbl   = t.priority==='urgente'?'● Urgente':t.priority==='normal'?'● Normal':'● Baixa';
+  const prioHTML  = `<span style="padding:3px 10px;background:${prioBg};color:${prioColor};border:1px solid ${prioBdr};border-radius:20px;font-size:0.85rem;font-weight:700;">${prioLbl}</span>`;
+  const createdHTML = t.created ? `<span style="font-size:0.88rem;color:var(--text-secondary);">${new Date(t.created).toLocaleDateString('pt-BR')}</span>` : '';
 
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
-    ${cell('Prioridade', prioHTML, `cycleTaskPriority(${t.id})`)}
-    ${t.created ? cell('🕐 Criado em', createdHTML) : '<div></div>'}
-  </div>`;
+  html += row2(
+    cell('⚑ Prioridade', prioHTML, `cycleTaskPriority(${t.id})`),
+    t.created ? cell('🕐 Criado em', createdHTML) : emptyCell()
+  );
 
   // — Linha 4: Processo + Tipo —
-  if (t.process || t.tipo) {
-    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start;">
-      ${t.process ? cell('📄 Processo', `<span style="font-family:monospace;color:var(--text-primary);font-size:0.92rem;">${escapeHtml(t.process)}</span>`) : '<div></div>'}
-      ${t.tipo ? cell('🏷️ Tipo', `<span style="font-size:0.92rem;font-weight:600;color:var(--text-primary);">${tipoLabel(t.tipo)}</span>`) : '<div></div>'}
-    </div>`;
-  }
+  const processoHTML  = t.process ? `<span style="font-family:monospace;font-size:0.88rem;color:var(--text-primary);font-weight:600;">${escapeHtml(t.process)}</span>` : `<span style="font-size:0.85rem;color:var(--text-secondary);opacity:0.5;">—</span>`;
+  const tipoHTML      = t.tipo    ? `<span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">${tipoLabel(t.tipo)}</span>` : `<span style="font-size:0.85rem;color:var(--text-secondary);opacity:0.5;">—</span>`;
 
-  // — Município —
-  if (municipio) {
-    html += cell('📍 Município', `<span style="font-size:0.92rem;color:var(--text-primary);font-weight:600;">${escapeHtml(municipio.name)}</span>`);
-  }
+  html += row2(
+    cell('📄 Processo', processoHTML),
+    cell('📋 Tipo', tipoHTML)
+  );
+
+  // — Linha 5: Município (largura total) —
+  const municipioHTML = municipio
+    ? `<span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">${escapeHtml(municipio.name)}</span>`
+    : `<span style="font-size:0.85rem;color:var(--text-secondary);opacity:0.5;">Nenhum selecionado</span>`;
+  html += cell('📍 Município', municipioHTML);
 
   // — Descrição —
   if (t.desc) {
-    html += cell('📝 Descrição', `<div style="font-size:0.92rem;color:var(--text-primary);line-height:1.5;white-space:pre-wrap;word-break:break-word;">${escapeHtml(t.desc)}</div>`);
+    html += cell('📝 Descrição', `<div style="font-size:0.88rem;color:var(--text-primary);line-height:1.6;white-space:pre-wrap;word-break:break-word;">${escapeHtml(t.desc)}</div>`);
   }
 
-  // — Compartilhada —
-  if (t.mode === 'compartilhada') {
-    const owner = members.find(m => m.id === t.owner);
-    html += `<div style="padding:8px 10px;background:var(--accent-glow);border-radius:8px;border-left:3px solid var(--primary);">
-      <div style="font-size:0.58rem;color:var(--text-secondary);text-transform:uppercase;font-weight:700;letter-spacing:0.4px;margin-bottom:5px;">🤝 Atividade Compartilhada</div>
-      <div style="font-weight:600;color:var(--text-primary);font-size:0.82rem;margin-bottom:5px;">Proprietário: ${owner?.name||'N/A'}</div>
-      ${t.participants&&t.participants.length>0?`<div style="display:flex;flex-wrap:wrap;gap:4px;">${t.participants.map(p=>{const pm=members.find(m=>m.id===p.memberId);return`<div style="padding:2px 7px;background:var(--bg);border-radius:20px;font-size:0.7rem;border:1px solid var(--border);">${pm?.name||'N/A'}</div>`;}).join('')}</div>`:''}</div>`;
+  // — Membros Compartilhados —
+  if (t.participants && t.participants.length > 0) {
+    const avatarColors = ['#f59e0b','#8b5cf6','#3b82f6','#10b981','#e05c5c','#e09a3a','#5b8dee','#4caf7d'];
+    const memberAvatars = t.participants.map((p, i) => {
+      const pm = members.find(m => m.id === p.memberId);
+      if (!pm) return '';
+      const initials = pm.name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+      const color = avatarColors[i % avatarColors.length];
+      return `<div style="display:flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;background:var(--bg);border-radius:20px;border:1px solid var(--border);">
+        <div style="width:22px;height:22px;border-radius:50%;background:${color}22;border:1.5px solid ${color};display:flex;align-items:center;justify-content:center;color:${color};font-weight:800;font-size:0.62rem;flex-shrink:0;">${initials}</div>
+        <span style="font-size:0.8rem;color:var(--text-primary);font-weight:500;">${pm.name}</span>
+      </div>`;
+    }).join('');
+    html += `<div style="${CELL}border-left:3px solid var(--primary);">
+      <div style="${LABEL}">🤝 Membros Compartilhados</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${memberAvatars}</div>
+    </div>`;
   }
 
   return html;
@@ -3681,70 +3932,47 @@ function renderPrazoList() {
 // ============================================================
 let pendingChecklist = [];
 let pendingTaskParticipants = [];
-let pendingTaskSubtasks = [];
 
-function toggleTaskMode() {
-  const mode = document.getElementById('taskMode').value;
-  const compartilhadaSection = document.getElementById('taskCompartilhadaSection');
-  compartilhadaSection.style.display = mode === 'compartilhada' ? '' : 'none';
-  if (mode === 'compartilhada') {
-    fillTaskOwnerSelect();
-    renderTaskParticipants();
-  } else {
-    pendingTaskParticipants = [];
-    pendingTaskSubtasks = [];
-    document.getElementById('taskParticipantsSection').innerHTML = '';
-    document.getElementById('taskSubtaskInput').value = '';
-    document.getElementById('taskSubtaskItems').innerHTML = '';
+function initTaskMembers() {
+  fillTaskMemberSelect();
+  renderTaskMembers();
+}
+
+function fillTaskMemberSelect() {
+  const select = document.getElementById('taskMemberSelect');
+  select.innerHTML = '<option value="">Selecionar membro...</option>' +
+    members.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+}
+
+function addTaskMember() {
+  const select = document.getElementById('taskMemberSelect');
+  const memberId = parseInt(select.value);
+  if (!memberId || pendingTaskParticipants.includes(memberId)) {
+    select.value = '';
+    return;
   }
+  pendingTaskParticipants.push(memberId);
+  select.value = '';
+  renderTaskMembers();
 }
 
-function fillTaskOwnerSelect() {
-  const eligible = members.filter(m => m.role === 'advogado' || m.role === 'socio');
-  document.getElementById('taskOwner').innerHTML = eligible.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
-}
-
-function renderTaskParticipants() {
-  const section = document.getElementById('taskParticipantsSection');
-  const assigneeId = parseInt(document.getElementById('taskAssignee').value);
-  const otherMembers = members.filter(m => m.id !== assigneeId);
-
-  section.innerHTML = otherMembers.map(m => `
-    <label style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:6px;cursor:pointer;font-size:.9rem">
-      <input type="checkbox" value="${m.id}" onchange="toggleTaskParticipant(${m.id})">
-      <span>${m.name}</span>
-    </label>
-  `).join('');
-}
-
-function toggleTaskParticipant(memberId) {
+function removeTaskMember(memberId) {
   const idx = pendingTaskParticipants.indexOf(memberId);
-  if (idx === -1) pendingTaskParticipants.push(memberId);
-  else pendingTaskParticipants.splice(idx, 1);
+  if (idx > -1) pendingTaskParticipants.splice(idx, 1);
+  renderTaskMembers();
 }
 
-function addTaskSubtask() {
-  const inp = document.getElementById('taskSubtaskInput');
-  const text = inp.value.trim();
-  if (!text) return;
-  pendingTaskSubtasks.push({ id: 'st' + Date.now() + Math.random(), title: text, done: false });
-  inp.value = '';
-  renderTaskSubtasks();
-}
-
-function removeTaskSubtask(idx) {
-  pendingTaskSubtasks.splice(idx, 1);
-  renderTaskSubtasks();
-}
-
-function renderTaskSubtasks() {
-  const ul = document.getElementById('taskSubtaskItems');
-  ul.innerHTML = pendingTaskSubtasks.map((st, idx) => `
-    <li style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:.9rem;border-bottom:1px solid var(--border)">
-      <span>${st.title}</span>
-      <button class="btn btn-ghost btn-sm" onclick="removeTaskSubtask(${idx})">✕</button>
-    </li>
-  `).join('');
+function renderTaskMembers() {
+  const section = document.getElementById('taskMembersListSection');
+  section.innerHTML = pendingTaskParticipants.map(memberId => {
+    const m = members.find(mb => mb.id === memberId);
+    return `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--accent);border-radius:6px;font-size:.85rem">
+        <span>${m?.name || 'Desconhecido'}</span>
+        <button class="btn btn-ghost btn-xs" style="padding:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center" onclick="removeTaskMember(${memberId})">✕</button>
+      </div>
+    `;
+  }).join('');
 }
 
 // Funções do modal de NOVA TAREFA (pendingChecklist) — nomes com prefixo para não conflitar com task detail
@@ -4099,6 +4327,18 @@ function deleteMunicipio(id) {
   const idx = municipios.findIndex(m => m.id === id);
   if (idx === -1) return;
   const removed = municipios.splice(idx, 1)[0];
+
+  // Salvar IMEDIATAMENTE para Supabase (não esperar undo timeout)
+  save(STORAGE_KEYS.municipios, municipios);
+  logAction({
+    action: 'municipio.delete',
+    category: 'municipios',
+    description: `Contrato "${removed.name.substring(0,50)}" deletado`,
+    entityId: id,
+    entityTitle: removed.name,
+    color: '#e05c5c'
+  });
+
   renderMunicipios();
   showUndoToast({
     label: 'Contrato removido',
@@ -4109,7 +4349,6 @@ function deleteMunicipio(id) {
       renderMunicipios();
     },
     onExpire: () => {
-      save(STORAGE_KEYS.municipios, municipios);
       addActivity(`Contrato "${removed.name}" removido`, '#e05c5c');
     }
   });
@@ -4737,6 +4976,29 @@ document.addEventListener('DOMContentLoaded', function() {
   applyTheme();
   if (typeof loadNotifAlerts === 'function') loadNotifAlerts();
   // checkDeadlineNotifications will be called by renderDashboard
+
+  // ─── Seed initial data if empty ───
+  const DATA_VERSION = 'vgai_v7';
+  if (!window.members || !window.members.length || localStorage.getItem('lex_data_ver') !== DATA_VERSION) {
+    window.members = [
+      { id: 1,  name: 'Gleydson',        role: 'socio',      area: 'Sócio-Gestor',    email: 'gleydson@vgai.com',          workload: 8, team: 1, teams: [1,2,3,4], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Gleydson' },
+      { id: 2,  name: 'Caio',            role: 'advogado',   area: 'Direito Público', email: 'caio@vgai.com',              workload: 5, team: 1, teams: [1], seniority: 'senior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Caio' },
+      { id: 3,  name: 'Izabelle',        role: 'advogado',   area: 'Direito Público', email: 'izabelle@vgai.com',          workload: 5, team: 1, teams: [1], seniority: 'junior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Izabelle' },
+      { id: 4,  name: 'Juli',            role: 'estagiario', inst: '',                email: 'juli@vgai.com',              workload: 3, team: 1, teams: [1], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Juli' },
+      { id: 5,  name: 'Yuri Pompeu',     role: 'advogado',   area: 'Direito Público', email: 'yuripompeu@vgai.com',        workload: 6, team: 2, teams: [2], seniority: 'senior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=YuriPompeu' },
+      { id: 6,  name: 'Nakano',          role: 'advogado',   area: 'Direito Público', email: 'nakano@vgai.com',            workload: 5, team: 2, teams: [2], seniority: 'junior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nakano' },
+      { id: 7,  name: 'Larissa',         role: 'estagiario', inst: '',                email: 'larissa@vgai.com',           workload: 3, team: 2, teams: [2], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Larissa' },
+      { id: 8,  name: 'Wagner',          role: 'socio',      area: 'Sócio-Gestor',    email: 'wagner@vgai.com',            workload: 8, team: 3, teams: [1,2,3,4], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Wagner' },
+      { id: 9,  name: 'Yuri Beleza',     role: 'advogado',   area: 'Direito Público', email: 'yuribeleza@vgai.com',        workload: 5, team: 3, teams: [3], seniority: 'senior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=YuriB' },
+      { id: 10, name: 'Nicole',          role: 'advogado',   area: 'Direito Público', email: 'nicole@vgai.com',            workload: 5, team: 3, teams: [3], seniority: 'junior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nicole' },
+      { id: 11, name: 'Felipe',          role: 'advogado',   area: 'Direito Público', email: 'felipe@vgai.com',            workload: 5, team: 4, teams: [4], seniority: 'senior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felipe' },
+      { id: 12, name: 'Erika',           role: 'advogado',   area: 'Direito Público', email: 'erika@vgai.com',             workload: 5, team: 4, teams: [4], seniority: 'junior', photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Erika' },
+      { id: 13, name: 'Leandro Andrade', role: 'estagiario', inst: '',                email: 'leandrosmg0629@gmail.com',   workload: 3, team: 4, teams: [4], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leandro' },
+      { id: 14, name: 'Roger Cunha',     role: 'estagiario', inst: '',                email: 'roger@vgai.com',             workload: 3, team: 3, teams: [3], photo: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Roger' },
+    ];
+    if (typeof window.save === 'function') window.save(window.STORAGE_KEYS.members, window.members);
+    localStorage.setItem('lex_data_ver', DATA_VERSION);
+  }
 });
 
 // Sync utility for console use
@@ -4748,3 +5010,6 @@ window.syncUsersToSupabase = function() {
     .then(() => console.log('Usuários sincronizados:', currentUsers.length))
     .catch(e => console.error('Erro ao sincronizar:', e));
 };
+
+// Expor _enviarEmailMissao ao window para que features/tasks.js possa chamar
+window._enviarEmailMissao = _enviarEmailMissao;

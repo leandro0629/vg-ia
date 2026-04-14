@@ -102,6 +102,20 @@ export function deletePrazo(id) {
   if (idx === -1) return;
 
   const removed = window.prazos.splice(idx, 1)[0];
+
+  // Salvar IMEDIATAMENTE para Supabase (não esperar undo timeout)
+  window.save(window.STORAGE_KEYS.prazos, window.prazos);
+
+  // 📋 AUDITORIA - Prazo deletado
+  window.logAction({
+    action: 'prazo.delete',
+    category: 'prazos',
+    description: `Prazo "${removed.title.substring(0,50)}" removido`,
+    entityId: id,
+    entityTitle: removed.title,
+    color: '#e05c5c'
+  });
+
   if (typeof window.renderPrazos === 'function') {
     window.renderPrazos();
   }
@@ -120,17 +134,6 @@ export function deletePrazo(id) {
       if (typeof window.DB?.deletePrazo === 'function') {
         window.DB.deletePrazo(id);
       }
-      window.save(window.STORAGE_KEYS.prazos, window.prazos);
-
-      // 📋 AUDITORIA - Prazo deletado
-      window.logAction({
-        action: 'prazo.delete',
-        category: 'prazos',
-        description: `Prazo "${removed.title.substring(0,50)}" removido`,
-        entityId: id,
-        entityTitle: removed.title,
-        color: '#e05c5c'
-      });
     }
   });
 }

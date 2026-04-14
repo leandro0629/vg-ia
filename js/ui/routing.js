@@ -54,11 +54,8 @@ export function getCurrentPage() {
 
 // ─── Sidebar ───
 export function toggleSidebarCollapse() {
-  const sidebar = document.querySelector('.sidebar');
-  if (sidebar) {
-    sidebar.classList.toggle('collapsed');
-    localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
-  }
+  // Desativado - sidebar sempre expandida
+  console.log('Sidebar collapse desativado - sidebar permanece sempre expandida');
 }
 
 export function toggleSidebarMobile() {
@@ -82,11 +79,10 @@ export function closeSidebar() {
 }
 
 export function initializeSidebar() {
-  // Restaurar estado do sidebar
-  const collapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+  // Restaurar estado do sidebar (padrão: expandido)
   const sidebar = document.querySelector('.sidebar');
-  if (sidebar && collapsed) {
-    sidebar.classList.add('collapsed');
+  if (sidebar) {
+    sidebar.classList.remove('collapsed'); // Sempre começa expandido
   }
 
   // Event listeners dos itens do sidebar

@@ -1,0 +1,54 @@
+{
+  "name": "EMAIL-KAUSAS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-notificacao-nova-tarefa",
+        "options": {}
+      },
+      "id": "883ebcea-f3fb-495b-82df-9f12c42f1608",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [944, 16],
+      "webhookId": "452c5dba-880c-4c7d-8636-86ebaaa6cdd6"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.destinatario_email || 'leandrosmg0629@gmail.com' }}",
+        "subject": "={{ $json.body.tipo_notificacao === 'criada' ? '📋 Nova Missão: ' : $json.body.tipo_notificacao === 'atividade_criada' ? '🤝 Nova Atividade Compartilhada: ' : $json.body.tipo_notificacao === 'status_mudou' ? '🔄 Status: ' : $json.body.tipo_notificacao === 'prazo_3_dias' ? '⏰ Vence em 3 dias: ' : $json.body.tipo_notificacao === 'prazo_2_dias' ? '⏰ Vence em 2 dias: ' : '🚨 Vence Amanhã: ' }}{{ $json.body.titulo }}",
+        "message": "=<!DOCTYPE html><html lang=\"pt-BR\"><head><meta charset=\"UTF-8\"><style>* { margin:0; padding:0; box-sizing:border-box; } body { background:#09090b; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; } .wrap { max-width:580px; margin:32px auto; background:#18181b; border-radius:16px; overflow:hidden; border:1px solid #27272a; } .hero { background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%); padding:36px 32px; } .hero-ac { background:linear-gradient(135deg,#8b5cf6 0%,#6d28d9 100%); padding:36px 32px; } .badge { display:inline-block; background:rgba(0,0,0,.2); color:#000; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:4px 12px; border-radius:20px; margin-bottom:14px; } .hero h1, .hero-ac h1 { font-size:24px; font-weight:800; color:#000; line-height:1.2; margin-bottom:6px; } .hero p, .hero-ac p { color:rgba(0,0,0,.6); font-size:13px; } .body { padding:28px 32px; } .mission-title { font-size:20px; font-weight:700; color:#fafafa; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #27272a; } .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; } .grid-1 { display:grid; grid-template-columns:1fr; gap:12px; margin-bottom:20px; } .field { background:#09090b; border-radius:10px; padding:14px; } .label { font-size:10px; font-weight:700; color:#52525b; text-transform:uppercase; letter-spacing:.1em; margin-bottom:6px; } .value { font-size:14px; color:#e4e4e7; font-weight:500; } .pill { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; background:rgba(245,158,11,.15); color:#f59e0b; } .pill-ac { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; background:rgba(139,92,246,.15); color:#8b5cf6; } .cta { text-align:center; margin-bottom:4px; } .btn { display:inline-block; background:linear-gradient(135deg,#f59e0b,#d97706); color:#000 !important; font-weight:700; font-size:14px; padding:14px 36px; border-radius:10px; text-decoration:none; } .btn-ac { display:inline-block; background:linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff !important; font-weight:700; font-size:14px; padding:14px 36px; border-radius:10px; text-decoration:none; } .footer { padding:20px 32px; text-align:center; border-top:1px solid #27272a; } .logo { font-size:13px; font-weight:700; color:#f59e0b; margin-bottom:6px; } .footer p { font-size:11px; color:#52525b; line-height:1.8; }</style></head><body><div class=\"wrap\">{{ $json.body.tipo_notificacao === 'atividade_criada' ? '<div class=\"hero-ac\">' : '<div class=\"hero\">' }}<div class=\"badge\">KAUSAS · Notificação</div><h1>{{ $json.body.tipo_notificacao === 'criada' ? '📋 Nova Missão Criada' : $json.body.tipo_notificacao === 'atividade_criada' ? '🤝 Nova Atividade Compartilhada' : $json.body.tipo_notificacao === 'status_mudou' ? '🔄 Status Atualizado' : $json.body.tipo_notificacao === 'prazo_3_dias' ? '⏰ Vence em 3 Dias' : $json.body.tipo_notificacao === 'prazo_2_dias' ? '⏰ Vence em 2 Dias' : '🚨 Vence Amanhã!' }}</h1><p>{{ $json.body.tipo_notificacao === 'atividade_criada' ? 'Você foi adicionado a uma atividade compartilhada' : $json.body.tipo_notificacao === 'criada' ? 'Uma nova missão foi criada no sistema' : $json.body.tipo_notificacao === 'status_mudou' ? 'O status foi atualizado' : 'O prazo está se aproximando — ação necessária' }}</p></div><div class=\"body\"><div class=\"mission-title\">{{ $json.body.titulo }}</div>{{ $json.body.tipo_notificacao === 'atividade_criada' ? '<div class=\"grid\"><div class=\"field\"><div class=\"label\">Responsável</div><div class=\"value\">' + $json.body.responsavel + '</div></div><div class=\"field\"><div class=\"label\">Delegado por</div><div class=\"value\">' + $json.body.delegado_por + '</div></div><div class=\"field\"><div class=\"label\">Prioridade</div><div class=\"value\"><span class=\"pill-ac\">' + $json.body.prioridade + '</span></div></div><div class=\"field\"><div class=\"label\">Vencimento</div><div class=\"value\">' + $json.body.data_vencimento + '</div></div></div>' + ($json.body.processo ? '<div class=\"grid-1\"><div class=\"field\"><div class=\"label\">Processo</div><div class=\"value\">' + $json.body.processo + '</div></div></div>' : '') + ($json.body.descricao ? '<div class=\"grid-1\"><div class=\"field\"><div class=\"label\">Descrição</div><div class=\"value\">' + $json.body.descricao + '</div></div></div>' : '') + '<div class=\"cta\"><a href=\"' + $json.body.link_tarefa + '\" class=\"btn-ac\">Ver Atividade no KAUSAS →</a></div>' : '<div class=\"grid\"><div class=\"field\"><div class=\"label\">Responsável</div><div class=\"value\">' + $json.body.responsavel + '</div></div><div class=\"field\"><div class=\"label\">Status</div><div class=\"value\"><span class=\"pill\">' + $json.body.status + '</span></div></div><div class=\"field\"><div class=\"label\">Prioridade</div><div class=\"value\"><span class=\"pill\">' + $json.body.prioridade + '</span></div></div><div class=\"field\"><div class=\"label\">Vencimento</div><div class=\"value\">' + $json.body.data_vencimento + '</div></div></div><div class=\"cta\"><a href=\"' + $json.body.link_tarefa + '\" class=\"btn\">Ver Missão no KAUSAS →</a></div>' }}</div><div class=\"footer\"><div class=\"logo\">KAUSAS · Gestão Jurídica</div><p>Notificação automática do Sistema KAUSAS<br>Não responda este email · © 2026 Todos os direitos reservados</p></div></div></body></html>",
+        "options": {}
+      },
+      "id": "8b0648cc-6e93-4175-aaff-5160d5141e73",
+      "name": "Enviar Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1168, 16],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1N4wkcjPlhiQ4y6w",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Enviar Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c3d6d447-832b-470a-a950-116a9272c637",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8f24f56537a437d426a09cf93a09e2bc142cc72e31c96fa1183e5aebe9e8786a"
+  },
+  "id": "EvBsCo4vcKOUdmon",
+  "tags": []
+}

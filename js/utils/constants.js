@@ -15,6 +15,7 @@ export const STORAGE_KEYS = {
   municipios: 'lex_municipios',
   users: 'lex_users',
   dailyChecklist: 'lex_daily_checklist',
+  processos: 'lex_processos',
 };
 
 // Pages
@@ -33,7 +34,7 @@ export const ALL_PAGES = [
 // Permissions Matrix
 export const PERMISSIONS = {
   admin: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
     canAddMembers: true,
     canDeleteMembers: true,
     canDeleteTasks: true,
@@ -45,7 +46,7 @@ export const PERMISSIONS = {
     pillClass: 'role-admin',
   },
   socio: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
     canAddMembers: true,
     canDeleteMembers: true,
     canDeleteTasks: true,
@@ -57,7 +58,7 @@ export const PERMISSIONS = {
     pillClass: 'role-socio',
   },
   advogado: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'relatorios', 'calendario', 'configuracoes'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'relatorios', 'calendario', 'configuracoes'],
     canAddMembers: false,
     canDeleteMembers: false,
     canDeleteTasks: true,
@@ -69,7 +70,7 @@ export const PERMISSIONS = {
     pillClass: 'role-advogado',
   },
   estagiario: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'relatorios', 'calendario', 'configuracoes'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'relatorios', 'calendario', 'configuracoes'],
     canAddMembers: false,
     canDeleteMembers: false,
     canDeleteTasks: false,

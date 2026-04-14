@@ -23,7 +23,21 @@ export function load(key) {
 }
 
 export function save(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
+  try {
+    const now = new Date().toISOString();
+    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(key + '_updated_at', now);
+    console.log(`[storage.save] Salvo em localStorage: ${key}`);
+  } catch (e) {
+    console.error(`[storage.save] Erro ao salvar em localStorage: ${key}`, e);
+  }
+  // Sincronizar com Supabase se disponível
+  if (typeof window._sbSave === 'function') {
+    console.log(`[storage.save] Enviando para Supabase: ${key}`);
+    window._sbSave(key, data);
+  } else {
+    console.log(`[storage.save] ⚠️ _sbSave não disponível`);
+  }
 }
 
 // ─── Attachments (localStorage) ───
@@ -82,6 +96,7 @@ export function initializeStorage() {
     activity: load(STORAGE_KEYS.activity),
     sharedAC: load(STORAGE_KEYS.sharedAC),
     municipios: load(STORAGE_KEYS.municipios),
+    processos: load(STORAGE_KEYS.processos),
   };
   return state;
 }

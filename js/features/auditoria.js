@@ -1,218 +1,240 @@
 // ============================================================
-// AUDITORIA FEATURE - INTERFACE VISUAL
+// AUDITORIA - AUDIT PAGE UI MODULE
 // ============================================================
 
+import { getAuditLog, getAuditStats, clearAuditLog, downloadAuditLog, formatAuditEntry } from '../core/audit.js';
+
+// ─── State ───
 let _currentFilter = 'todas';
 let _currentSearch = '';
 let _offset = 0;
-const _pageSize = 25;
+const ITEMS_PER_PAGE = 25;
 
-/**
- * Renderiza a aba de auditoria (chamado por renderPage)
- */
+// ─── Main Render ───
 export function renderAuditoria() {
+  console.log('🕵️ Renderizando auditoria...');
+
+  // Reset pagination
   _offset = 0;
-  _currentFilter = 'todas';
-  _currentSearch = '';
 
-  // Limpar estado dos filtros
-  document.querySelectorAll('#auditFilters .filter-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelector('#auditFilters .filter-btn:first-child')?.classList.add('active');
+  // Render stats
+  _renderAuditStats();
 
-  const searchInput = document.getElementById('auditSearch');
-  if (searchInput) searchInput.value = '';
+  // Render table
+  _renderAuditTable();
 
-  // Mostrar/esconder botão "Limpar" apenas para admin
+  // Show/hide clear button (only admin can see)
   const btnClear = document.getElementById('btnClearAudit');
   if (btnClear) {
-    btnClear.style.display = window.currentUser?.profile === 'admin' ? '' : 'none';
+    if (window.currentUser?.profile === 'admin') {
+      btnClear.style.display = 'inline-block';
+    } else {
+      btnClear.style.display = 'none';
+    }
   }
-
-  _updateAuditView();
 }
 
-/**
- * Filtra por categoria
- */
+// ─── Render Stats Cards ───
+function _renderAuditStats() {
+  const statsContainer = document.getElementById('auditStats');
+  if (!statsContainer) return;
+
+  const logs = getAuditLog();
+  const stats = getAuditStats();
+
+  // Count actions today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayCount = logs.filter(l => new Date(l.timestamp) >= today).length;
+
+  // Count unique users
+  const uniqueUsers = new Set(logs.map(l => l.userId)).size;
+
+  // Last action time
+  const lastAction = stats.lastAction ? new Date(stats.lastAction.timestamp).toLocaleString('pt-BR') : 'Nenhuma';
+
+  const statsHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total de Ações</div>
+      <div class="stat-value">${stats.totalActions}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Hoje</div>
+      <div class="stat-value">${todayCount}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Usuários Ativos</div>
+      <div class="stat-value">${uniqueUsers}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Última Ação</div>
+      <div class="stat-value-small">${lastAction}</div>
+    </div>
+  `;
+
+  statsContainer.innerHTML = statsHTML;
+}
+
+// ─── Render Audit Table ───
+function _renderAuditTable() {
+  const tbody = document.getElementById('auditBody');
+  const emptyMsg = document.getElementById('auditEmpty');
+  const loadMoreBtn = document.getElementById('auditLoadMore');
+
+  if (!tbody) return;
+
+  // Get filtered logs
+  let logs = getAuditLog();
+
+  // Apply category filter
+  if (_currentFilter !== 'todas') {
+    logs = logs.filter(l => l.category === _currentFilter);
+  }
+
+  // Apply search filter
+  if (_currentSearch) {
+    const q = _currentSearch.toLowerCase();
+    logs = logs.filter(l =>
+      l.description?.toLowerCase().includes(q) ||
+      l.entityTitle?.toLowerCase().includes(q) ||
+      l.userName?.toLowerCase().includes(q)
+    );
+  }
+
+  // Show/hide empty message
+  if (logs.length === 0) {
+    tbody.innerHTML = '';
+    if (emptyMsg) emptyMsg.style.display = 'block';
+    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+    return;
+  }
+
+  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  // Paginate
+  const paginatedLogs = logs.slice(0, _offset + ITEMS_PER_PAGE);
+  tbody.innerHTML = _renderAuditRows(paginatedLogs);
+
+  // Show/hide load more button
+  if (loadMoreBtn) {
+    if (paginatedLogs.length < logs.length) {
+      loadMoreBtn.style.display = 'block';
+    } else {
+      loadMoreBtn.style.display = 'none';
+    }
+  }
+}
+
+// ─── Render Audit Rows ───
+function _renderAuditRows(logs) {
+  return logs.map(entry => {
+    const formatted = formatAuditEntry(entry);
+    const categoryEmoji = getCategoryEmoji(entry.category);
+
+    return `
+      <tr style="border-bottom: 1px solid var(--border-color)">
+        <td style="padding: 12px 8px; font-size: 0.9rem; white-space: nowrap">
+          <div>${formatted.displayDate}</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem">${formatted.displayTime}</div>
+        </td>
+        <td style="padding: 12px 8px; font-size: 0.9rem">
+          <div style="font-weight: 500">${entry.userName}</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem">${getRoleLabel(entry.userRole)}</div>
+        </td>
+        <td style="padding: 12px 8px; font-size: 0.9rem">
+          <span style="
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: ${entry.color}22;
+            color: ${entry.color};
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+          ">
+            ${categoryEmoji} ${formatted.categoryLabel}
+          </span>
+        </td>
+        <td style="padding: 12px 8px; font-size: 0.9rem">
+          <span style="color: var(--text-secondary)">${formatted.actionLabel}</span>
+        </td>
+        <td style="padding: 12px 8px; font-size: 0.9rem">
+          ${entry.description}
+          ${entry.entityTitle ? `<br><span style="color: var(--text-secondary)">• ${entry.entityTitle}</span>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ─── Filter Audit ───
 export function filterAudit(category, btn) {
   _currentFilter = category;
   _offset = 0;
 
-  // Atualizar estado dos botões
-  document.querySelectorAll('#auditFilters .filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  // Update active button
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('active');
+  });
+  if (btn) {
+    btn.classList.add('active');
+  }
 
-  _updateAuditView();
+  // Re-render table
+  _renderAuditTable();
 }
 
-/**
- * Busca por texto
- */
+// ─── Search Audit ───
 export function searchAudit(query) {
-  _currentSearch = query.toLowerCase();
+  _currentSearch = query;
   _offset = 0;
-  _updateAuditView();
+
+  // Re-render table
+  _renderAuditTable();
 }
 
-/**
- * Carregar mais (paginação)
- */
+// ─── Load More ───
 export function loadMoreAudit() {
-  _offset += _pageSize;
-  _updateAuditView();
+  _offset += ITEMS_PER_PAGE;
+  _renderAuditTable();
 }
 
-/**
- * Confirmar e limpar log (apenas admin)
- */
+// ─── Confirm Clear Audit ───
 export function confirmClearAudit() {
   if (window.currentUser?.profile !== 'admin') {
-    alert('Apenas admin pode limpar o log');
+    window.showNotification?.('Apenas admin pode limpar auditoria', 'error');
     return;
   }
 
-  if (!confirm('⚠️ Você está prestes a limpar TODO o histórico de auditoria. Isso não pode ser desfeito.\n\nTem certeza?')) {
-    return;
-  }
+  const confirmed = confirm('⚠️ Tem certeza que deseja limpar todo o log de auditoria? Esta ação não pode ser desfeita.');
 
-  if (typeof window.clearAuditLog === 'function') {
-    window.clearAuditLog();
-    alert('✅ Log de auditoria limpo');
-    _updateAuditView();
+  if (confirmed) {
+    clearAuditLog();
+    renderAuditoria();
+    window.showNotification?.('Log de auditoria limpo', 'success');
   }
 }
 
-// ─── Internal Functions ───
-
-/**
- * Atualiza a view inteira (stats + tabela)
- */
-function _updateAuditView() {
-  const allLogs = window.getAuditLog ? window.getAuditLog() : [];
-
-  // Aplicar filtros
-  let filtered = allLogs;
-
-  // Filtro por categoria
-  if (_currentFilter !== 'todas') {
-    filtered = filtered.filter(log => log.category === _currentFilter);
-  }
-
-  // Filtro por busca
-  if (_currentSearch) {
-    filtered = filtered.filter(log => {
-      const query = _currentSearch;
-      return (
-        log.userName?.toLowerCase().includes(query) ||
-        log.description?.toLowerCase().includes(query) ||
-        log.entityTitle?.toLowerCase().includes(query) ||
-        log.action?.toLowerCase().includes(query)
-      );
-    });
-  }
-
-  // Atualizar stats
-  _renderAuditStats(allLogs);
-
-  // Atualizar tabela com paginação
-  const paginated = filtered.slice(_offset, _offset + _pageSize);
-  _renderAuditTable(paginated, filtered.length);
+// ─── Helpers ───
+function getCategoryEmoji(category) {
+  const map = {
+    tasks: '📋',
+    prazos: '📅',
+    members: '👤',
+    municipios: '🏢',
+    auth: '🔐',
+    system: '⚙️',
+  };
+  return map[category] || '●';
 }
 
-/**
- * Renderiza os 4 cards de estatísticas
- */
-function _renderAuditStats(allLogs) {
-  const stats = window.getAuditStats ? window.getAuditStats() : {};
-
-  // Logs de hoje
-  const today = new Date().toISOString().split('T')[0];
-  const todayCount = allLogs.filter(log => log.timestamp.startsWith(today)).length;
-
-  // Usuários únicos
-  const uniqueUsers = new Set(allLogs.map(log => log.userId)).size;
-
-  const statsHtml = `
-    <div class="card" style="padding:16px">
-      <div style="font-size:.8rem;color:var(--text-secondary);margin-bottom:8px">📊 Total de Ações</div>
-      <div style="font-size:1.8rem;font-weight:600;color:var(--text-primary)">${stats.totalActions || 0}</div>
-    </div>
-    <div class="card" style="padding:16px">
-      <div style="font-size:.8rem;color:var(--text-secondary);margin-bottom:8px">📅 Hoje</div>
-      <div style="font-size:1.8rem;font-weight:600;color:var(--text-primary)">${todayCount}</div>
-    </div>
-    <div class="card" style="padding:16px">
-      <div style="font-size:.8rem;color:var(--text-secondary);margin-bottom:8px">👥 Usuários Ativos</div>
-      <div style="font-size:1.8rem;font-weight:600;color:var(--text-primary)">${uniqueUsers}</div>
-    </div>
-    <div class="card" style="padding:16px">
-      <div style="font-size:.8rem;color:var(--text-secondary);margin-bottom:8px">⏱️ Última Ação</div>
-      <div style="font-size:.9rem;font-weight:500;color:var(--text-primary)">${
-        stats.lastAction ? _formatTime(stats.lastAction.timestamp) : '—'
-      }</div>
-    </div>
-  `;
-
-  const statsEl = document.getElementById('auditStats');
-  if (statsEl) statsEl.innerHTML = statsHtml;
-}
-
-/**
- * Renderiza a tabela com logs
- */
-function _renderAuditTable(logs, totalFiltered) {
-  const tbody = document.getElementById('auditBody');
-  const emptyEl = document.getElementById('auditEmpty');
-  const loadMoreEl = document.getElementById('auditLoadMore');
-
-  if (!tbody) return;
-
-  if (logs.length === 0) {
-    tbody.innerHTML = '';
-    if (emptyEl) emptyEl.style.display = 'block';
-    if (loadMoreEl) loadMoreEl.style.display = 'none';
-    return;
-  }
-
-  if (emptyEl) emptyEl.style.display = 'none';
-
-  // Renderizar rows
-  const html = logs
-    .map(log => {
-      const formatted = window.formatAuditEntry ? window.formatAuditEntry(log) : log;
-      const dotColor = log.color || '#5b8dee';
-
-      return `
-        <tr style="border-bottom:1px solid var(--border);hover-background:var(--bg-secondary)">
-          <td style="font-size:.85rem">${formatted.displayDateTime || '—'}</td>
-          <td>
-            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dotColor};margin-right:6px"></span>
-            ${log.userName || '—'}
-          </td>
-          <td>${formatted.categoryLabel || log.category || '—'}</td>
-          <td>${formatted.actionLabel || log.action || '—'}</td>
-          <td style="max-width:250px;word-break:break-word">${log.description || '—'}</td>
-        </tr>
-      `;
-    })
-    .join('');
-
-  tbody.innerHTML = html;
-
-  // Mostrar botão "Carregar mais" se há mais itens
-  if (loadMoreEl) {
-    const hasMore = _offset + _pageSize < totalFiltered;
-    loadMoreEl.style.display = hasMore ? 'block' : 'none';
-  }
-}
-
-/**
- * Formata timestamp para exibição legível
- */
-function _formatTime(isoString) {
-  if (!isoString) return '—';
-  const date = new Date(isoString);
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
+function getRoleLabel(role) {
+  const map = {
+    admin: 'Admin',
+    socio: 'Sócio-Gestor',
+    advogado: 'Advogado(a)',
+    estagiario: 'Estagiário(a)',
+  };
+  return map[role] || role;
 }

@@ -80,6 +80,20 @@ export function deleteMunicipio(id) {
   if (idx === -1) return;
 
   const removed = window.municipios.splice(idx, 1)[0];
+
+  // Salvar IMEDIATAMENTE para Supabase (não esperar undo timeout)
+  window.save(window.STORAGE_KEYS.municipios, window.municipios);
+
+  // 📋 AUDITORIA - Município deletado
+  window.logAction({
+    action: 'municipio.delete',
+    category: 'municipios',
+    description: `Contrato "${removed.name}" removido`,
+    entityId: id,
+    entityTitle: removed.name,
+    color: '#e05c5c'
+  });
+
   if (typeof window.renderMunicipios === 'function') {
     window.renderMunicipios();
   }
@@ -95,17 +109,7 @@ export function deleteMunicipio(id) {
       }
     },
     onExpire: () => {
-      window.save(window.STORAGE_KEYS.municipios, window.municipios);
-
-      // 📋 AUDITORIA - Município deletado
-      window.logAction({
-        action: 'municipio.delete',
-        category: 'municipios',
-        description: `Contrato "${removed.name}" removido`,
-        entityId: id,
-        entityTitle: removed.name,
-        color: '#e05c5c'
-      });
+      // Tudo já foi salvo imediatamente
     }
   });
 }
