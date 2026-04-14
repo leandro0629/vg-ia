@@ -24,6 +24,8 @@ import {
   requestPasswordReset,
   getPendingResetRequests,
   adminResetPassword,
+  signupOffice,
+  VG_OFFICE_ID,
 } from './core/auth.js';
 
 // ─── UI Modules ───
@@ -153,6 +155,70 @@ window.changePassword = changePassword;
 window.requestPasswordReset = requestPasswordReset;
 window.getPendingResetRequests = getPendingResetRequests;
 window.adminResetPassword = adminResetPassword;
+window.signupOffice = signupOffice;
+window.VG_OFFICE_ID = VG_OFFICE_ID;
+
+// ─── Navegação entre Login e Signup ───
+window.showSignup = function() {
+  document.getElementById('loginScreen')?.classList.add('hidden');
+  document.getElementById('signupScreen')?.classList.remove('hidden');
+  document.getElementById('signupError').style.display = 'none';
+  ['signupOfficeName','signupCNPJ','signupEmail','signupPassword','signupPasswordConfirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+};
+
+window.showLogin = function() {
+  document.getElementById('signupScreen')?.classList.add('hidden');
+  document.getElementById('loginScreen')?.classList.remove('hidden');
+};
+
+// ─── Signup Handler ───
+window.doSignup = async function() {
+  const officeName = document.getElementById('signupOfficeName')?.value.trim() || '';
+  const cnpj       = document.getElementById('signupCNPJ')?.value.trim() || '';
+  const email      = document.getElementById('signupEmail')?.value.trim() || '';
+  const password   = document.getElementById('signupPassword')?.value || '';
+  const confirm    = document.getElementById('signupPasswordConfirm')?.value || '';
+  const errorEl    = document.getElementById('signupError');
+  const btn        = document.getElementById('signupBtn');
+  const btnText    = document.getElementById('signupBtnText');
+
+  const showError = (msg) => {
+    errorEl.textContent = msg;
+    errorEl.style.display = 'block';
+  };
+
+  if (!officeName) return showError('Informe o nome do escritório');
+  if (!email)      return showError('Informe o email do administrador');
+  if (!password)   return showError('Informe uma senha');
+  if (password !== confirm) return showError('As senhas não coincidem');
+  if (password.length < 6) return showError('Senha deve ter no mínimo 6 caracteres');
+
+  errorEl.style.display = 'none';
+  btn.disabled = true;
+  btnText.textContent = 'Criando...';
+
+  if (!window._sb) await initSupabase();
+
+  const result = await signupOffice({ officeName, cnpj, adminEmail: email, adminPassword: password });
+
+  btn.disabled = false;
+  btnText.textContent = 'Criar Escritório';
+
+  if (result.error) return showError(result.error);
+
+  // Login bem-sucedido após signup
+  window.currentUser = result.user;
+  setCurrentUser(result.user);
+  document.getElementById('signupScreen')?.classList.add('hidden');
+  window._setupRealtime?.();
+  startInactivityWatch();
+  navigate('dashboard');
+  if (typeof window.updateUIForUser === 'function') window.updateUIForUser(result.user);
+  window.showNotification?.('Escritório criado com sucesso! Bem-vindo ao Kausas.', 'success');
+};
 
 // ─── Funções do modal "Esqueci minha senha" ───
 window.openForgotPassword = function() {

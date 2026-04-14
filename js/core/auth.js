@@ -1,8 +1,11 @@
 // ============================================================
-// AUTHENTICATION MODULE
+// AUTHENTICATION MODULE — Multi-Tenant SaaS
 // ============================================================
 
 import { AUTH_KEY, USERS_KEY, PERMISSIONS, SESSION_TIMEOUT_MS, SESSION_WARNING_MS } from '../utils/constants.js';
+
+// ID fixo do escritório VG durante a transição
+export const VG_OFFICE_ID = 'vg-advocacia';
 
 // Global state
 export let currentUser = null;
@@ -14,13 +17,12 @@ let _inactivityTimer = null;
 let _warningTimer = null;
 let _warningToastEl = null;
 
-// ─── Feature #6: BroadcastChannel — Logout em todas as abas ───
+// ─── BroadcastChannel — Logout em todas as abas ───
 const _authChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kausas-auth') : null;
 
 if (_authChannel) {
   _authChannel.onmessage = (e) => {
     if (e.data === 'logout') {
-      // Outra aba fez logout — limpar sessão e mostrar tela de login
       clearSession();
       currentUser = null;
       const loginScreen = document.getElementById('loginScreen');
@@ -46,17 +48,15 @@ export async function hashPassword(password) {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// ─── Feature #4: Session Management com "Lembrar de mim" ───
+// ─── Session Management ───
 export function getSession() {
   try {
-    // Verifica sessionStorage primeiro (aba atual), depois localStorage (lembrar de mim)
     const fromSession = sessionStorage.getItem(AUTH_KEY);
     if (fromSession) return JSON.parse(fromSession);
 
     const fromLocal = localStorage.getItem(AUTH_KEY);
     if (fromLocal) {
       const parsed = JSON.parse(fromLocal);
-      // Verificar se não expirou (7 dias)
       if (parsed._rememberExpiry && Date.now() > parsed._rememberExpiry) {
         localStorage.removeItem(AUTH_KEY);
         return null;
@@ -71,7 +71,6 @@ export function getSession() {
 
 export function setSession(user, rememberMe = false) {
   if (rememberMe) {
-    // Salva em localStorage com expiração de 7 dias
     const userWithExpiry = { ...user, _rememberExpiry: Date.now() + 7 * 24 * 60 * 60 * 1000 };
     localStorage.setItem(AUTH_KEY, JSON.stringify(userWithExpiry));
   } else {
@@ -84,7 +83,7 @@ export function clearSession() {
   localStorage.removeItem(AUTH_KEY);
 }
 
-// ─── Load/Save Users ───
+// ─── Load/Save Users (legado — VG durante transição) ───
 export function loadUsers() {
   try {
     return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
@@ -94,11 +93,10 @@ export function loadUsers() {
 }
 
 export function saveUsers(users) {
-  // Nunca sincronizar usuários com Supabase (senhas não devem sair do device)
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
-// ─── Initialize Users ───
+// ─── Initialize Users (mantém VG funcionando durante transição) ───
 export async function initializeUsers() {
   let users = loadUsers();
 
@@ -111,6 +109,7 @@ export async function initializeUsers() {
     profile: 'admin',
     name: 'Admin Geral',
     memberId: null,
+    officeId: VG_OFFICE_ID,
     photo: 'https://api.dicebear.com/7.x/initials/svg?seed=AG&backgroundColor=000000&textColor=ffffff',
   };
 
@@ -127,15 +126,15 @@ export async function initializeUsers() {
   }
 
   const memberUsersPlain = [
-    { id: 'gleydson',   email: 'gleydson@vgai.com',        password: 'gleydson123',   profile: 'socio',      name: 'Gleydson',        memberId: 1 },
-    { id: 'caio',       email: 'caio@vgai.com',            password: 'caio123',       profile: 'advogado',   name: 'Caio',            memberId: 2 },
-    { id: 'izabelle',   email: 'izabelle@vgai.com',        password: 'izabelle123',   profile: 'advogado',   name: 'Izabelle',        memberId: 3 },
-    { id: 'juli',       email: 'juli@vgai.com',            password: 'juli123',       profile: 'estagiario', name: 'Juli',            memberId: 4 },
-    { id: 'yuripompeu', email: 'yuripompeu@vgai.com',      password: 'yuripompeu123', profile: 'advogado',   name: 'Yuri Pompeu',     memberId: 5 },
-    { id: 'nakano',     email: 'nakano@vgai.com',          password: 'nakano123',     profile: 'advogado',   name: 'Nakano',          memberId: 6 },
-    { id: 'larissa',    email: 'larissa@vgai.com',         password: 'larissa123',    profile: 'estagiario', name: 'Larissa',         memberId: 7 },
-    { id: 'wagner',     email: 'wagner@vgai.com',          password: 'wagner123',     profile: 'socio',      name: 'Wagner',          memberId: 8 },
-    { id: 'yuribeleza', email: 'yuribeleza@vgai.com',      password: 'yuribeleza123', profile: 'advogado',   name: 'Yuri Beleza',     memberId: 9 },
+    { id: 'gleydson',   email: 'gleydson@vgai.com',        password: 'gleydson123',   profile: 'socio',      name: 'Gleydson',        memberId: 1  },
+    { id: 'caio',       email: 'caio@vgai.com',            password: 'caio123',       profile: 'advogado',   name: 'Caio',            memberId: 2  },
+    { id: 'izabelle',   email: 'izabelle@vgai.com',        password: 'izabelle123',   profile: 'advogado',   name: 'Izabelle',        memberId: 3  },
+    { id: 'juli',       email: 'juli@vgai.com',            password: 'juli123',       profile: 'estagiario', name: 'Juli',            memberId: 4  },
+    { id: 'yuripompeu', email: 'yuripompeu@vgai.com',      password: 'yuripompeu123', profile: 'advogado',   name: 'Yuri Pompeu',     memberId: 5  },
+    { id: 'nakano',     email: 'nakano@vgai.com',          password: 'nakano123',     profile: 'advogado',   name: 'Nakano',          memberId: 6  },
+    { id: 'larissa',    email: 'larissa@vgai.com',         password: 'larissa123',    profile: 'estagiario', name: 'Larissa',         memberId: 7  },
+    { id: 'wagner',     email: 'wagner@vgai.com',          password: 'wagner123',     profile: 'socio',      name: 'Wagner',          memberId: 8  },
+    { id: 'yuribeleza', email: 'yuribeleza@vgai.com',      password: 'yuribeleza123', profile: 'advogado',   name: 'Yuri Beleza',     memberId: 9  },
     { id: 'nicole',     email: 'nicole@vgai.com',          password: 'nicole123',     profile: 'advogado',   name: 'Nicole',          memberId: 10 },
     { id: 'felipe',     email: 'felipe@vgai.com',          password: 'felipe123',     profile: 'advogado',   name: 'Felipe',          memberId: 11 },
     { id: 'erika',      email: 'erika@vgai.com',           password: 'erika123',      profile: 'advogado',   name: 'Erika',           memberId: 12 },
@@ -145,7 +144,7 @@ export async function initializeUsers() {
 
   for (const memberUser of memberUsersPlain) {
     const hashed = await hashPassword(memberUser.password);
-    const hashedUser = { ...memberUser, password: hashed, _hashed: true };
+    const hashedUser = { ...memberUser, password: hashed, _hashed: true, officeId: VG_OFFICE_ID };
     const idx = users.findIndex((u) => u.id === memberUser.id);
     if (idx === -1) {
       users.push(hashedUser);
@@ -159,7 +158,6 @@ export async function initializeUsers() {
     }
   }
 
-  // Remove duplicates
   const _emailMap = new Map();
   users.forEach((u) => {
     const existing = _emailMap.get(u.email);
@@ -172,7 +170,7 @@ export async function initializeUsers() {
   return users;
 }
 
-// ─── Password Overrides (sincroniza senhas alteradas via Supabase) ───
+// ─── Password Overrides ───
 const _OVERRIDES_KEY = 'lex_password_overrides';
 
 function _loadOverrides() {
@@ -185,26 +183,57 @@ function _saveOverride(userId, hash) {
   if (idx === -1) overrides.push({ userId, hash });
   else overrides[idx].hash = hash;
   localStorage.setItem(_OVERRIDES_KEY, JSON.stringify(overrides));
-  // Sincronizar com Supabase
   if (typeof window._sbSave === 'function') window._sbSave(_OVERRIDES_KEY, overrides);
 }
 
-// ─── Quick Login ───
+// ─── Quick Login — Multi-Tenant ───
 export async function quickLogin(email, pass, rememberMe = false) {
-  const users = loadUsers();
   const hashed = await hashPassword(pass);
+  const emailLower = email.toLowerCase().trim();
 
-  const user = users.find((u) => u.email === email);
+  // 1. Tentar login via Supabase (tabela office_users — novos escritórios)
+  if (window._sb) {
+    try {
+      const { data: sbUser, error } = await window._sb
+        .from('office_users')
+        .select('*')
+        .eq('email', emailLower)
+        .single();
+
+      if (!error && sbUser && sbUser.password_hash !== 'pending_sync') {
+        if (sbUser.password_hash !== hashed) return { error: 'Email ou senha incorretos' };
+
+        const sessionUser = {
+          id: sbUser.id,
+          email: sbUser.email,
+          profile: sbUser.role,
+          name: sbUser.name,
+          memberId: sbUser.member_id,
+          photo: sbUser.photo || null,
+          officeId: sbUser.office_id,
+        };
+
+        setSession(sessionUser, rememberMe);
+        currentUser = sessionUser;
+        return { user: sessionUser };
+      }
+    } catch {
+      // Tabela ainda não existe — usa fallback local
+    }
+  }
+
+  // 2. Fallback: login local (VG Advocacia durante transição)
+  const users = loadUsers();
+  const user = users.find((u) => u.email === emailLower || u.email === email);
   if (!user) return { error: 'Email ou senha incorretos' };
 
-  // Checar override de senha (reset pelo admin ou troca pelo usuário)
   const overrides = _loadOverrides();
   const override = overrides.find((o) => o.userId === user.id);
   const activeHash = override ? override.hash : user.password;
 
   const match = user._hashed || override
     ? activeHash === hashed
-    : user.password === pass; // legado
+    : user.password === pass;
 
   if (!match) return { error: 'Email ou senha incorretos' };
 
@@ -214,12 +243,82 @@ export async function quickLogin(email, pass, rememberMe = false) {
     profile: user.profile,
     name: user.name,
     memberId: user.memberId,
-    photo: user.photo,
+    photo: user.photo || null,
+    officeId: user.officeId || VG_OFFICE_ID,
   };
 
   setSession(sessionUser, rememberMe);
   currentUser = sessionUser;
+
+  // Sincronizar senha para Supabase (silencioso)
+  _syncVGPasswordToSupabase(user.id, activeHash).catch(() => {});
+
   return { user: sessionUser };
+}
+
+// Sincroniza senha do VG para Supabase após login
+async function _syncVGPasswordToSupabase(userId, hash) {
+  if (!window._sb) return;
+  try {
+    await window._sb
+      .from('office_users')
+      .update({ password_hash: hash })
+      .eq('id', userId)
+      .eq('password_hash', 'pending_sync');
+  } catch {
+    // Silencioso
+  }
+}
+
+// ─── Signup de Novo Escritório (SaaS) ───
+export async function signupOffice({ officeName, cnpj, adminEmail, adminPassword }) {
+  if (!window._sb) return { error: 'Sistema offline. Tente novamente.' };
+  if (!officeName || !adminEmail || !adminPassword) return { error: 'Preencha todos os campos obrigatórios' };
+  if (adminPassword.length < 6) return { error: 'Senha deve ter no mínimo 6 caracteres' };
+
+  const emailLower = adminEmail.toLowerCase().trim();
+  const officeId = 'office_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const adminId  = 'user_'   + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const passwordHash = await hashPassword(adminPassword);
+
+  // Verificar se email já existe
+  try {
+    const { data: existing } = await window._sb
+      .from('office_users')
+      .select('id')
+      .eq('email', emailLower)
+      .single();
+    if (existing) return { error: 'Este email já está cadastrado' };
+  } catch {
+    // Email não existe — pode continuar
+  }
+
+  // Criar escritório
+  const { error: officeError } = await window._sb
+    .from('offices')
+    .insert({ id: officeId, name: officeName, cnpj: cnpj || '', email: emailLower });
+
+  if (officeError) return { error: 'Erro ao criar escritório. Tente novamente.' };
+
+  // Criar admin do escritório
+  const { error: userError } = await window._sb
+    .from('office_users')
+    .insert({
+      id: adminId,
+      office_id: officeId,
+      email: emailLower,
+      password_hash: passwordHash,
+      role: 'admin',
+      name: 'Administrador',
+    });
+
+  if (userError) {
+    await window._sb.from('offices').delete().eq('id', officeId);
+    return { error: 'Erro ao criar usuário. Tente novamente.' };
+  }
+
+  // Login automático após signup
+  return await quickLogin(adminEmail, adminPassword);
 }
 
 // ─── Logout ───
@@ -235,7 +334,6 @@ export async function doLogout() {
   clearSession();
   currentUser = null;
 
-  // Feature #6: notificar outras abas
   _authChannel?.postMessage('logout');
 
   const loginScreen = document.getElementById('loginScreen');
@@ -248,7 +346,7 @@ export async function doLogout() {
   }
 }
 
-// ─── Feature #2: Recuperação de Senha ───
+// ─── Recuperação de Senha ───
 const _RESET_KEY = 'lex_reset_requests';
 
 export function requestPasswordReset(email) {
@@ -257,7 +355,6 @@ export function requestPasswordReset(email) {
   if (!user) return { error: 'Email não encontrado no sistema' };
 
   const requests = _loadResetRequests();
-  // Evitar spam: só 1 pedido por usuário a cada 5 minutos
   const recent = requests.find((r) => r.userId === user.id && Date.now() - r.createdAt < 5 * 60 * 1000);
   if (recent) return { error: 'Pedido já enviado. Aguarde 5 minutos.' };
 
@@ -273,10 +370,7 @@ export function requestPasswordReset(email) {
   requests.unshift(request);
   localStorage.setItem(_RESET_KEY, JSON.stringify(requests));
 
-  // Salvar no Supabase para admin ver
-  if (typeof window._sbSave === 'function') {
-    window._sbSave(_RESET_KEY, requests);
-  }
+  if (typeof window._sbSave === 'function') window._sbSave(_RESET_KEY, requests);
 
   return { success: true };
 }
@@ -299,26 +393,27 @@ export async function adminResetPassword(userId, newPassword) {
   if (window.currentUser.profile !== 'admin' && window.currentUser.profile !== 'socio') {
     return { error: 'Sem permissão' };
   }
-  const users = loadUsers();
-  const idx = users.findIndex((u) => u.id === userId);
-  if (idx === -1) return { error: 'Usuário não encontrado' };
 
   const hash = await hashPassword(newPassword);
+  const users = loadUsers();
+  const idx = users.findIndex((u) => u.id === userId);
+  if (idx !== -1) {
+    users[idx].password = hash;
+    users[idx]._hashed = true;
+    users[idx]._passwordChanged = true;
+    saveUsers(users);
+  }
 
-  // Salvar localmente
-  users[idx].password = hash;
-  users[idx]._hashed = true;
-  users[idx]._passwordChanged = true;
-  saveUsers(users);
-
-  // Sincronizar via override (propaga para todos os dispositivos)
   _saveOverride(userId, hash);
 
-  // Marcar pedido como resolvido
   const requests = _loadResetRequests();
   requests.forEach((r) => { if (r.userId === userId) r.status = 'resolved'; });
   localStorage.setItem(_RESET_KEY, JSON.stringify(requests));
   if (typeof window._sbSave === 'function') window._sbSave(_RESET_KEY, requests);
+
+  if (window._sb) {
+    try { await window._sb.from('office_users').update({ password_hash: hash }).eq('id', userId); } catch {}
+  }
 
   return { success: true };
 }
@@ -413,8 +508,11 @@ export async function changePassword(oldPassword, newPassword) {
   users[userIdx]._passwordChanged = true;
   saveUsers(users);
 
-  // Sincronizar via override (propaga para todos os dispositivos)
   _saveOverride(currentUser.id, newHash);
+
+  if (window._sb) {
+    try { await window._sb.from('office_users').update({ password_hash: newHash }).eq('id', currentUser.id); } catch {}
+  }
 
   return { success: true };
 }
