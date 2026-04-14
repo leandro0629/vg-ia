@@ -4,8 +4,8 @@
 
 import { AUTH_KEY, USERS_KEY, PERMISSIONS, SESSION_TIMEOUT_MS, SESSION_WARNING_MS } from '../utils/constants.js';
 
-// ID fixo do escritório VG durante a transição
-export const VG_OFFICE_ID = 'vg-advocacia';
+// UUID fixo do escritório VG (corresponde ao registro na tabela offices do Supabase)
+export const VG_OFFICE_ID = '00000000-0000-0000-0000-000000000001';
 
 // Global state
 export let currentUser = null;

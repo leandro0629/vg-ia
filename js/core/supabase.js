@@ -25,7 +25,7 @@ export function setSBState(state) {
 
 // Retorna o office_id do usuário atual (com fallback para VG)
 function _getOfficeId() {
-  return (window.currentUser?.officeId) || 'vg-advocacia';
+  return (window.currentUser?.officeId) || '00000000-0000-0000-0000-000000000001';
 }
 
 // ─── Initialize Supabase Client ───
