@@ -290,7 +290,7 @@ function navigate(page) {
   const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
   if (navEl) navEl.classList.add('active');
   currentPage = page;
-  const titles = { dashboard:'Dashboard', equipe:'Equipe', missoes:'Missões', atividades:'Atividades Compartilhadas', prazos:'Prazos Processuais', municipios:'Contratos', advogados:'Advogados', estagiarios:'Estagiários', relatorios:'Relatórios', usuarios:'Usuários', calendario:'Calendário Jurídico', configuracoes:'Configurações', auditoria:'Auditoria' };
+  const titles = { dashboard:'Dashboard', equipe:'Equipe', missoes:'Missões', atividades:'Atividades Compartilhadas', prazos:'Prazos Processuais', municipios:'Contratos', advogados:'Advogados', estagiarios:'Estagiários', relatorios:'Relatórios', usuarios:'Usuários', calendario:'Calendário Jurídico', configuracoes:'Configurações', auditoria:'Auditoria', processos:'Processos', convites:'Convites' };
   document.getElementById('pageTitle').textContent = titles[page] || page;
   updateAddButton();
   renderPage(page);
