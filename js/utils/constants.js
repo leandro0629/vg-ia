@@ -29,12 +29,13 @@ export const ALL_PAGES = [
   'estagiarios',
   'relatorios',
   'calendario',
+  'convites',
 ];
 
 // Permissions Matrix
 export const PERMISSIONS = {
   admin: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria', 'convites'],
     canAddMembers: true,
     canDeleteMembers: true,
     canDeleteTasks: true,
@@ -42,11 +43,12 @@ export const PERMISSIONS = {
     canAddPrazos: true,
     canDelegate: true,
     canManageUsers: true,
+    canCreateInvites: true,
     label: 'Admin Geral',
     pillClass: 'role-admin',
   },
   socio: {
-    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria'],
+    pages: ['dashboard', 'equipe', 'missoes', 'atividades', 'municipios', 'processos', 'usuarios', 'estagiarios', 'relatorios', 'calendario', 'configuracoes', 'auditoria', 'convites'],
     canAddMembers: true,
     canDeleteMembers: true,
     canDeleteTasks: true,
@@ -54,6 +56,7 @@ export const PERMISSIONS = {
     canAddPrazos: true,
     canDelegate: true,
     canManageUsers: true,
+    canCreateInvites: true,
     label: 'Sócio-Gestor',
     pillClass: 'role-socio',
   },

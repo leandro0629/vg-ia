@@ -34,8 +34,8 @@ ALTER TABLE app_data DROP CONSTRAINT IF EXISTS app_data_pkey;
 ALTER TABLE app_data ADD PRIMARY KEY (office_id, key);
 
 -- 5. Inserir VG Advocacia com UUID fixo
-INSERT INTO offices (id, name, plan, email)
-VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'VG Advocacia', 'pro', 'kausasvgadmin@gmail.com')
+INSERT INTO offices (id, name, email)
+VALUES ('00000000-0000-0000-0000-000000000001'::uuid, 'VG Advocacia', 'kausasvgadmin@gmail.com')
 ON CONFLICT (id) DO NOTHING;
 
 -- 6. Inserir usuários do VG

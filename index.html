@@ -1535,6 +1535,10 @@
     </div>
     <div class="login-error" id="signupError" style="display:none"></div>
     <div class="form-group">
+      <label class="form-label">Código de Convite <span style="color:#e05c5c">*</span></label>
+      <input class="form-input" id="signupInviteCode" type="text" placeholder="Ex: VG-ABC12345" autocomplete="off">
+    </div>
+    <div class="form-group">
       <label class="form-label">Nome do Escritório <span style="color:#e05c5c">*</span></label>
       <input class="form-input" id="signupOfficeName" type="text" placeholder="Ex: Silva & Associados Advocacia" autocomplete="off">
     </div>
@@ -1642,6 +1646,10 @@
         <div class="nav-item" data-page="auditoria" onclick="navigate('auditoria'); closeSidebarMobile();">
           <span class="icon">🕵️</span>
           <span class="nav-item-label">Auditoria</span>
+        </div>
+        <div class="nav-item" data-page="convites" onclick="navigate('convites'); closeSidebarMobile();">
+          <span class="icon">🎟</span>
+          <span class="nav-item-label">Convites</span>
         </div>
       </div>
 
@@ -2274,9 +2282,105 @@
         </div>
       </div>
 
+      <!-- CONVITES -->
+      <div class="page" id="page-convites">
+        <div class="page-header">
+          <h1>🎟 Códigos de Convite</h1>
+          <p>Gerencie os códigos de convite para novos escritórios</p>
+        </div>
+
+        <!-- Seção Gerar Novo Convite -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Gerar Novo Código</span>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="generateInviteCode()">
+                ✨ Gerar Código
+              </button>
+              <button class="btn btn-secondary" onclick="generateMultipleInviteCodes()">
+                🎁 Gerar 5 Códigos
+              </button>
+            </div>
+            <div id="inviteCodeResult" style="margin-top: 16px; display: none; padding: 12px; background: var(--bg-secondary); border-radius: 8px; border-left: 3px solid var(--primary);">
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">Código Gerado:</div>
+              <div style="font-family: monospace; font-size: 1.1rem; color: var(--primary); font-weight: 600;" id="inviteCodeValue"></div>
+              <button class="btn btn-ghost btn-sm" style="margin-top: 12px;" onclick="copyInviteCode()">📋 Copiar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Códigos -->
+        <div class="card" style="margin-top: 16px;">
+          <div class="card-header">
+            <span class="card-title">Códigos Ativos</span>
+            <div style="display: flex; gap: 8px;">
+              <select id="inviteCodeFilter" class="form-input" style="max-width: 200px; padding: 6px 12px; font-size: 0.9rem;" onchange="filterInviteCodes()">
+                <option value="all">Todos</option>
+                <option value="unused">Não Utilizados</option>
+                <option value="used">Utilizados</option>
+                <option value="expired">Expirados</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: var(--bg-secondary); border-bottom: 1px solid var(--border);">
+                    <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem;">Código</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem;">Status</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem;">Criado em</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem;">Expira em</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem;">Utilizado por</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem;">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="inviteCodesTable">
+                  <!-- Será preenchido dinamicamente -->
+                </tbody>
+              </table>
+            </div>
+            <div id="inviteCodesEmpty" style="padding: 24px; text-align: center; color: var(--text-secondary);">
+              Nenhum código disponível
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 </div>
+
+<!-- CSS para role-boss -->
+<style>
+  .role-boss {
+    background: linear-gradient(135deg, #7c3aed, #9f67ff) !important;
+    color: #fff !important;
+  }
+
+  .stat-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+</style>
 
 <!-- MODAL EVENTOS DO DIA -->
 <div class="modal-overlay" id="modalDayEvents">

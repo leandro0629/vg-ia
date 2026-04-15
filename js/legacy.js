@@ -314,6 +314,7 @@ function renderPage(page) {
   else if (page === 'configuracoes') loadConfigPage();
   else if (page === 'auditoria'  && typeof window.renderAuditoria  === 'function') window.renderAuditoria();
   else if (page === 'processos'  && typeof window.renderProcessos  === 'function') window.renderProcessos();
+  else if (page === 'convites'   && typeof window.loadInviteCodes   === 'function') window.loadInviteCodes();
 }
 
 // ============================================================

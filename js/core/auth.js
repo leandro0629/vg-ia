@@ -270,11 +270,48 @@ async function _syncVGPasswordToSupabase(userId, hash) {
   }
 }
 
-// ─── Signup de Novo Escritório (SaaS) ───
-export async function signupOffice({ officeName, cnpj, adminEmail, adminPassword }) {
+// ─── Validar Invite Code ───
+async function validateAndUseInviteCode(inviteCode) {
   if (!window._sb) return { error: 'Sistema offline. Tente novamente.' };
-  if (!officeName || !adminEmail || !adminPassword) return { error: 'Preencha todos os campos obrigatórios' };
+  if (!inviteCode || inviteCode.trim().length === 0) return { error: 'Código de convite obrigatório' };
+
+  const code = inviteCode.trim().toUpperCase();
+
+  try {
+    // Buscar invite code
+    const { data, error } = await window._sb
+      .from('invite_codes')
+      .select('id, is_used, expires_at')
+      .eq('code', code)
+      .single();
+
+    if (error || !data) return { error: 'Código de convite inválido ou expirado' };
+
+    // Verificar se já foi usado
+    if (data.is_used) return { error: 'Este código de convite já foi utilizado' };
+
+    // Verificar expiração
+    if (data.expires_at) {
+      const expiresAt = new Date(data.expires_at).getTime();
+      if (Date.now() > expiresAt) return { error: 'Código de convite expirado' };
+    }
+
+    return { success: true, inviteCodeId: data.id };
+  } catch (e) {
+    console.error('Erro ao validar invite code:', e);
+    return { error: 'Erro ao validar código. Tente novamente.' };
+  }
+}
+
+// ─── Signup de Novo Escritório (SaaS) ───
+export async function signupOffice({ inviteCode, officeName, cnpj, adminEmail, adminPassword }) {
+  if (!window._sb) return { error: 'Sistema offline. Tente novamente.' };
+  if (!inviteCode || !officeName || !adminEmail || !adminPassword) return { error: 'Preencha todos os campos obrigatórios' };
   if (adminPassword.length < 6) return { error: 'Senha deve ter no mínimo 6 caracteres' };
+
+  // Validar invite code
+  const codeValidation = await validateAndUseInviteCode(inviteCode);
+  if (codeValidation.error) return codeValidation;
 
   const emailLower = adminEmail.toLowerCase().trim();
   const officeId = 'office_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
@@ -315,6 +352,17 @@ export async function signupOffice({ officeName, cnpj, adminEmail, adminPassword
   if (userError) {
     await window._sb.from('offices').delete().eq('id', officeId);
     return { error: 'Erro ao criar usuário. Tente novamente.' };
+  }
+
+  // Marcar invite code como usado
+  try {
+    await window._sb
+      .from('invite_codes')
+      .update({ is_used: true, used_by: officeId })
+      .eq('id', codeValidation.inviteCodeId);
+  } catch (e) {
+    console.error('Erro ao marcar invite code como usado:', e);
+    // Não falha a criação da conta se isso der erro
   }
 
   // Login automático após signup

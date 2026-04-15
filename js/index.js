@@ -88,6 +88,14 @@ import {
   saveProcesso,
   confirmDeleteProcesso,
 } from './features/processos.js';
+import {
+  generateInviteCode,
+  generateMultipleInviteCodes,
+  loadInviteCodes,
+  revokeInviteCode,
+  filterInviteCodes,
+  copyInviteCode,
+} from './features/invites.js';
 
 // ─── Global State ───
 window.currentUser = null;
@@ -176,6 +184,7 @@ window.showLogin = function() {
 
 // ─── Signup Handler ───
 window.doSignup = async function() {
+  const inviteCode = document.getElementById('signupInviteCode')?.value.trim() || '';
   const officeName = document.getElementById('signupOfficeName')?.value.trim() || '';
   const cnpj       = document.getElementById('signupCNPJ')?.value.trim() || '';
   const email      = document.getElementById('signupEmail')?.value.trim() || '';
@@ -190,6 +199,7 @@ window.doSignup = async function() {
     errorEl.style.display = 'block';
   };
 
+  if (!inviteCode)  return showError('Informe o código de convite');
   if (!officeName) return showError('Informe o nome do escritório');
   if (!email)      return showError('Informe o email do administrador');
   if (!password)   return showError('Informe uma senha');
@@ -202,7 +212,7 @@ window.doSignup = async function() {
 
   if (!window._sb) await initSupabase();
 
-  const result = await signupOffice({ officeName, cnpj, adminEmail: email, adminPassword: password });
+  const result = await signupOffice({ inviteCode, officeName, cnpj, adminEmail: email, adminPassword: password });
 
   btn.disabled = false;
   btnText.textContent = 'Criar Escritório';
@@ -363,6 +373,14 @@ window.openProcessoModal    = openProcessoModal;
 window.openProcessoDetail   = openProcessoDetail;
 window.saveProcesso         = saveProcesso;
 window.confirmDeleteProcesso = confirmDeleteProcesso;
+
+// ─── Feature Functions (Invites) ───
+window.generateInviteCode          = generateInviteCode;
+window.generateMultipleInviteCodes = generateMultipleInviteCodes;
+window.loadInviteCodes             = loadInviteCodes;
+window.revokeInviteCode            = revokeInviteCode;
+window.filterInviteCodes           = filterInviteCodes;
+window.copyInviteCode              = copyInviteCode;
 
 // ─── Initialize Application ───
 async function initializeApp() {
