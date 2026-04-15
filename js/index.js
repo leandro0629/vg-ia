@@ -152,6 +152,7 @@ window.doLogin = async function() {
     if (errorEl) errorEl.classList.remove('show');
     if (!window._sb) await initSupabase();
     document.getElementById('loginScreen')?.classList.add('hidden');
+    if (typeof window.updateUIForUser === 'function') window.updateUIForUser(r.user);
     window._setupRealtime?.();
     startInactivityWatch();
     navigate('dashboard');
