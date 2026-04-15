@@ -431,12 +431,14 @@ async function initializeApp() {
     await _sbLoadAll();
     console.log('✅ Dados carregados do Supabase');
 
-    // 9. Entrar na app
+    // 9. Atualizar UI com dados corretos do Supabase
+    if (typeof window.updateUIForUser === 'function') window.updateUIForUser(window.currentUser);
+
+    // 10. Entrar na app
     document.getElementById('loginScreen').classList.add('hidden');
     window._setupRealtime?.();
     startInactivityWatch();
     navigate('dashboard');
-    if (typeof window.updateUIForUser === 'function') window.updateUIForUser(session);
   } else {
     console.log('⚠️ Nenhuma sessão ativa');
     document.getElementById('loginScreen').classList.remove('hidden');
