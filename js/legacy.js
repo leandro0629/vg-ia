@@ -976,7 +976,9 @@ function showProfile(id) {
   document.getElementById('editPhotoBtn').style.display = isOwnProfile ? '' : 'none';
   document.getElementById('deleteMemberBtn').onclick = () => deleteMember(id);
   document.getElementById('deleteMemberBtn').style.display = canDo('canDeleteMembers') ? '' : 'none';
-  document.getElementById('modalProfile').classList.add('open');
+  const modalProfile = document.getElementById('modalProfile');
+  modalProfile.style.display = 'flex';
+  modalProfile.classList.add('open');
 }
 function deleteMember(id) {
   if (!confirm('Remover membro e todas as suas tarefas?')) return;
