@@ -1683,19 +1683,9 @@
       <div class="topbar-left">
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
         <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        <span style="color: var(--text-secondary); font-size: 0.9rem; margin-left: 16px;" id="officeNameTopbar"></span>
       </div>
       <div class="topbar-right">
-        <span class="role-pill" id="topbarRolePill"></span>
-        <button class="btn btn-ghost btn-sm" onclick="openGlobalSearch()" title="Busca global (/)">🔍</button>
-        <button class="btn btn-ghost btn-sm" id="themeToggleBtn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
-        <div class="shortcut-hint-btn" style="position:relative">?
-          <div class="shortcut-tooltip">
-            <div><span>Nova tarefa</span><kbd>N</kbd></div>
-            <div><span>Novo prazo</span><kbd>P</kbd></div>
-            <div><span>Busca global</span><kbd>/</kbd></div>
-            <div><span>Fechar modal</span><kbd>Esc</kbd></div>
-          </div>
-        </div>
         <button class="btn btn-ghost btn-sm" id="notifBtn" onclick="toggleNotifPanel()">🔔 <span class="notif-badge" id="notifCount">0</span></button>
         <button class="btn btn-primary btn-sm" id="addBtn" onclick="openAddModal()">+ Adicionar</button>
       </div>

@@ -26,8 +26,10 @@ function updateUIForUser(user) {
   const roleEl = document.getElementById('sidebarRole');
   if (nameEl) nameEl.textContent = user.name;
   if (roleEl) roleEl.textContent = perms.label;
-  const pill = document.getElementById('topbarRolePill');
-  if (pill) { pill.textContent = perms.label; pill.className = 'role-pill ' + perms.pillClass; }
+  const officeNameEl = document.getElementById('officeNameTopbar');
+  if (officeNameEl && window.currentOffice) {
+    officeNameEl.textContent = '📍 ' + window.currentOffice.name;
+  }
   document.querySelectorAll('.nav-item[data-page]').forEach(item => {
     const page = item.dataset.page;
     item.style.display = perms.pages.includes(page) ? '' : 'none';
