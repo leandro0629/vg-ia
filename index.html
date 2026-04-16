@@ -1687,7 +1687,11 @@
       </div>
       <div class="topbar-right">
         <button class="btn btn-ghost btn-sm" id="notifBtn" onclick="toggleNotifPanel()">🔔 <span class="notif-badge" id="notifCount">0</span></button>
-        <button class="btn btn-primary btn-sm" id="addBtn" onclick="openAddModal()">+ Adicionar</button>
+        <div style="position:relative;">
+          <button class="btn btn-primary btn-sm" id="addBtn" onclick="openAddModal()">+ Adicionar</button>
+          <div id="addDropdown" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:var(--card); border:1px solid var(--border); border-radius:10px; min-width:210px; z-index:999; box-shadow:0 8px 24px rgba(0,0,0,0.3); padding:6px;">
+          </div>
+        </div>
       </div>
     </header>
 

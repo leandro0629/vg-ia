@@ -1070,12 +1070,69 @@ function saveEditPhoto() {
 // ADD MODAL LOGIC
 // ============================================================
 function openAddModal() {
-  if (currentPage === 'missoes' || currentPage === 'dashboard') openTaskModal();
+  const pagesWithMenu = ['dashboard', 'processos', 'calendario'];
+  if (pagesWithMenu.includes(currentPage)) {
+    toggleAddDropdown();
+    return;
+  }
+  if (currentPage === 'missoes') openTaskModal();
   else if (currentPage === 'municipios') openModalMunicipio();
-  else if (currentPage === 'processos') window.openProcessoModal?.();
   else if (currentPage === 'usuarios') window.openModalNovoUsuario?.();
   else if (currentPage === 'equipe' || currentPage === 'estagiarios') openMemberModal();
 }
+
+function toggleAddDropdown() {
+  const dropdown = document.getElementById('addDropdown');
+  if (!dropdown) return;
+  if (dropdown.style.display !== 'none') {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  const options = [];
+  options.push({ icon: '📝', label: 'Nova Tarefa',    fn: 'openTaskModal()' });
+  options.push({ icon: '⚖️',  label: 'Novo Processo',  fn: 'window.openProcessoModal?.()' });
+  if (window.canDo?.('canAddPrazos'))
+    options.push({ icon: '📅', label: 'Novo Prazo',      fn: 'openPrazoModalDirect()' });
+  if (window.canDo?.('canDelegate'))
+    options.push({ icon: '🤝', label: 'Nova Atividade',  fn: 'openNovaACModal()' });
+  if (window.canDo?.('canAddMembers')) {
+    options.push({ icon: '👤', label: 'Novo Membro',     fn: 'openMemberModal()' });
+    options.push({ icon: '🏛️', label: 'Novo Contrato',   fn: 'openModalMunicipio()' });
+  }
+  if (window.canDo?.('canCreateInvites'))
+    options.push({ icon: '🎟️', label: 'Gerar Convite',   fn: "navigate('convites')" });
+
+  dropdown.innerHTML = options.map(o => `
+    <div onclick="${o.fn}; document.getElementById('addDropdown').style.display='none';"
+         style="display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:8px; cursor:pointer; font-size:0.9rem; color:var(--text-primary); transition:background 0.15s;"
+         onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background=''">
+      <span style="font-size:1rem;">${o.icon}</span>
+      <span>${o.label}</span>
+    </div>
+  `).join('');
+
+  dropdown.style.display = 'block';
+}
+
+function openPrazoModalDirect() {
+  if (typeof window.openPrazoModal === 'function') window.openPrazoModal();
+  else if (typeof openModal === 'function') openModal('modalPrazo');
+}
+
+function openNovaACModal() {
+  const btn = document.getElementById('btnNovaAC');
+  if (btn) btn.click();
+}
+
+// Fechar dropdown ao clicar fora
+document.addEventListener('click', e => {
+  const dropdown = document.getElementById('addDropdown');
+  const addBtn = document.getElementById('addBtn');
+  if (dropdown && addBtn && !dropdown.contains(e.target) && !addBtn.contains(e.target)) {
+    dropdown.style.display = 'none';
+  }
+});
 function openTaskModal() {
   fillAssigneeSelect('taskAssignee');
   fillMunicipioSelect();
