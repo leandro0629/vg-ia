@@ -232,10 +232,20 @@ function updateAddButton() {
   if (!perms) return;
   const addBtn = document.getElementById('addBtn');
   if (!addBtn) return;
-  const noAdd = (currentPage === 'equipe' || currentPage === 'estagiarios') && !perms.canAddMembers;
-  const noAC = currentPage === 'atividades';
-  const noMun = currentPage === 'municipios';
-  addBtn.style.display = (noAdd || noAC || noMun) ? 'none' : '';
+
+  // Páginas que têm botão próprio ou não precisam do botão principal
+  const hideBtn = (
+    currentPage === 'atividades' ||
+    currentPage === 'municipios' ||
+    currentPage === 'calendario' ||
+    currentPage === 'relatorios' ||
+    currentPage === 'auditoria' ||
+    currentPage === 'configuracoes' ||
+    currentPage === 'convites' ||
+    ((currentPage === 'equipe' || currentPage === 'estagiarios') && !perms.canAddMembers)
+  );
+  addBtn.style.display = hideBtn ? 'none' : '';
+
   const btnAC = document.getElementById('btnNovaAC');
   if (btnAC) btnAC.style.display = (currentPage === 'atividades' && canDo('canDelegate')) ? '' : 'none';
   const btnMun = document.getElementById('btnNovoMunicipio');
@@ -1062,7 +1072,9 @@ function saveEditPhoto() {
 function openAddModal() {
   if (currentPage === 'missoes' || currentPage === 'dashboard') openTaskModal();
   else if (currentPage === 'municipios') openModalMunicipio();
-  else openMemberModal();
+  else if (currentPage === 'processos') window.openProcessoModal?.();
+  else if (currentPage === 'usuarios') window.openModalNovoUsuario?.();
+  else if (currentPage === 'equipe' || currentPage === 'estagiarios') openMemberModal();
 }
 function openTaskModal() {
   fillAssigneeSelect('taskAssignee');
