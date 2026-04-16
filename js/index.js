@@ -21,6 +21,7 @@ import {
   canDo,
   canSeePage,
   changePassword,
+  hashPassword,
   requestPasswordReset,
   getPendingResetRequests,
   adminResetPassword,
@@ -128,6 +129,7 @@ window.setSession = setSession;
 window.clearSession = clearSession;
 window.loadUsers = loadUsers;
 window.saveUsers = saveUsers;
+window.hashPassword = hashPassword;
 window.quickLogin = quickLogin;
 window.doLogout = doLogout;
 

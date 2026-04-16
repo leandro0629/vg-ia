@@ -268,7 +268,57 @@ function showChangePassword() {
   document.getElementById('pwNew').value = '';
   document.getElementById('pwConfirm').value = '';
   document.getElementById('pwError').classList.remove('show');
-  document.getElementById('modalPassword').classList.add('open');
+  const modal = document.getElementById('modalPassword');
+  modal.style.display = 'flex';
+  modal.classList.add('open');
+}
+
+async function doChangePassword() {
+  const newPass = document.getElementById('pwNew').value.trim();
+  const confirmPass = document.getElementById('pwConfirm').value.trim();
+  const errorEl = document.getElementById('pwError');
+
+  errorEl.classList.remove('show');
+
+  if (!newPass || newPass.length < 6) {
+    errorEl.textContent = 'A senha deve ter no mínimo 6 caracteres.';
+    errorEl.classList.add('show');
+    return;
+  }
+  if (newPass !== confirmPass) {
+    errorEl.textContent = 'As senhas não coincidem.';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  const btn = document.querySelector('#modalPassword .btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+  try {
+    const newHash = await window.hashPassword?.(newPass);
+    if (!newHash) throw new Error('Erro ao gerar hash');
+
+    const users = window.loadUsers?.() || [];
+    const idx = users.findIndex(u => u.id === window.currentUser?.id);
+    if (idx !== -1) {
+      users[idx].password = newHash;
+      users[idx]._hashed = true;
+      users[idx]._passwordChanged = true;
+      window.saveUsers?.(users);
+    }
+
+    if (window._sb && window.currentUser?.id) {
+      await window._sb.from('office_users').update({ password_hash: newHash }).eq('id', window.currentUser.id);
+    }
+
+    closeModal('modalPassword');
+    window.showNotification?.('Senha alterada com sucesso!', 'success');
+  } catch(e) {
+    errorEl.textContent = 'Erro ao alterar senha. Tente novamente.';
+    errorEl.classList.add('show');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Alterar Senha'; }
+  }
 }
 
 function toggleUserMenu() {
