@@ -1092,8 +1092,7 @@ function toggleAddDropdown() {
   const options = [];
   options.push({ icon: '📝', label: 'Nova Tarefa',    fn: 'openTaskModal()' });
   options.push({ icon: '⚖️',  label: 'Novo Processo',  fn: 'window.openProcessoModal?.()' });
-  if (window.canDo?.('canAddPrazos'))
-    options.push({ icon: '📅', label: 'Novo Prazo',      fn: 'openPrazoModalDirect()' });
+  options.push({ icon: '📅', label: 'Novo Prazo',      fn: 'openPrazoModalDirect()' });
   if (window.canDo?.('canDelegate'))
     options.push({ icon: '🤝', label: 'Nova Atividade',  fn: 'openNovaACModal()' });
   if (window.canDo?.('canAddMembers')) {
