@@ -400,10 +400,13 @@ async function initializeApp() {
   // 1. Inicializar estilos de notificação
   initNotificationStyles();
 
-  // 2. Inicializar usuários
+  // 2. Inicializar Supabase PRIMEIRO (necessário para auth.getSession)
+  await initSupabase();
+
+  // 3. Inicializar usuários legado (fallback)
   window.users = await initializeUsers();
 
-  // 3. Carregar dados do localStorage
+  // 4. Carregar dados do localStorage
   const state = initializeStorage();
   window.tasks = state.tasks;
   window.members = state.members;
@@ -413,35 +416,75 @@ async function initializeApp() {
   window.municipios = state.municipios || [];
   window.processos  = state.processos  || [];
 
-  // 4. Verificar sessão anterior
-  const session = getSession();
-  if (session) {
-    window.currentUser = session;
-    setCurrentUser(session);
-    console.log('✅ Sessão recuperada:', session.name);
+  // 5. Verificar sessão — Supabase Auth primeiro, fallback local
+  let sessionUser = null;
 
-    // 5. Inicializar Supabase
-    await initSupabase();
+  if (window._sb) {
+    try {
+      const { data: { session } } = await window._sb.auth.getSession();
+      if (session?.user) {
+        console.log('✅ Sessão Supabase Auth ativa:', session.user.email);
+        const { data: profile } = await window._sb
+          .from('office_users')
+          .select('*')
+          .eq('email', session.user.email)
+          .single();
 
-    // 6. Inicializar handlers de modal
+        if (profile) {
+          sessionUser = {
+            id: profile.id,
+            email: profile.email,
+            profile: profile.role,
+            name: profile.name,
+            memberId: profile.member_id,
+            photo: profile.photo || null,
+            officeId: profile.office_id,
+            authId: session.user.id,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao verificar sessão Supabase:', e);
+    }
+  }
+
+  // Fallback: sessão local legada
+  if (!sessionUser) {
+    const legacySession = getSession();
+    if (legacySession) {
+      console.log('✅ Sessão local recuperada:', legacySession.name);
+      sessionUser = legacySession;
+    }
+  }
+
+  if (sessionUser) {
+    window.currentUser = sessionUser;
+    setCurrentUser(sessionUser);
+
+    // 6. Inicializar handlers de modal e sidebar
     initModalHandlers();
-
-    // 7. Inicializar sidebar
     initializeSidebar();
 
-    // 8. Carregar dados do Supabase ANTES de mostrar a app
+    // 7. Carregar dados do Supabase ANTES de mostrar a app
     console.log('⏳ Carregando dados do Supabase...');
     await _sbLoadAll();
     console.log('✅ Dados carregados do Supabase');
 
-    // 9. Atualizar UI com dados corretos do Supabase
+    // 8. Atualizar UI
     if (typeof window.updateUIForUser === 'function') window.updateUIForUser(window.currentUser);
 
-    // 10. Entrar na app
+    // 9. Entrar na app
     document.getElementById('loginScreen').classList.add('hidden');
     window._setupRealtime?.();
     startInactivityWatch();
     navigate('dashboard');
+
+    // 10. Listener para logout em outros dispositivos
+    window._sb?.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT' && window.currentUser) {
+        window.doLogout?.();
+      }
+    });
   } else {
     console.log('⚠️ Nenhuma sessão ativa');
     document.getElementById('loginScreen').classList.remove('hidden');

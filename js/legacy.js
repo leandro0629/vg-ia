@@ -295,21 +295,11 @@ async function doChangePassword() {
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
 
   try {
-    const newHash = await window.hashPassword?.(newPass);
-    if (!newHash) throw new Error('Erro ao gerar hash');
+    if (!window._sb) throw new Error('Sistema offline');
 
-    const users = window.loadUsers?.() || [];
-    const idx = users.findIndex(u => u.id === window.currentUser?.id);
-    if (idx !== -1) {
-      users[idx].password = newHash;
-      users[idx]._hashed = true;
-      users[idx]._passwordChanged = true;
-      window.saveUsers?.(users);
-    }
-
-    if (window._sb && window.currentUser?.id) {
-      await window._sb.from('office_users').update({ password_hash: newHash }).eq('id', window.currentUser.id);
-    }
+    // Alterar senha via Supabase Auth — simples e seguro
+    const { error } = await window._sb.auth.updateUser({ password: newPass });
+    if (error) throw error;
 
     closeModal('modalPassword');
     window.showNotification?.('Senha alterada com sucesso!', 'success');

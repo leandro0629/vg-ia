@@ -1,43 +1,22 @@
 // ============================================================
-// AUTHENTICATION MODULE — Multi-Tenant SaaS
+// AUTHENTICATION MODULE — Supabase Auth (com fallback legado VG)
 // ============================================================
 
 import { AUTH_KEY, USERS_KEY, PERMISSIONS, SESSION_TIMEOUT_MS, SESSION_WARNING_MS } from '../utils/constants.js';
 
-// UUID fixo do escritório VG (corresponde ao registro na tabela offices do Supabase)
 export const VG_OFFICE_ID = '00000000-0000-0000-0000-000000000001';
 
-// Global state
 export let currentUser = null;
 
 export function setCurrentUser(user) {
   currentUser = user;
 }
+
 let _inactivityTimer = null;
 let _warningTimer = null;
 let _warningToastEl = null;
 
-// ─── BroadcastChannel — Logout em todas as abas ───
-const _authChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('kausas-auth') : null;
-
-if (_authChannel) {
-  _authChannel.onmessage = (e) => {
-    if (e.data === 'logout') {
-      clearSession();
-      currentUser = null;
-      const loginScreen = document.getElementById('loginScreen');
-      if (loginScreen) {
-        loginScreen.classList.remove('hidden');
-        const emailEl = document.getElementById('loginEmail');
-        const passEl = document.getElementById('loginPass');
-        if (emailEl) emailEl.value = '';
-        if (passEl) passEl.value = '';
-      }
-    }
-  };
-}
-
-// ─── Password Hashing (SHA-256 via Web Crypto API) ───
+// ─── Password Hashing (mantido para fallback legado VG) ───
 const _SALT = 'kausas_vg_salt_2024';
 
 export async function hashPassword(password) {
@@ -48,66 +27,23 @@ export async function hashPassword(password) {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// ─── Session Management ───
-export function getSession() {
-  try {
-    const fromSession = sessionStorage.getItem(AUTH_KEY);
-    if (fromSession) return JSON.parse(fromSession);
-
-    const fromLocal = localStorage.getItem(AUTH_KEY);
-    if (fromLocal) {
-      const parsed = JSON.parse(fromLocal);
-      if (parsed._rememberExpiry && Date.now() > parsed._rememberExpiry) {
-        localStorage.removeItem(AUTH_KEY);
-        return null;
-      }
-      return parsed;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-export function setSession(user, rememberMe = false) {
-  if (rememberMe) {
-    const userWithExpiry = { ...user, _rememberExpiry: Date.now() + 7 * 24 * 60 * 60 * 1000 };
-    localStorage.setItem(AUTH_KEY, JSON.stringify(userWithExpiry));
-  } else {
-    sessionStorage.setItem(AUTH_KEY, JSON.stringify(user));
-  }
-}
-
-export function clearSession() {
-  sessionStorage.removeItem(AUTH_KEY);
-  localStorage.removeItem(AUTH_KEY);
-}
-
-// ─── Load/Save Users (legado — VG durante transição) ───
+// ─── Legacy User Storage (mantido para fallback durante transição VG) ───
 export function loadUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; } catch { return []; }
 }
 
 export function saveUsers(users) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
-// ─── Initialize Users (mantém VG funcionando durante transição) ───
+// ─── Initialize Users (legado VG — fallback) ───
 export async function initializeUsers() {
   let users = loadUsers();
 
   const _adminAccount = {
-    id: 'admin',
-    email: 'kausasvgadmin@gmail.com',
+    id: 'admin', email: 'kausasvgadmin@gmail.com',
     password: '971f1b3eb49623397a2c21f57d909e482f08877e03790e66dd8782c9e5030ec6',
-    _hashed: true,
-    profile: 'admin',
-    name: 'Admin Geral',
-    memberId: null,
+    _hashed: true, profile: 'admin', name: 'Admin Geral', memberId: null,
     officeId: VG_OFFICE_ID,
     photo: 'https://api.dicebear.com/7.x/initials/svg?seed=AG&backgroundColor=000000&textColor=ffffff',
   };
@@ -117,11 +53,9 @@ export async function initializeUsers() {
     users.unshift(_adminAccount);
   } else {
     const existing = users[_adminIdx];
-    if (existing._passwordChanged) {
-      users[_adminIdx] = { ..._adminAccount, password: existing.password, _passwordChanged: true };
-    } else {
-      users[_adminIdx] = _adminAccount;
-    }
+    users[_adminIdx] = existing._passwordChanged
+      ? { ..._adminAccount, password: existing.password, _passwordChanged: true }
+      : _adminAccount;
   }
 
   const memberUsersPlain = [
@@ -148,11 +82,9 @@ export async function initializeUsers() {
       users.push(hashedUser);
     } else {
       const existing = users[idx];
-      if (existing._passwordChanged) {
-        users[idx] = { ...hashedUser, password: existing.password, _passwordChanged: true };
-      } else {
-        users[idx] = hashedUser;
-      }
+      users[idx] = existing._passwordChanged
+        ? { ...hashedUser, password: existing.password, _passwordChanged: true }
+        : hashedUser;
     }
   }
 
@@ -168,7 +100,7 @@ export async function initializeUsers() {
   return users;
 }
 
-// ─── Password Overrides ───
+// ─── Password Overrides (legado) ───
 const _OVERRIDES_KEY = 'lex_password_overrides';
 
 function _loadOverrides() {
@@ -184,187 +116,131 @@ function _saveOverride(userId, hash) {
   if (typeof window._sbSave === 'function') window._sbSave(_OVERRIDES_KEY, overrides);
 }
 
-// ─── Quick Login — Multi-Tenant ───
-export async function quickLogin(email, pass, rememberMe = false) {
-  const hashed = await hashPassword(pass);
+// ─── Montar objeto de sessão a partir do perfil ───
+function _buildSessionUser(profile, authId = null) {
+  return {
+    id: profile.id,
+    email: profile.email,
+    profile: profile.role,
+    name: profile.name,
+    memberId: profile.member_id,
+    photo: profile.photo || null,
+    officeId: profile.office_id,
+    authId,
+  };
+}
+
+// ─── Quick Login — Supabase Auth + Fallback Local VG ───
+export async function quickLogin(email, password, rememberMe = false) {
+  if (!window._sb) return { error: 'Sistema offline. Verifique sua conexão.' };
+
   const emailLower = email.toLowerCase().trim();
 
-  // 1. Tentar login via Supabase (tabela office_users — novos escritórios)
-  if (window._sb) {
-    try {
-      const { data: sbUser, error } = await window._sb
-        .from('office_users')
-        .select('*')
-        .eq('email', emailLower)
-        .single();
+  // 1. Tentar login via Supabase Auth
+  const { data: authData, error: authError } = await window._sb.auth.signInWithPassword({
+    email: emailLower,
+    password,
+  });
 
-      if (!error && sbUser && sbUser.password_hash !== 'pending_sync') {
-        if (sbUser.password_hash === hashed) {
-          const sessionUser = {
-            id: sbUser.id,
-            email: sbUser.email,
-            profile: sbUser.role,
-            name: sbUser.name,
-            memberId: sbUser.member_id,
-            photo: sbUser.photo || null,
-            officeId: sbUser.office_id,
-          };
-          setSession(sessionUser, rememberMe);
+  if (!authError && authData?.user) {
+    const { data: profile } = await window._sb
+      .from('office_users')
+      .select('*')
+      .eq('email', emailLower)
+      .single();
+
+    if (profile) {
+      const sessionUser = _buildSessionUser(profile, authData.user.id);
+      currentUser = sessionUser;
+      return { user: sessionUser };
+    }
+  }
+
+  // 2. Fallback: verificação local (usuários VG ainda não migrados para Supabase Auth)
+  const hashed = await hashPassword(password);
+  const users = loadUsers();
+  const user = users.find((u) => u.email === emailLower || u.email === email);
+
+  if (user) {
+    const overrides = _loadOverrides();
+    const override = overrides.find((o) => o.userId === user.id);
+    const activeHash = override ? override.hash : user.password;
+    const match = (user._hashed || override) ? activeHash === hashed : user.password === password;
+
+    if (match) {
+      // Autenticação local ok! Tentar criar conta no Supabase Auth automaticamente
+      const migrated = await _autoMigrateToSupabaseAuth(emailLower, password);
+
+      if (migrated) {
+        // Tentar Supabase Auth novamente após migração
+        const { data: authData2 } = await window._sb.auth.signInWithPassword({ email: emailLower, password });
+        const { data: profile } = await window._sb.from('office_users').select('*').eq('email', emailLower).single();
+
+        if (profile) {
+          const sessionUser = _buildSessionUser(profile, authData2?.user?.id || null);
           currentUser = sessionUser;
           return { user: sessionUser };
         }
-        // Hash não bate no Supabase — cai no fallback local
-        // (senha pode ter sido trocada localmente mas Supabase não atualizou ainda)
       }
-    } catch {
-      // Tabela ainda não existe — usa fallback local
+
+      // Último fallback: sessão local (Supabase Auth não disponível ou confirmação pendente)
+      const sessionUser = {
+        id: user.id, email: user.email, profile: user.profile, name: user.name,
+        memberId: user.memberId, photo: user.photo || null, officeId: user.officeId || VG_OFFICE_ID,
+      };
+      currentUser = sessionUser;
+      try { sessionStorage.setItem(AUTH_KEY, JSON.stringify(sessionUser)); } catch {}
+      return { user: sessionUser };
     }
   }
 
-  // 2. Fallback: login local (VG Advocacia durante transição)
-  const users = loadUsers();
-  const user = users.find((u) => u.email === emailLower || u.email === email);
-  if (!user) return { error: 'Email ou senha incorretos' };
-
-  const overrides = _loadOverrides();
-  const override = overrides.find((o) => o.userId === user.id);
-  const activeHash = override ? override.hash : user.password;
-
-  const match = user._hashed || override
-    ? activeHash === hashed
-    : user.password === pass;
-
-  if (!match) return { error: 'Email ou senha incorretos' };
-
-  const sessionUser = {
-    id: user.id,
-    email: user.email,
-    profile: user.profile,
-    name: user.name,
-    memberId: user.memberId,
-    photo: user.photo || null,
-    officeId: user.officeId || VG_OFFICE_ID,
-  };
-
-  setSession(sessionUser, rememberMe);
-  currentUser = sessionUser;
-
-  // Sincronizar senha para Supabase (silencioso)
-  _syncVGPasswordToSupabase(user.id, activeHash).catch(() => {});
-
-  return { user: sessionUser };
+  return { error: 'Email ou senha incorretos' };
 }
 
-// Sincroniza senha do VG para Supabase após login
-async function _syncVGPasswordToSupabase(userId, hash) {
-  if (!window._sb) return;
+// Auto-migrar usuário legado para Supabase Auth (na primeira vez que logar)
+async function _autoMigrateToSupabaseAuth(email, password) {
+  if (!window._sb) return false;
   try {
-    await window._sb
-      .from('office_users')
-      .update({ password_hash: hash })
-      .eq('id', userId);
-  } catch {
-    // Silencioso
-  }
-}
-
-// ─── Validar Invite Code ───
-async function validateAndUseInviteCode(inviteCode) {
-  if (!window._sb) return { error: 'Sistema offline. Tente novamente.' };
-  if (!inviteCode || inviteCode.trim().length === 0) return { error: 'Código de convite obrigatório' };
-
-  const code = inviteCode.trim().toUpperCase();
-
-  try {
-    // Buscar invite code
-    const { data, error } = await window._sb
-      .from('invite_codes')
-      .select('id, is_used, expires_at')
-      .eq('code', code)
-      .single();
-
-    if (error || !data) return { error: 'Código de convite inválido ou expirado' };
-
-    // Verificar se já foi usado
-    if (data.is_used) return { error: 'Este código de convite já foi utilizado' };
-
-    // Verificar expiração
-    if (data.expires_at) {
-      const expiresAt = new Date(data.expires_at).getTime();
-      if (Date.now() > expiresAt) return { error: 'Código de convite expirado' };
+    const { error } = await window._sb.auth.signUp({ email, password });
+    // Se já existe, considera migrado (vai tentar signIn depois)
+    if (!error || error.message?.includes('already registered') || error.message?.includes('User already registered')) {
+      return true;
     }
-
-    return { success: true, inviteCodeId: data.id };
-  } catch (e) {
-    console.error('Erro ao validar invite code:', e);
-    return { error: 'Erro ao validar código. Tente novamente.' };
+    return false;
+  } catch {
+    return false;
   }
 }
 
-// ─── Signup de Novo Escritório (SaaS) ───
-export async function signupOffice({ inviteCode, officeName, cnpj, adminEmail, adminPassword }) {
-  if (!window._sb) return { error: 'Sistema offline. Tente novamente.' };
-  if (!inviteCode || !officeName || !adminEmail || !adminPassword) return { error: 'Preencha todos os campos obrigatórios' };
-  if (adminPassword.length < 6) return { error: 'Senha deve ter no mínimo 6 caracteres' };
-
-  // Validar invite code
-  const codeValidation = await validateAndUseInviteCode(inviteCode);
-  if (codeValidation.error) return codeValidation;
-
-  const emailLower = adminEmail.toLowerCase().trim();
-  const officeId = 'office_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-  const adminId  = 'user_'   + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-  const passwordHash = await hashPassword(adminPassword);
-
-  // Verificar se email já existe
+// ─── Session Legacy (mantido para compatibilidade) ───
+export function getSession() {
   try {
-    const { data: existing } = await window._sb
-      .from('office_users')
-      .select('id')
-      .eq('email', emailLower)
-      .single();
-    if (existing) return { error: 'Este email já está cadastrado' };
-  } catch {
-    // Email não existe — pode continuar
+    const fromSession = sessionStorage.getItem(AUTH_KEY);
+    if (fromSession) return JSON.parse(fromSession);
+    const fromLocal = localStorage.getItem(AUTH_KEY);
+    if (fromLocal) {
+      const parsed = JSON.parse(fromLocal);
+      if (parsed._rememberExpiry && Date.now() > parsed._rememberExpiry) {
+        localStorage.removeItem(AUTH_KEY);
+        return null;
+      }
+      return parsed;
+    }
+    return null;
+  } catch { return null; }
+}
+
+export function setSession(user, rememberMe = false) {
+  if (rememberMe) {
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ ...user, _rememberExpiry: Date.now() + 7 * 24 * 60 * 60 * 1000 }));
+  } else {
+    sessionStorage.setItem(AUTH_KEY, JSON.stringify(user));
   }
+}
 
-  // Criar escritório
-  const { error: officeError } = await window._sb
-    .from('offices')
-    .insert({ id: officeId, name: officeName, cnpj: cnpj || '', email: emailLower });
-
-  if (officeError) return { error: 'Erro ao criar escritório. Tente novamente.' };
-
-  // Criar admin do escritório
-  const { error: userError } = await window._sb
-    .from('office_users')
-    .insert({
-      id: adminId,
-      office_id: officeId,
-      email: emailLower,
-      password_hash: passwordHash,
-      role: 'admin',
-      name: 'Administrador',
-    });
-
-  if (userError) {
-    await window._sb.from('offices').delete().eq('id', officeId);
-    return { error: 'Erro ao criar usuário. Tente novamente.' };
-  }
-
-  // Marcar invite code como usado
-  try {
-    await window._sb
-      .from('invite_codes')
-      .update({ is_used: true, used_by: officeId })
-      .eq('id', codeValidation.inviteCodeId);
-  } catch (e) {
-    console.error('Erro ao marcar invite code como usado:', e);
-    // Não falha a criação da conta se isso der erro
-  }
-
-  // Login automático após signup
-  return await quickLogin(adminEmail, adminPassword);
+export function clearSession() {
+  sessionStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(AUTH_KEY);
 }
 
 // ─── Logout ───
@@ -377,10 +253,12 @@ export async function doLogout() {
     document.removeEventListener(evt, _resetInactivityTimer)
   );
 
+  if (window._sb) {
+    try { await window._sb.auth.signOut(); } catch {}
+  }
+
   clearSession();
   currentUser = null;
-
-  _authChannel?.postMessage('logout');
 
   const loginScreen = document.getElementById('loginScreen');
   if (loginScreen) {
@@ -406,27 +284,18 @@ export function requestPasswordReset(email) {
 
   const request = {
     id: `reset_${Date.now()}`,
-    userId: user.id,
-    userName: user.name,
-    userEmail: user.email,
-    createdAt: Date.now(),
-    status: 'pending',
+    userId: user.id, userName: user.name, userEmail: user.email,
+    createdAt: Date.now(), status: 'pending',
   };
 
   requests.unshift(request);
   localStorage.setItem(_RESET_KEY, JSON.stringify(requests));
-
   if (typeof window._sbSave === 'function') window._sbSave(_RESET_KEY, requests);
-
   return { success: true };
 }
 
 export function _loadResetRequests() {
-  try {
-    return JSON.parse(localStorage.getItem(_RESET_KEY)) || [];
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(_RESET_KEY)) || []; } catch { return []; }
 }
 
 export function getPendingResetRequests() {
@@ -457,11 +326,76 @@ export async function adminResetPassword(userId, newPassword) {
   localStorage.setItem(_RESET_KEY, JSON.stringify(requests));
   if (typeof window._sbSave === 'function') window._sbSave(_RESET_KEY, requests);
 
+  // Atualizar hash na tabela office_users (compatibilidade)
   if (window._sb) {
     try { await window._sb.from('office_users').update({ password_hash: hash }).eq('id', userId); } catch {}
   }
 
   return { success: true };
+}
+
+// ─── Validar Invite Code ───
+async function validateAndUseInviteCode(inviteCode) {
+  if (!window._sb) return { error: 'Sistema offline. Tente novamente.' };
+  if (!inviteCode || inviteCode.trim().length === 0) return { error: 'Código de convite obrigatório' };
+
+  const code = inviteCode.trim().toUpperCase();
+
+  try {
+    const { data, error } = await window._sb
+      .from('invite_codes').select('id, is_used, expires_at').eq('code', code).single();
+
+    if (error || !data) return { error: 'Código de convite inválido ou expirado' };
+    if (data.is_used) return { error: 'Este código de convite já foi utilizado' };
+    if (data.expires_at && Date.now() > new Date(data.expires_at).getTime()) {
+      return { error: 'Código de convite expirado' };
+    }
+    return { success: true, inviteCodeId: data.id };
+  } catch (e) {
+    return { error: 'Erro ao validar código. Tente novamente.' };
+  }
+}
+
+// ─── Signup de Novo Escritório (SaaS) ───
+export async function signupOffice({ inviteCode, officeName, cnpj, adminEmail, adminPassword }) {
+  if (!window._sb) return { error: 'Sistema offline. Tente novamente.' };
+  if (!inviteCode || !officeName || !adminEmail || !adminPassword) return { error: 'Preencha todos os campos obrigatórios' };
+  if (adminPassword.length < 6) return { error: 'Senha deve ter no mínimo 6 caracteres' };
+
+  const codeValidation = await validateAndUseInviteCode(inviteCode);
+  if (codeValidation.error) return codeValidation;
+
+  const emailLower = adminEmail.toLowerCase().trim();
+  const officeId = 'office_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const adminId  = 'user_'   + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const passwordHash = await hashPassword(adminPassword);
+
+  try {
+    const { data: existing } = await window._sb.from('office_users').select('id').eq('email', emailLower).single();
+    if (existing) return { error: 'Este email já está cadastrado' };
+  } catch {}
+
+  const { error: officeError } = await window._sb.from('offices').insert({ id: officeId, name: officeName, cnpj: cnpj || '', email: emailLower });
+  if (officeError) return { error: 'Erro ao criar escritório. Tente novamente.' };
+
+  const { error: userError } = await window._sb.from('office_users').insert({
+    id: adminId, office_id: officeId, email: emailLower,
+    password_hash: passwordHash, role: 'admin', name: 'Administrador',
+  });
+
+  if (userError) {
+    await window._sb.from('offices').delete().eq('id', officeId);
+    return { error: 'Erro ao criar usuário. Tente novamente.' };
+  }
+
+  try {
+    await window._sb.from('invite_codes').update({ is_used: true, used_by: officeId }).eq('id', codeValidation.inviteCodeId);
+  } catch {}
+
+  // Criar conta no Supabase Auth
+  await _autoMigrateToSupabaseAuth(emailLower, adminPassword);
+
+  return await quickLogin(adminEmail, adminPassword);
 }
 
 // ─── Inactivity Timer ───
@@ -532,33 +466,21 @@ export function canSeePage(page) {
   return perms.pages.includes(page);
 }
 
-// ─── Change Password ───
+// ─── Change Password (Supabase Auth) ───
 export async function changePassword(oldPassword, newPassword) {
   if (!currentUser) return { error: 'Usuário não autenticado' };
+  if (!window._sb) return { error: 'Sistema offline' };
 
-  const users = loadUsers();
-  const userIdx = users.findIndex((u) => u.id === currentUser.id);
-  if (userIdx === -1) return { error: 'Usuário não encontrado' };
+  // Verificar senha atual re-autenticando
+  const { error: signInError } = await window._sb.auth.signInWithPassword({
+    email: currentUser.email,
+    password: oldPassword,
+  });
+  if (signInError) return { error: 'Senha atual incorreta' };
 
-  const existingUser = users[userIdx];
-  const oldHash = await hashPassword(oldPassword);
-  const passwordMatch = existingUser._hashed
-    ? existingUser.password === oldHash
-    : existingUser.password === oldPassword;
-
-  if (!passwordMatch) return { error: 'Senha atual incorreta' };
-
-  const newHash = await hashPassword(newPassword);
-  users[userIdx].password = newHash;
-  users[userIdx]._hashed = true;
-  users[userIdx]._passwordChanged = true;
-  saveUsers(users);
-
-  _saveOverride(currentUser.id, newHash);
-
-  if (window._sb) {
-    try { await window._sb.from('office_users').update({ password_hash: newHash }).eq('id', currentUser.id); } catch {}
-  }
+  // Alterar senha via Supabase Auth
+  const { error } = await window._sb.auth.updateUser({ password: newPassword });
+  if (error) return { error: 'Erro ao alterar senha' };
 
   return { success: true };
 }
