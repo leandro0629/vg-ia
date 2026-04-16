@@ -199,21 +199,22 @@ export async function quickLogin(email, pass, rememberMe = false) {
         .single();
 
       if (!error && sbUser && sbUser.password_hash !== 'pending_sync') {
-        if (sbUser.password_hash !== hashed) return { error: 'Email ou senha incorretos' };
-
-        const sessionUser = {
-          id: sbUser.id,
-          email: sbUser.email,
-          profile: sbUser.role,
-          name: sbUser.name,
-          memberId: sbUser.member_id,
-          photo: sbUser.photo || null,
-          officeId: sbUser.office_id,
-        };
-
-        setSession(sessionUser, rememberMe);
-        currentUser = sessionUser;
-        return { user: sessionUser };
+        if (sbUser.password_hash === hashed) {
+          const sessionUser = {
+            id: sbUser.id,
+            email: sbUser.email,
+            profile: sbUser.role,
+            name: sbUser.name,
+            memberId: sbUser.member_id,
+            photo: sbUser.photo || null,
+            officeId: sbUser.office_id,
+          };
+          setSession(sessionUser, rememberMe);
+          currentUser = sessionUser;
+          return { user: sessionUser };
+        }
+        // Hash não bate no Supabase — cai no fallback local
+        // (senha pode ter sido trocada localmente mas Supabase não atualizou ainda)
       }
     } catch {
       // Tabela ainda não existe — usa fallback local
