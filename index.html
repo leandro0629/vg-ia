@@ -656,8 +656,29 @@
     overflow: hidden;
     z-index: 1;
   }
+  /* Padrão geométrico sutil */
   .login-brand::before {
-    content: none;
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,169,110,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Círculos decorativos */
+  .login-brand::after {
+    content: '';
+    position: absolute;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    border: 1px solid rgba(200,169,110,0.07);
+    bottom: -100px; right: -100px;
+    pointer-events: none;
+    z-index: 0;
+    box-shadow: 0 0 0 80px rgba(200,169,110,0.03), 0 0 0 160px rgba(200,169,110,0.015);
   }
   .login-brand-inner {
     position: relative; z-index: 2;
@@ -723,10 +744,10 @@
 
   /* RIGHT — FORM PANEL */
   .login-box {
-    width: 420px; min-width: 380px;
+    width: 440px; min-width: 380px;
     display: flex; flex-direction: column; justify-content: center;
-    padding: 72px 56px;
-    background: #0a0908;
+    padding: 72px 60px;
+    background: #080807;
     position: relative; z-index: 1;
     animation: formReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
     opacity: 0;
@@ -735,21 +756,70 @@
     from { opacity: 0; transform: translateX(24px); }
     to   { opacity: 1; transform: translateX(0); }
   }
-  .login-form-header { margin-bottom: 44px; }
+  .login-form-header { margin-bottom: 40px; }
   .login-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 2.1rem; font-weight: 400;
-    color: #f2ede4; margin-bottom: 10px;
-    line-height: 1.15; text-align: left;
+    font-size: 2.4rem; font-weight: 400;
+    color: #f2ede4; margin-bottom: 8px;
+    line-height: 1.1; text-align: left;
     letter-spacing: 0.01em;
   }
   .login-sub {
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.8rem; font-weight: 300;
-    color: rgba(242,237,228,0.38);
+    font-size: 0.78rem; font-weight: 300;
+    color: rgba(242,237,228,0.32);
     text-align: left; margin-bottom: 0;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
+
+  /* Inputs refinados */
+  .login-box .form-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(200,169,110,0.7);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .login-box .form-input {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(200,169,110,0.15);
+    color: #f2ede4;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 13px 16px;
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+  .login-box .form-input:focus {
+    outline: none;
+    border-color: rgba(200,169,110,0.5);
+    box-shadow: 0 0 0 3px rgba(200,169,110,0.07);
+  }
+  .login-box .form-input::placeholder { color: rgba(242,237,228,0.18); }
+
+  /* Botão de login refinado */
+  .login-box #loginBtn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 28px;
+    background: linear-gradient(135deg, #c8a96e 0%, #fbbf24 100%);
+    color: #0a0908;
+    border: none;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .login-box #loginBtn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .login-box #loginBtn:active { transform: translateY(0); }
   .login-error {
     display: none;
     background: rgba(200,70,70,0.08);
