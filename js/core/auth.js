@@ -261,8 +261,7 @@ async function _syncVGPasswordToSupabase(userId, hash) {
     await window._sb
       .from('office_users')
       .update({ password_hash: hash })
-      .eq('id', userId)
-      .eq('password_hash', 'pending_sync');
+      .eq('id', userId);
   } catch {
     // Silencioso
   }
